@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Crianças no Mundo da Lua?</title>
   <meta name="description" content="Ferramenta de rastreio de dificuldades de atenção e linguagem em contexto escolar." />
-  <meta name="author" content="Joana Miguel & Joana Carvalho — NID" />
+  <meta name="author" content="Joana Miguel & Joana Carvalho — NIDCAIDI" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌙</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -57,8 +57,7 @@ const { useState, useMemo } = React;
 
 // ─── CONFIGURAÇÃO ───────────────────────────────────────────
 // Cole aqui o URL do Google Apps Script após deploy:
-const API_URL = "";
-// Exemplo: "https://script.google.com/macros/s/AKfycbx.../exec"
+const API_URL = "https://script.google.com/a/macros/caidi.pt/s/AKfycbxnr9URYDpD8wSGhsjtube1Gti5uHUmleKD506XkVedGv7De83P7O2AisQQhUuVV24Y/exec";
 
 async function sendToSheet(action, payload) {
   if (!API_URL) return;
