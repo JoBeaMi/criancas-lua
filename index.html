@@ -59,6 +59,7 @@ const { useState, useMemo } = React;
 // Cole aqui o URL do Google Apps Script após deploy:
 const API_URL = "https://script.google.com/macros/s/AKfycbxEw7bzcQ0ycMKGaiOApeEZMg1DEiF2w86E7gzB0PZaYEb3WmgKoqi74PYYY-o7NlUi/exec";
 
+
 async function sendToSheet(action, payload) {
   if (!API_URL) { console.warn("API_URL vazio"); return; }
   const body = JSON.stringify({ action, ...payload });
@@ -158,26 +159,20 @@ const SCREENING_ITEMS = {
 
 const LIKERT = ["Nunca", "Raramente", "Frequentemente", "Sempre"];
 const IMPACT_LIKERT = ["Sem impacto", "Impacto ligeiro", "Impacto moderado", "Impacto grave"];
-const EFFICACY_LIKERT = ["Nada capaz", "Pouco capaz", "Moderadamente capaz", "Bastante capaz", "Totalmente capaz"];
+const EFFICACY_LIKERT = ["Nada", "Pouco", "Moderadamente", "Bastante", "Totalmente"];
 const STRATEGY_FREQ = ["Nunca usei", "Raramente", "Às vezes", "Frequentemente"];
 
 const STRATEGIES = [
-  { id: "s1", cat: "attention", text: "Instruções curtas, passo a passo" },
-  { id: "s2", cat: "attention", text: "Confirmar compreensão (pedir para repetir)" },
-  { id: "s3", cat: "attention", text: "Dividir tarefas em blocos pequenos" },
-  { id: "s4", cat: "attention", text: "Supervisão frequente" },
-  { id: "s5", cat: "attention", text: "Feedback imediato" },
-  { id: "s6", cat: "hyperactivity", text: "Posicionamento estratégico na sala" },
-  { id: "s7", cat: "hyperactivity", text: "Pausas motoras estruturadas" },
-  { id: "s8", cat: "hyperactivity", text: "Sinais não-verbais combinados" },
-  { id: "s9", cat: "hyperactivity", text: "Reforço positivo imediato e claro" },
-  { id: "s10", cat: "hyperactivity", text: "Contrato comportamental simples" },
-  { id: "s11", cat: "language", text: "Simplificar a linguagem utilizada" },
-  { id: "s12", cat: "language", text: "Apoios visuais (imagens, esquemas)" },
-  { id: "s13", cat: "language", text: "Repetição com reformulação" },
-  { id: "s14", cat: "language", text: "Verificação ativa da compreensão" },
-  { id: "s15", cat: "language", text: "Modelar estruturas frásicas" },
-  { id: "s16", cat: "language", text: "Trabalhar sequenciação narrativa" },
+  { id: "s1", cat: "attention", text: "Dividir tarefas em blocos pequenos" },
+  { id: "s2", cat: "attention", text: "Supervisão frequente" },
+  { id: "s3", cat: "attention", text: "Posicionamento estratégico na sala" },
+  { id: "s4", cat: "attention", text: "Feedback imediato" },
+  { id: "s5", cat: "attention", text: "Sinais não-verbais combinados" },
+  { id: "s6", cat: "language", text: "Simplificar a linguagem utilizada" },
+  { id: "s7", cat: "language", text: "Apoios visuais (imagens, esquemas)" },
+  { id: "s8", cat: "language", text: "Repetição com reformulação" },
+  { id: "s9", cat: "language", text: "Verificação ativa da compreensão" },
+  { id: "s10", cat: "language", text: "Modelar estruturas frásicas" },
 ];
 
 const VF_ITEMS = [
@@ -247,8 +242,7 @@ function computeProfile(responses) {
 
   const strats = [];
   if (aR) {
-    if (sc.inattention >= CUT) strats.push(...STRATEGIES.filter(s => s.cat === "attention"));
-    if (sc.hyperactivity >= CUT) strats.push(...STRATEGIES.filter(s => s.cat === "hyperactivity"));
+    strats.push(...STRATEGIES.filter(s => s.cat === "attention"));
   }
   if (lR) strats.push(...STRATEGIES.filter(s => s.cat === "language"));
   if (!strats.length) strats.push(...STRATEGIES.slice(0, 5));
@@ -273,7 +267,7 @@ function Pill({ selected, color, children, onClick }) {
   return <button onClick={onClick} style={{
     padding: "8px 18px", borderRadius: "99px",
     border: `1.5px solid ${brd}`, background: bg, color: fg,
-    fontSize: "13px", fontWeight: selected ? 600 : 400,
+    fontSize: "14px", fontWeight: selected ? 600 : 400,
     transition: "all 0.15s",
   }}>{children}</button>;
 }
@@ -281,7 +275,7 @@ function Pill({ selected, color, children, onClick }) {
 function Bar({ label, value, max = 3, color }) {
   const pct = max > 0 ? (value / max) * 100 : 0;
   return <div style={{ marginBottom: "10px" }}>
-    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "4px" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px", marginBottom: "4px" }}>
       <span style={{ fontWeight: 500 }}>{label}</span>
       <span style={{ color: "var(--text2)" }}>{value.toFixed(1)}/{max}</span>
     </div>
@@ -307,13 +301,18 @@ function Warning({ children }) {
 function TeacherProfile({ onComplete }) {
   const [step, setStep] = useState(0);
   const [consent, setConsent] = useState(false);
-  const [demo, setDemo] = useState({ distrito:"", cycle:"", yearsExp:"", age:"", gender:"", education:"", specialNeeds:"" });
+  const [demo, setDemo] = useState({
+    distrito:"", cycle:"", yearsExp:"", age:"", gender:"", education:"", specialNeeds:"",
+    formacaoPHDA:"", formacaoLing:"",
+    contactoPHDA:"", contactoLing:"",
+    proporcao: 50,
+  });
   const [vf, setVf] = useState(Array(16).fill(null));
   const [eff, setEff] = useState(Array(5).fill(null));
   const [stratUse, setStratUse] = useState({});
   const [vig, setVig] = useState({
-    v1: { refer: null, referTo: "", hypothesis: "", strategies: "" },
-    v2: { refer: null, referTo: "", hypothesis: "", strategies: "" },
+    v1: { refer: null, referTo: "", hypothesis: "", strategies: "", confianca: 50 },
+    v2: { refer: null, referTo: "", hypothesis: "", strategies: "", confianca: 50 },
   });
 
   const totalQ = VF_ITEMS.length + EFFICACY_ITEMS.length + STRATEGIES.length + 2;
@@ -327,7 +326,46 @@ function TeacherProfile({ onComplete }) {
     { l: "Estratégias", i: "🛠" }, { l: "Caso A", i: "📖" }, { l: "Caso B", i: "📖" },
   ];
 
-  const canAdvance = step === 0 ? consent : true;
+  const stepValid = () => {
+    switch(step) {
+      case 0: return true; // consent is optional
+      case 1: return demo.distrito && demo.cycle && demo.yearsExp && demo.age && demo.gender && demo.education && demo.specialNeeds && demo.formacaoPHDA && demo.formacaoLing && demo.contactoPHDA && demo.contactoLing;
+      case 2: return vf.every(v => v !== null);
+      case 3: return eff.every(v => v !== null);
+      case 4: return STRATEGIES.every(s => stratUse[s.id] !== undefined && stratUse[s.id] !== null);
+      case 5: return vig.v1.hypothesis;
+      case 6: return vig.v2.hypothesis;
+      default: return true;
+    }
+  };
+
+  const stepMissing = () => {
+    switch(step) {
+      case 1: {
+        const campos = [];
+        if (!demo.distrito) campos.push("Distrito");
+        if (!demo.cycle) campos.push("Ciclo");
+        if (!demo.yearsExp) campos.push("Experiência");
+        if (!demo.age) campos.push("Faixa etária");
+        if (!demo.gender) campos.push("Género");
+        if (!demo.education) campos.push("Habilitações");
+        if (!demo.specialNeeds) campos.push("Formação NEE");
+        if (!demo.formacaoPHDA) campos.push("Formação PHDA");
+        if (!demo.formacaoLing) campos.push("Formação linguagem");
+        if (!demo.contactoPHDA) campos.push("Contacto c/ atenção");
+        if (!demo.contactoLing) campos.push("Contacto c/ linguagem");
+        return `Faltam: ${campos.join(", ")}`;
+      }
+      case 2: { const n = vf.filter(v => v === null).length; return `Faltam ${n} afirmações por responder`; }
+      case 3: { const n = eff.filter(v => v === null).length; return `Faltam ${n} itens por responder`; }
+      case 4: { const n = STRATEGIES.filter(s => stratUse[s.id] === undefined || stratUse[s.id] === null).length; return `Faltam ${n} estratégias por responder`; }
+      case 5: return "Indique a sua hipótese sobre o Caso A";
+      case 6: return "Indique a sua hipótese sobre o Caso B";
+      default: return "";
+    }
+  };
+
+  const canAdvance = stepValid();
 
   const finish = () => {
     const data = {
@@ -336,6 +374,7 @@ function TeacherProfile({ onComplete }) {
       efficacy: eff,
       strategyUse: stratUse,
       vignetteResp: vig,
+      consent: consent,
       timestamp: new Date().toISOString()
     };
     onComplete(data);
@@ -347,16 +386,16 @@ function TeacherProfile({ onComplete }) {
     <Card>
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
         <div style={{ fontSize: "48px", marginBottom: "8px" }}>🌙</div>
-        <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--teal-dark)" }}>Bem-vindo/a!</h2>
-        <p style={{ fontSize: "12px", color: "var(--text3)", marginTop: "4px" }}>
+        <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--teal-dark)" }}>Crianças no Mundo da Lua?</h2>
+        <p style={{ fontSize: "13px", color: "var(--text3)", marginTop: "4px" }}>
           Joana Miguel &amp; Joana Carvalho · NID — Núcleo de Investigação e Desenvolvimento
         </p>
       </div>
-      <div style={{ background: "var(--teal-light)", padding: "20px", borderRadius: "var(--radius)", lineHeight: 1.7, fontSize: "14px", borderLeft: "4px solid var(--teal)", marginBottom: "20px" }}>
-        <p style={{ fontWeight: 600, marginBottom: "10px" }}>Esta ferramenta foi feita para si.</p>
-        <p style={{ marginBottom: "10px" }}>Criámos esta aplicação para o/a apoiar no dia-a-dia da sala de aula, ajudando a identificar mais cedo crianças com dificuldades de <strong>atenção</strong> e de <strong>linguagem</strong> — e a saber o que fazer em cada caso.</p>
-        <p style={{ marginBottom: "10px" }}>A ferramenta é <strong>totalmente gratuita</strong> e assim vai continuar. Vamos melhorando com base no que nos disser e sugerir.</p>
-        <p style={{ marginBottom: "0" }}>Não recolhemos nome nem escola. Os dados anónimos poderão ser utilizados para produzir conhecimento que ajude cada vez mais crianças.</p>
+      <div style={{ background: "var(--teal-light)", padding: "20px", borderRadius: "var(--radius)", lineHeight: 1.8, fontSize: "14px", borderLeft: "4px solid var(--teal)", marginBottom: "20px" }}>
+        <p style={{ fontWeight: 600, fontSize: "15px", marginBottom: "12px" }}>Sobre esta ferramenta</p>
+        <p style={{ marginBottom: "10px" }}>Esta aplicação foi desenvolvida para apoiar educadores e professores na identificação precoce de dificuldades de <strong>atenção</strong> e de <strong>linguagem</strong> em contexto escolar, fornecendo orientações práticas de atuação.</p>
+        <p style={{ marginBottom: "10px" }}>A ferramenta é <strong>totalmente gratuita</strong> e de utilização livre. As respostas recolhidas são <strong>anónimas</strong> — não registamos nome, escola, nem qualquer dado que permita identificar quem responde.</p>
+        <p style={{ marginBottom: "0" }}>Os dados recolhidos poderão ser utilizados para <strong>fins clínicos</strong> (melhoria contínua da ferramenta e dos materiais de apoio) e para <strong>fins científicos</strong> (produção de conhecimento sobre práticas pedagógicas e identificação de dificuldades de desenvolvimento). Poderão resultar em publicações académicas, sendo sempre apresentados de forma agregada e anónima.</p>
       </div>
       <div onClick={() => setConsent(!consent)} style={{
         display: "flex", alignItems: "flex-start", gap: "12px", padding: "16px",
@@ -369,21 +408,26 @@ function TeacherProfile({ onComplete }) {
           background: consent ? "var(--teal)" : "var(--surface)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>{consent && <span style={{ color: "#fff", fontSize: "14px", fontWeight: 700 }}>✓</span>}</div>
-        <span style={{ fontSize: "13px", lineHeight: 1.5 }}>
-          Li e aceito. Compreendo que as minhas respostas anónimas poderão ser utilizadas para melhorar esta ferramenta e contribuir para o apoio a crianças com dificuldades de atenção e linguagem.
+        <span style={{ fontSize: "14px", lineHeight: 1.6 }}>
+          Aceito que as minhas respostas anónimas sejam utilizadas para os fins clínicos e científicos acima descritos.
         </span>
       </div>
+      {!consent && (
+        <p style={{ fontSize: "13px", color: "var(--text3)", marginTop: "10px", textAlign: "center", lineHeight: 1.5 }}>
+          Pode continuar sem aceitar. As suas respostas serão recolhidas mas não serão incluídas em análises ou publicações.
+        </p>
+      )}
     </Card>
   );
 
   // Step 1 — Dados demográficos
   const inputStyle = { width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1.5px solid var(--border)", fontSize: "14px", background: "var(--surface)" };
-  const labelStyle = { display: "block", fontSize: "13px", fontWeight: 600, marginBottom: "4px", color: "var(--text)" };
+  const labelStyle = { display: "block", fontSize: "14px", fontWeight: 600, marginBottom: "4px", color: "var(--text)" };
 
   const S1 = () => (
     <Card>
       <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "4px" }}>👤 Sobre si</h3>
-      <p style={{ fontSize: "13px", color: "var(--text2)", marginBottom: "20px" }}>Dados gerais e anónimos — ajudam-nos a compreender melhor quem utiliza esta ferramenta</p>
+      <p style={{ fontSize: "14px", color: "var(--text2)", marginBottom: "20px" }}>Dados gerais e anónimos — ajudam-nos a compreender melhor quem utiliza esta ferramenta</p>
       {[
         { k: "distrito", l: "Distrito / Região", type: "select", opts: ["Aveiro","Beja","Braga","Bragança","Castelo Branco","Coimbra","Évora","Faro","Guarda","Leiria","Lisboa","Portalegre","Porto","Santarém","Setúbal","Viana do Castelo","Vila Real","Viseu","R.A. Açores","R.A. Madeira"] },
         { k: "cycle", l: "Ciclo de ensino", type: "select", opts: ["Pré-escolar","1.º Ciclo","2.º Ciclo","3.º Ciclo"] },
@@ -392,19 +436,35 @@ function TeacherProfile({ onComplete }) {
         { k: "gender", l: "Género", type: "select", opts: ["Feminino","Masculino","Outro","Prefiro não responder"] },
         { k: "education", l: "Habilitações académicas", type: "select", opts: ["Licenciatura","Pós-graduação","Mestrado","Doutoramento"] },
         { k: "specialNeeds", l: "Já recebeu formação sobre Necessidades Educativas Especiais?", type: "select", opts: ["Sim, formação específica","Sim, integrada noutras formações","Não"] },
+        { k: "formacaoPHDA", l: "Já recebeu formação específica sobre PHDA?", type: "select", opts: ["Sim","Não"] },
+        { k: "formacaoLing", l: "Já recebeu formação específica sobre dificuldades de linguagem?", type: "select", opts: ["Sim","Não"] },
+        { k: "contactoPHDA", l: "Com que frequência contacta com alunos com dificuldades de atenção?", type: "select", opts: ["Nunca","Raramente","Algumas vezes","Frequentemente","Muito frequentemente"] },
+        { k: "contactoLing", l: "Com que frequência contacta com alunos com dificuldades de linguagem?", type: "select", opts: ["Nunca","Raramente","Algumas vezes","Frequentemente","Muito frequentemente"] },
       ].map(f => (
         <div key={f.k} style={{ marginBottom: "14px" }}>
           <label style={labelStyle}>{f.l}</label>
-          {f.type === "select" ? (
-            <select value={demo[f.k]} onChange={e => setDemo({...demo, [f.k]: e.target.value})} style={inputStyle}>
-              <option value="">— Selecione —</option>
-              {f.opts.map(o => <option key={o} value={o}>{o}</option>)}
-            </select>
-          ) : (
-            <input value={demo[f.k]} onChange={e => setDemo({...demo, [f.k]: e.target.value})} placeholder={f.ph} style={inputStyle} />
-          )}
+          <select value={demo[f.k]} onChange={e => setDemo({...demo, [f.k]: e.target.value})} style={inputStyle}>
+            <option value="">— Selecione —</option>
+            {f.opts.map(o => <option key={o} value={o}>{o}</option>)}
+          </select>
         </div>
       ))}
+
+      {/* Slider: proporção percebida */}
+      <div style={{ marginTop: "20px", padding: "20px", background: "var(--surface2)", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}>
+        <label style={{ ...labelStyle, marginBottom: "12px" }}>Na sua experiência, as dificuldades que mais observa nos seus alunos são sobretudo de:</label>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "8px" }}>
+          <span style={{ color: "#EF4444", fontWeight: 600 }}>⚡ Atenção</span>
+          <span style={{ color: "var(--text3)" }}>Ambas</span>
+          <span style={{ color: "#3B82F6", fontWeight: 600 }}>💬 Linguagem</span>
+        </div>
+        <input type="range" min="0" max="100" value={demo.proporcao}
+          onChange={e => setDemo({...demo, proporcao: parseInt(e.target.value)})}
+          style={{ width: "100%", accentColor: "var(--teal)" }} />
+        <p style={{ textAlign: "center", fontSize: "13px", color: "var(--text2)", marginTop: "6px" }}>
+          {demo.proporcao < 30 ? "Sobretudo atenção" : demo.proporcao < 45 ? "Mais atenção do que linguagem" : demo.proporcao < 55 ? "Ambas por igual" : demo.proporcao < 70 ? "Mais linguagem do que atenção" : "Sobretudo linguagem"}
+        </p>
+      </div>
     </Card>
   );
 
@@ -412,10 +472,10 @@ function TeacherProfile({ onComplete }) {
   const S2 = () => (
     <Card>
       <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "4px" }}>📚 O que sabe sobre atenção e linguagem</h3>
-      <p style={{ fontSize: "13px", color: "var(--text2)", marginBottom: "20px" }}>Indique Verdadeiro ou Falso para cada afirmação ({vf.filter(v=>v!==null).length}/{VF_ITEMS.length})</p>
+      <p style={{ fontSize: "14px", color: "var(--text2)", marginBottom: "20px" }}>Indique Verdadeiro ou Falso para cada afirmação ({vf.filter(v=>v!==null).length}/{VF_ITEMS.length})</p>
       {VF_ITEMS.map((item, i) => (
         <div key={i} style={{ padding: "14px 16px", background: i%2===0 ? "var(--surface)" : "var(--surface2)", borderRadius: "10px", marginBottom: "6px", border: "1px solid var(--border)" }}>
-          <p style={{ fontSize: "14px", marginBottom: "10px", lineHeight: 1.5 }}>
+          <p style={{ fontSize: "15px", marginBottom: "10px", lineHeight: 1.5 }}>
             <span style={{ color: "var(--text3)", fontWeight: 600, marginRight: "8px" }}>{i+1}.</span>{item.s}
           </p>
           <div style={{ display: "flex", gap: "8px" }}>
@@ -431,7 +491,7 @@ function TeacherProfile({ onComplete }) {
   const S3 = () => (
     <Card>
       <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "4px" }}>💪 Como se sente no dia-a-dia</h3>
-      <p style={{ fontSize: "13px", color: "var(--text2)", marginBottom: "20px" }}>Quão preparado/a se sente para lidar com estas situações?</p>
+      <p style={{ fontSize: "14px", color: "var(--text2)", marginBottom: "20px" }}>Quão preparado/a se sente para lidar com estas situações?</p>
       {EFFICACY_ITEMS.map((item, i) => (
         <div key={i} style={{ marginBottom: "16px" }}>
           <p style={{ fontSize: "14px", fontWeight: 500, marginBottom: "8px" }}>{item}</p>
@@ -449,10 +509,10 @@ function TeacherProfile({ onComplete }) {
   const S4 = () => (
     <Card>
       <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "4px" }}>🛠 O que já faz</h3>
-      <p style={{ fontSize: "13px", color: "var(--text2)", marginBottom: "20px" }}>Com que frequência usa cada estratégia?</p>
+      <p style={{ fontSize: "14px", color: "var(--text2)", marginBottom: "20px" }}>Com que frequência usa cada estratégia?</p>
       {STRATEGIES.map((s, i) => (
         <div key={s.id} style={{ marginBottom: "14px" }}>
-          <p style={{ fontSize: "13px", fontWeight: 500, marginBottom: "6px" }}>{s.text}</p>
+          <p style={{ fontSize: "14px", fontWeight: 500, marginBottom: "8px" }}>{s.text}</p>
           <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
             {STRATEGY_FREQ.map((f, fi) => (
               <Pill key={fi} selected={stratUse[s.id]===fi} onClick={() => setStratUse({...stratUse, [s.id]: fi})}>{f}</Pill>
@@ -512,6 +572,19 @@ function TeacherProfile({ onComplete }) {
             style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1.5px solid var(--border)", fontSize: "14px", resize: "vertical", fontFamily: "inherit" }}
           />
         </div>
+
+        {/* Slider: confiança */}
+        <div style={{ padding: "16px", background: "var(--surface2)", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}>
+          <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "10px" }}>Quão confiante está nas suas respostas a este caso?</p>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "6px" }}>
+            <span style={{ color: "var(--text3)" }}>Nada confiante</span>
+            <span style={{ color: "var(--text3)" }}>Totalmente confiante</span>
+          </div>
+          <input type="range" min="0" max="100" value={r.confianca}
+            onChange={e => upd("confianca", parseInt(e.target.value))}
+            style={{ width: "100%", accentColor: "var(--teal)" }} />
+          <p style={{ textAlign: "center", fontSize: "13px", color: "var(--text2)", marginTop: "4px" }}>{r.confianca}%</p>
+        </div>
       </Card>
     );
   };
@@ -523,9 +596,9 @@ function TeacherProfile({ onComplete }) {
       {/* Step pills */}
       <div style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginBottom: "8px" }}>
         {steps.map((s, i) => (
-          <button key={i} onClick={() => { if (i === 0 || consent) setStep(i); }}
+          <button key={i} onClick={() => setStep(i)}
             style={{
-              padding: "5px 10px", borderRadius: "8px", fontSize: "11px",
+              padding: "6px 12px", borderRadius: "8px", fontSize: "12px",
               border: `1.5px solid ${step===i ? "var(--teal)" : "var(--border)"}`,
               background: step===i ? "var(--teal)" : i < step ? "var(--teal-light)" : "var(--surface)",
               color: step===i ? "#fff" : "var(--text2)", fontWeight: step===i ? 600 : 400,
@@ -538,10 +611,21 @@ function TeacherProfile({ onComplete }) {
         <div style={{ height: "6px", background: "var(--surface2)", borderRadius: "99px", overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${(filledQ/totalQ)*100}%`, background: "var(--teal)", borderRadius: "99px", transition: "width 0.3s" }} />
         </div>
-        <p style={{ fontSize: "11px", color: "var(--text3)", marginTop: "4px", textAlign: "right" }}>{filledQ}/{totalQ}</p>
+        <p style={{ fontSize: "12px", color: "var(--text3)", marginTop: "4px", textAlign: "right" }}>{filledQ}/{totalQ}</p>
       </div>
 
       {content[step]()}
+
+      {/* Validation warning */}
+      {!canAdvance && step > 0 && (
+        <div style={{
+          background: "var(--coral-light)", border: "1.5px solid var(--coral)",
+          borderRadius: "var(--radius)", padding: "12px 16px", marginTop: "12px",
+          fontSize: "14px", color: "#9A3412", textAlign: "center",
+        }}>
+          ⚠️ {stepMissing()}
+        </div>
+      )}
 
       {/* Navigation */}
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "16px" }}>
@@ -550,13 +634,13 @@ function TeacherProfile({ onComplete }) {
           ← Anterior
         </button>
         {step < steps.length - 1 ? (
-          <button onClick={() => setStep(step+1)} disabled={!canAdvance}
-            style={{ padding: "10px 20px", borderRadius: "8px", background: canAdvance ? "var(--teal)" : "var(--border)", color: canAdvance ? "#fff" : "var(--text3)", fontSize: "14px", fontWeight: 600 }}>
-            {step===0 && !consent ? "Aceite para continuar" : "Seguinte →"}
+          <button onClick={() => { if (canAdvance) setStep(step+1); }} disabled={!canAdvance}
+            style={{ padding: "10px 20px", borderRadius: "8px", background: canAdvance ? "var(--teal)" : "var(--border)", color: canAdvance ? "#fff" : "var(--text3)", fontSize: "14px", fontWeight: 600, opacity: canAdvance ? 1 : 0.5 }}>
+            Seguinte →
           </button>
         ) : (
-          <button onClick={finish}
-            style={{ padding: "10px 24px", borderRadius: "8px", background: "var(--coral)", color: "#fff", fontSize: "14px", fontWeight: 600 }}>
+          <button onClick={() => { if (canAdvance) finish(); }} disabled={!canAdvance}
+            style={{ padding: "10px 24px", borderRadius: "8px", background: canAdvance ? "var(--coral)" : "var(--border)", color: canAdvance ? "#fff" : "var(--text3)", fontSize: "14px", fontWeight: 600, opacity: canAdvance ? 1 : 0.5 }}>
             ✓ Concluir
           </button>
         )}
@@ -567,7 +651,7 @@ function TeacherProfile({ onComplete }) {
 
 // ─── PARTE 2: RASTREIO DE ALUNOS ────────────────────────────
 
-function Screening({ students, setStudents }) {
+function Screening({ students, setStudents, teacherData }) {
   const [mode, setMode] = useState("list");
   const [info, setInfo] = useState({ initials: "", age: "", cycle: "", knownDx: "" });
   const [resp, setResp] = useState({});
@@ -621,7 +705,7 @@ function Screening({ students, setStudents }) {
         ].map(b => <Bar key={b.l} label={b.l} value={b.v} color={b.c} />)}
         <h4 style={{ fontSize: "14px", fontWeight: 600, margin: "16px 0 12px" }}>📋 Estratégias recomendadas</h4>
         {result.strategies.map((s,i) => (
-          <div key={s.id} style={{ padding: "10px 14px", background: "var(--surface2)", borderRadius: "8px", marginBottom: "6px", fontSize: "13px", display: "flex", gap: "8px", alignItems: "center" }}>
+          <div key={s.id} style={{ padding: "10px 14px", background: "var(--surface2)", borderRadius: "8px", marginBottom: "6px", fontSize: "14px", display: "flex", gap: "8px", alignItems: "center" }}>
             <span style={{ width: "22px", height: "22px", borderRadius: "50%", background: "var(--teal)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, flexShrink: 0 }}>{i+1}</span>
             {s.text}
           </div>
@@ -648,7 +732,7 @@ function Screening({ students, setStudents }) {
         <div style={{ height: "6px", background: "var(--surface2)", borderRadius: "99px", overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${(answered/totalItems)*100}%`, background: "var(--teal)", borderRadius: "99px", transition: "width 0.3s" }} />
         </div>
-        <p style={{ fontSize: "11px", color: "var(--text3)", marginTop: "4px", textAlign: "right" }}>{answered}/{totalItems}</p>
+        <p style={{ fontSize: "12px", color: "var(--text3)", marginTop: "4px", textAlign: "right" }}>{answered}/{totalItems}</p>
       </div>
 
       {sStep === 0 && (
@@ -661,7 +745,7 @@ function Screening({ students, setStudents }) {
             { k: "knownDx", l: "Diagnóstico conhecido?", type: "select", opts: ["Nenhum","PHDA","Perturbação da linguagem","Outro","Em avaliação"] },
           ].map(f => (
             <div key={f.k} style={{ marginBottom: "12px" }}>
-              <label style={{ display: "block", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{f.l}</label>
+              <label style={{ display: "block", fontSize: "14px", fontWeight: 600, marginBottom: "4px" }}>{f.l}</label>
               {f.type === "select" ? (
                 <select value={info[f.k]} onChange={e => setInfo({...info, [f.k]: e.target.value})}
                   style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1.5px solid var(--border)", fontSize: "14px" }}>
@@ -685,7 +769,7 @@ function Screening({ students, setStudents }) {
         </div>
         {items.items.map((item, i) => (
           <div key={i} style={{ padding: "12px 0", borderBottom: i < items.items.length-1 ? "1px solid var(--border)" : "none" }}>
-            <p style={{ fontSize: "14px", marginBottom: "8px", lineHeight: 1.5 }}>{item}</p>
+            <p style={{ fontSize: "15px", marginBottom: "8px", lineHeight: 1.5 }}>{item}</p>
             <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
               {labels.map((l, li) => (
                 <Pill key={li} selected={(resp[dom]||[])[i]===li} onClick={() => {
@@ -701,23 +785,40 @@ function Screening({ students, setStudents }) {
         ))}
       </Card>
 
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "16px" }}>
-        <button onClick={() => setSStep(Math.max(0, sStep-1))} disabled={sStep===0}
-          style={{ padding: "10px 20px", borderRadius: "8px", background: "var(--surface)", color: "var(--text2)", border: "1.5px solid var(--border)", fontSize: "14px", opacity: sStep===0?0.4:1 }}>
-          ← Anterior
-        </button>
-        {sStep < domains.length - 1 ? (
-          <button onClick={() => setSStep(sStep+1)}
-            style={{ padding: "10px 20px", borderRadius: "8px", background: "var(--teal)", color: "#fff", fontSize: "14px", fontWeight: 600 }}>
-            Seguinte →
-          </button>
-        ) : (
-          <button onClick={submit}
-            style={{ padding: "10px 24px", borderRadius: "8px", background: "var(--coral)", color: "#fff", fontSize: "14px", fontWeight: 600 }}>
-            ✓ Calcular perfil
-          </button>
-        )}
-      </div>
+      {(() => {
+        const domResp = resp[dom] || [];
+        const missing = domResp.filter(v => v === null || v === undefined).length;
+        const infoMissing = sStep === 0 && (!info.initials || !info.age);
+        const valid = missing === 0 && !infoMissing;
+        return <>
+          {!valid && (
+            <div style={{
+              background: "var(--coral-light)", border: "1.5px solid var(--coral)",
+              borderRadius: "var(--radius)", padding: "12px 16px", marginTop: "12px",
+              fontSize: "14px", color: "#9A3412", textAlign: "center",
+            }}>
+              ⚠️ {infoMissing ? "Preencha as iniciais e a idade do aluno" : `Faltam ${missing} itens por responder`}
+            </div>
+          )}
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "16px" }}>
+            <button onClick={() => setSStep(Math.max(0, sStep-1))} disabled={sStep===0}
+              style={{ padding: "10px 20px", borderRadius: "8px", background: "var(--surface)", color: "var(--text2)", border: "1.5px solid var(--border)", fontSize: "14px", opacity: sStep===0?0.4:1 }}>
+              ← Anterior
+            </button>
+            {sStep < domains.length - 1 ? (
+              <button onClick={() => { if (valid) setSStep(sStep+1); }} disabled={!valid}
+                style={{ padding: "10px 20px", borderRadius: "8px", background: valid ? "var(--teal)" : "var(--border)", color: valid ? "#fff" : "var(--text3)", fontSize: "14px", fontWeight: 600, opacity: valid ? 1 : 0.5 }}>
+                Seguinte →
+              </button>
+            ) : (
+              <button onClick={() => { if (valid) submit(); }} disabled={!valid}
+                style={{ padding: "10px 24px", borderRadius: "8px", background: valid ? "var(--coral)" : "var(--border)", color: valid ? "#fff" : "var(--text3)", fontSize: "14px", fontWeight: 600, opacity: valid ? 1 : 0.5 }}>
+                ✓ Calcular perfil
+              </button>
+            )}
+          </div>
+        </>;
+      })()}
     </div>;
   }
 
@@ -743,7 +844,7 @@ function Screening({ students, setStudents }) {
             </div>
             <div style={{ textAlign: "right" }}>
               <span style={{ padding: "3px 10px", borderRadius: "20px", background: s.pColor+"20", color: s.pColor, fontSize: "12px", fontWeight: 600 }}>{s.profile}</span>
-              <div style={{ fontSize: "11px", color: s.dColor, marginTop: "3px", fontWeight: 600 }}>{s.decision}</div>
+              <div style={{ fontSize: "12px", color: s.dColor, marginTop: "3px", fontWeight: 600 }}>{s.decision}</div>
             </div>
           </div>
         </Card>
@@ -931,7 +1032,7 @@ function App() {
             <TeacherProfile onComplete={(data) => { setTeacherData(data); setTab(1); }} />
           )
         )}
-        {tab === 1 && <Screening students={students} setStudents={setStudents} />}
+        {tab === 1 && <Screening students={students} setStudents={setStudents} teacherData={teacherData} />}
         {tab === 2 && <Dashboard students={students} teacherData={teacherData} />}
       </div>
     </div>
