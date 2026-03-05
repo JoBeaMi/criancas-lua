@@ -57,17 +57,32 @@ const { useState, useMemo } = React;
 
 // ─── CONFIGURAÇÃO ───────────────────────────────────────────
 // Cole aqui o URL do Google Apps Script após deploy:
-const API_URL = "https://script.google.com/a/macros/caidi.pt/s/AKfycbxnr9URYDpD8wSGhsjtube1Gti5uHUmleKD506XkVedGv7De83P7O2AisQQhUuVV24Y/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxEw7bzcQ0ycMKGaiOApeEZMg1DEiF2w86E7gzB0PZaYEb3WmgKoqi74PYYY-o7NlUi/exec";
 
 async function sendToSheet(action, payload) {
-  if (!API_URL) return;
+  if (!API_URL) { console.warn("API_URL vazio"); return; }
+  const body = JSON.stringify({ action, ...payload });
+  console.log("A enviar:", action);
+
+  // Método 1: fetch no-cors (funciona mas não dá feedback)
   try {
     await fetch(API_URL, {
       method: "POST",
-      body: JSON.stringify({ action, ...payload }),
       mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: body,
     });
-  } catch (e) { console.warn("Sheet:", e); }
+    console.log("Enviado (no-cors, sem confirmação)");
+  } catch (e1) {
+    console.warn("fetch falhou, a tentar via beacon...", e1);
+    // Método 2: sendBeacon como fallback
+    try {
+      navigator.sendBeacon(API_URL, new Blob([body], { type: "text/plain" }));
+      console.log("Enviado via beacon");
+    } catch (e2) {
+      console.error("Ambos os métodos falharam:", e2);
+    }
+  }
 }
 
 // ─── DADOS ──────────────────────────────────────────────────
@@ -927,4 +942,3 @@ ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(
 </script>
 </body>
 </html>
-
