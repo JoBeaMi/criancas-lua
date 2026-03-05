@@ -26,7 +26,28 @@ const { useState, useEffect, useCallback, useMemo } = React;
 // ═══════════════════════════════════════════════════════════════
 // "CRIANÇAS NO MUNDO DA LUA?" — App de Rastreio
 // CAIDI · Centro de Apoio e Intervenção no Desenvolvimento Infantil
+// Joana Miguel & Joana Carvalho · NID
 // ═══════════════════════════════════════════════════════════════
+
+// ─── CONFIGURAÇÃO ───────────────────────────────────────────
+// Cole aqui o URL do Google Apps Script (Deploy > Nova implementação > App Web)
+const API_URL = "https://script.google.com/a/macros/caidi.pt/s/AKfycbxnr9URYDpD8wSGhsjtube1Gti5uHUmleKD506XkVedGv7De83P7O2AisQQhUuVV24Y/exec";
+// Exemplo: "https://script.google.com/macros/s/AKfycbx.../exec"
+// Se vazio, a app funciona normalmente mas não guarda dados na Sheet.
+
+async function sendToSheet(action, payload) {
+  if (!API_URL) return;
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, ...payload }),
+      mode: "no-cors",
+    });
+  } catch (e) {
+    console.warn("Envio para Sheet falhou:", e);
+  }
+}
 
 // ─── DADOS DO INSTRUMENTO ────────────────────────────────────
 
@@ -946,6 +967,7 @@ function ResearchQuestionnaire({ onComplete, teacherData, setTeacherData }) {
               const data = { demo, knowledge, efficacy, strategyUse, vignetteResp, timestamp: new Date().toISOString() };
               setTeacherData(data);
               onComplete(data);
+              sendToSheet("submitResearch", data);
             }}
           >
             ✓ Concluir
@@ -995,6 +1017,7 @@ function StudentScreening({ students, setStudents }) {
     setStudents([...students, record]);
     setResult(record);
     setMode("result");
+    sendToSheet("submitScreening", record);
   };
 
   if (mode === "result" && result) {
