@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Crianças no Mundo da Lua?</title>
   <meta name="description" content="Ferramenta de rastreio de dificuldades de atenção e linguagem em contexto escolar." />
-  <meta name="author" content="Joana Miguel & Joana Carvalho — NIDCAIDI" />
+  <meta name="author" content="Joana Miguel & Joana Carvalho — NID" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌙</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -64,7 +64,6 @@ async function sendToSheet(action, payload) {
   try {
     await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action, ...payload }),
       mode: "no-cors",
     });
@@ -77,19 +76,19 @@ const SCREENING_ITEMS = {
   inattention: {
     label: "Desatenção", icon: "🔍", color: "#EF4444",
     items: [
-      "Distrai-se facilmente com estímulos irrelevantes",
-      "Tem dificuldade em manter a atenção em tarefas prolongadas",
+      "Distrai-se facilmente com estímulos irrelevantes (ruídos, movimentos de colegas)",
+      "Tem dificuldade em manter a atenção em tarefas ou atividades prolongadas",
       "Parece não ouvir quando se lhe fala diretamente",
       "Não segue instruções até ao fim e não termina trabalhos",
       "Tem dificuldade em organizar tarefas e materiais",
-      "Evita tarefas que exigem esforço mental sustentado",
-      "Perde materiais necessários para as atividades",
+      "Evita ou resiste a tarefas que exigem esforço mental sustentado",
+      "Perde materiais necessários para as atividades (lápis, cadernos, fichas)",
     ],
   },
   hyperactivity: {
     label: "Hiperatividade / Impulsividade", icon: "⚡", color: "#F97316",
     items: [
-      "Mexe-se excessivamente ou levanta-se quando deveria estar sentado/a",
+      "Mexe-se excessivamente na cadeira ou levanta-se quando deveria estar sentado/a",
       "Corre ou trepa em situações inapropriadas",
       "Tem dificuldade em brincar ou realizar atividades calmamente",
       "Fala excessivamente",
@@ -99,33 +98,33 @@ const SCREENING_ITEMS = {
     ],
   },
   comprehension: {
-    label: "Compreensão de Instruções", icon: "👂", color: "#3B82F6",
+    label: "Compreensão de Instruções e Linguagem Académica", icon: "👂", color: "#3B82F6",
     items: [
       "Tem dificuldade em seguir instruções com mais de dois passos",
-      "Necessita de exemplos concretos para compreender o que é pedido",
-      "A compreensão melhora quando a instrução é simplificada",
-      "Confunde relações temporais ou causais (antes/depois, se…então)",
-      "Tem dificuldade com linguagem figurada ou expressões idiomáticas",
-      "Parece «desligar» mas consegue quando vê um modelo/exemplo",
+      "Necessita de exemplos concretos/demonstrações para compreender o que é pedido",
+      "A compreensão melhora claramente quando a instrução é reformulada com linguagem mais simples",
+      "Confunde relações temporais, causais ou condicionais (antes/depois, se…então, porque…)",
+      "Tem dificuldade em compreender linguagem figurada ou expressões idiomáticas",
+      "Parece «desligar» mas consegue realizar a tarefa quando vê um modelo/exemplo",
     ],
   },
   expression: {
-    label: "Expressão Oral", icon: "💬", color: "#6366F1",
+    label: "Expressão Oral e Organização Verbal", icon: "💬", color: "#6366F1",
     items: [
       "Tem dificuldade em explicar o que fez ou como resolveu uma tarefa",
-      "Produz narrativas desorganizadas (salta passos, omite informação)",
+      "Produz narrativas desorganizadas (salta passos, omite informação essencial)",
       "Usa vocabulário limitado ou impreciso para a idade",
       "Tem dificuldade em justificar respostas ou argumentar",
-      "Utiliza poucos conectores em vez de estruturas mais complexas",
+      "Utiliza poucos conectores (e depois… e depois…) em vez de estruturas mais complexas",
       "Sabe a resposta mas tem dificuldade em expressá-la verbalmente",
     ],
   },
   pragmatics: {
-    label: "Pragmática / Uso Social", icon: "🤝", color: "#8B5CF6",
+    label: "Pragmática e Uso Social da Linguagem", icon: "🤝", color: "#8B5CF6",
     items: [
       "Interpreta mensagens de forma demasiado literal",
-      "Tem dificuldade em compreender intenções implícitas (ironia, indiretas)",
-      "Tem dificuldade na gestão de turnos de conversa",
+      "Tem dificuldade em compreender intenções implícitas (ironia, sarcasmo, indiretas)",
+      "Tem dificuldade na gestão de turnos de conversa (por razões comunicativas, não impulsivas)",
       "Não adapta o discurso ao interlocutor ou contexto",
       "Tem dificuldade em manter o tópico de conversa",
     ],
@@ -143,9 +142,9 @@ const SCREENING_ITEMS = {
 };
 
 const LIKERT = ["Nunca", "Raramente", "Frequentemente", "Sempre"];
-const IMPACT_LIKERT = ["Sem impacto", "Ligeiro", "Moderado", "Grave"];
-const EFFICACY_LIKERT = ["Nada capaz", "Pouco capaz", "Moderadamente", "Bastante", "Totalmente"];
-const STRATEGY_FREQ = ["Nunca", "Raramente", "Às vezes", "Frequentemente"];
+const IMPACT_LIKERT = ["Sem impacto", "Impacto ligeiro", "Impacto moderado", "Impacto grave"];
+const EFFICACY_LIKERT = ["Nada capaz", "Pouco capaz", "Moderadamente capaz", "Bastante capaz", "Totalmente capaz"];
+const STRATEGY_FREQ = ["Nunca usei", "Raramente", "Às vezes", "Frequentemente"];
 
 const STRATEGIES = [
   { id: "s1", cat: "attention", text: "Instruções curtas, passo a passo" },
@@ -169,7 +168,7 @@ const STRATEGIES = [
 const VF_ITEMS = [
   { s: "A PHDA é mais frequente nos rapazes do que nas raparigas.", c: true, d: "phda" },
   { s: "A PHDA desaparece habitualmente na adolescência.", c: false, d: "phda" },
-  { s: "A maioria das crianças que começam a falar tarde acabam por desenvolver linguagem dentro dos parâmetros normais.", c: true, d: "lang" },
+  { s: "A maioria das crianças que começam a falar tarde (late talkers) acabam por desenvolver linguagem dentro dos parâmetros normais.", c: true, d: "lang" },
   { s: "O excesso de tempo de ecrã (televisão, tablets) é uma causa direta da PHDA.", c: false, d: "phda" },
   { s: "Crianças com perturbação da linguagem têm habitualmente uma inteligência abaixo da média.", c: false, d: "lang" },
   { s: "Dificuldades de atenção e dificuldades de linguagem podem manifestar-se de forma semelhante em sala de aula.", c: true, d: "cross" },
@@ -177,7 +176,7 @@ const VF_ITEMS = [
   { s: "A perturbação da linguagem é tão comum em idade escolar como a PHDA.", c: true, d: "lang" },
   { s: "A PHDA e a perturbação da linguagem raramente coexistem na mesma criança.", c: false, d: "cross" },
   { s: "A forma como uma criança responde a adaptações na sala de aula pode ajudar a distinguir entre dificuldades de atenção e de linguagem.", c: true, d: "cross" },
-  { s: "É aconselhável educar crianças com perturbação da linguagem apenas numa língua.", c: false, d: "lang" },
+  { s: "É aconselhável educar crianças com perturbação da linguagem apenas numa língua (monolingue).", c: false, d: "lang" },
   { s: "Uma criança pode expressar-se bem oralmente e ainda assim ter uma perturbação da linguagem.", c: true, d: "cross" },
   { s: "Uma perturbação da linguagem é geralmente identificada antes da entrada no 1.º ciclo.", c: false, d: "lang" },
   { s: "Uma criança com bom vocabulário pode, ainda assim, ter uma perturbação da linguagem.", c: true, d: "cross" },
@@ -186,17 +185,11 @@ const VF_ITEMS = [
 ];
 
 const EFFICACY_ITEMS = [
-  "Gerir comportamentos de desatenção na sala",
-  "Adaptar a minha comunicação a crianças com dificuldades de linguagem",
-  "Implementar estratégias diferenciadas conforme o perfil da criança",
-  "Colaborar com outros profissionais no apoio à criança",
-  "Monitorizar e avaliar a eficácia das estratégias que implemento",
-];
-
-const DISTRITOS = [
-  "Aveiro","Beja","Braga","Bragança","Castelo Branco","Coimbra","Évora","Faro",
-  "Guarda","Leiria","Lisboa","Portalegre","Porto","Santarém","Setúbal",
-  "Viana do Castelo","Vila Real","Viseu","R.A. Açores","R.A. Madeira"
+  "Sinto-me capaz de gerir comportamentos de desatenção na sala",
+  "Sinto-me capaz de adaptar a minha comunicação a crianças com dificuldades de linguagem",
+  "Sinto-me capaz de implementar estratégias diferenciadas conforme o perfil da criança",
+  "Sinto-me capaz de colaborar com outros profissionais (terapeutas, psicólogos) no apoio à criança",
+  "Sinto-me capaz de monitorizar e avaliar a eficácia das estratégias que implemento",
 ];
 
 const VIGNETTES = [
@@ -322,7 +315,14 @@ function TeacherProfile({ onComplete }) {
   const canAdvance = step === 0 ? consent : true;
 
   const finish = () => {
-    const data = { demo, vf, eff, stratUse, vig, timestamp: new Date().toISOString() };
+    const data = {
+      demo,
+      knowledge: vf,
+      efficacy: eff,
+      strategyUse: stratUse,
+      vignetteResp: vig,
+      timestamp: new Date().toISOString()
+    };
     onComplete(data);
     sendToSheet("submitResearch", data);
   };
@@ -334,7 +334,7 @@ function TeacherProfile({ onComplete }) {
         <div style={{ fontSize: "48px", marginBottom: "8px" }}>🌙</div>
         <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--teal-dark)" }}>Bem-vindo/a!</h2>
         <p style={{ fontSize: "12px", color: "var(--text3)", marginTop: "4px" }}>
-          Joana Miguel &amp; Joana Carvalho · NIDCAIDI — Núcleo de Investigação e Desenvolvimento CAIDI
+          Joana Miguel &amp; Joana Carvalho · NID — Núcleo de Investigação e Desenvolvimento
         </p>
       </div>
       <div style={{ background: "var(--teal-light)", padding: "20px", borderRadius: "var(--radius)", lineHeight: 1.7, fontSize: "14px", borderLeft: "4px solid var(--teal)", marginBottom: "20px" }}>
@@ -368,15 +368,15 @@ function TeacherProfile({ onComplete }) {
   const S1 = () => (
     <Card>
       <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "4px" }}>👤 Sobre si</h3>
-      <p style={{ fontSize: "13px", color: "var(--text2)", marginBottom: "20px" }}>Dados gerais e anónimos</p>
+      <p style={{ fontSize: "13px", color: "var(--text2)", marginBottom: "20px" }}>Dados gerais e anónimos — ajudam-nos a compreender melhor quem utiliza esta ferramenta</p>
       {[
-        { k: "distrito", l: "Distrito", type: "select", opts: DISTRITOS },
-        { k: "cycle", l: "Ciclo de ensino", type: "select", opts: ["Pré-escolar","1.º Ciclo","2.º Ciclo","3.º Ciclo","Secundário"] },
-        { k: "yearsExp", l: "Anos de experiência", ph: "Ex: 12" },
-        { k: "age", l: "Idade", ph: "Ex: 38" },
-        { k: "gender", l: "Género", type: "select", opts: ["Feminino","Masculino","Outro","Prefiro não dizer"] },
-        { k: "education", l: "Habilitações", type: "select", opts: ["Licenciatura","Pós-graduação","Mestrado","Doutoramento"] },
-        { k: "specialNeeds", l: "Formação em NEE?", type: "select", opts: ["Sim","Não"] },
+        { k: "distrito", l: "Distrito / Região", type: "select", opts: ["Aveiro","Beja","Braga","Bragança","Castelo Branco","Coimbra","Évora","Faro","Guarda","Leiria","Lisboa","Portalegre","Porto","Santarém","Setúbal","Viana do Castelo","Vila Real","Viseu","R.A. Açores","R.A. Madeira"] },
+        { k: "cycle", l: "Ciclo de ensino", type: "select", opts: ["Pré-escolar","1.º Ciclo","2.º Ciclo","3.º Ciclo"] },
+        { k: "yearsExp", l: "Anos de experiência docente", type: "select", opts: ["0-5","6-10","11-20","21-30","30+"] },
+        { k: "age", l: "Faixa etária", type: "select", opts: ["20-29","30-39","40-49","50-59","60+"] },
+        { k: "gender", l: "Género", type: "select", opts: ["Feminino","Masculino","Outro","Prefiro não responder"] },
+        { k: "education", l: "Habilitações académicas", type: "select", opts: ["Licenciatura","Pós-graduação","Mestrado","Doutoramento"] },
+        { k: "specialNeeds", l: "Já recebeu formação sobre Necessidades Educativas Especiais?", type: "select", opts: ["Sim, formação específica","Sim, integrada noutras formações","Não"] },
       ].map(f => (
         <div key={f.k} style={{ marginBottom: "14px" }}>
           <label style={labelStyle}>{f.l}</label>
@@ -404,8 +404,8 @@ function TeacherProfile({ onComplete }) {
             <span style={{ color: "var(--text3)", fontWeight: 600, marginRight: "8px" }}>{i+1}.</span>{item.s}
           </p>
           <div style={{ display: "flex", gap: "8px" }}>
-            <Pill selected={vf[i]===true} color="var(--green)" onClick={() => { const n=[...vf]; n[i]=true; setVf(n); }}>Verdadeiro</Pill>
-            <Pill selected={vf[i]===false} color="var(--red)" onClick={() => { const n=[...vf]; n[i]=false; setVf(n); }}>Falso</Pill>
+            <Pill selected={vf[i]===true} color="var(--teal)" onClick={() => { const n=[...vf]; n[i]=true; setVf(n); }}>Verdadeiro</Pill>
+            <Pill selected={vf[i]===false} color="var(--teal)" onClick={() => { const n=[...vf]; n[i]=false; setVf(n); }}>Falso</Pill>
           </div>
         </div>
       ))}
@@ -579,7 +579,7 @@ function Screening({ students, setStudents }) {
     setStudents([...students, rec]);
     setResult(rec);
     setMode("result");
-    sendToSheet("submitScreening", { ...rec, responses: resp });
+    sendToSheet("submitScreening", { studentInfo: info, responses: resp });
   };
 
   // ─ Result view
@@ -844,7 +844,7 @@ function App() {
           <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--teal-dark)", marginBottom: "4px" }}>Crianças no Mundo da Lua?</h1>
           <p style={{ fontSize: "14px", color: "var(--coral)", fontWeight: 600, marginBottom: "4px" }}>Ferramenta de Rastreio · Atenção e Linguagem</p>
           <p style={{ fontSize: "12px", color: "var(--text2)", marginBottom: "2px" }}>Joana Miguel &amp; Joana Carvalho</p>
-          <p style={{ fontSize: "11px", color: "var(--text3)", fontStyle: "italic", marginBottom: "28px" }}>NIDCAIDI — Núcleo de Investigação e Desenvolvimento CAIDI</p>
+          <p style={{ fontSize: "11px", color: "var(--text3)", fontStyle: "italic", marginBottom: "28px" }}>NID — Núcleo de Investigação e Desenvolvimento</p>
           <Card>
             <p style={{ fontSize: "14px", lineHeight: 1.7, marginBottom: "16px", textAlign: "left" }}>
               Aplicação para apoiar educadores na identificação precoce de dificuldades de <strong style={{ color: "var(--teal)" }}>atenção</strong> e <strong style={{ color: "var(--coral)" }}>linguagem</strong>, fornecendo estratégias práticas de intervenção.
@@ -927,3 +927,4 @@ ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(
 </script>
 </body>
 </html>
+
