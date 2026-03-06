@@ -59,7 +59,6 @@ const { useState, useMemo } = React;
 // Cole aqui o URL do Google Apps Script após deploy:
 const API_URL = "https://script.google.com/macros/s/AKfycbxEw7bzcQ0ycMKGaiOApeEZMg1DEiF2w86E7gzB0PZaYEb3WmgKoqi74PYYY-o7NlUi/exec";
 
-
 async function sendToSheet(action, payload) {
   if (!API_URL) { console.warn("API_URL vazio"); return; }
   const body = JSON.stringify({ action, ...payload });
@@ -157,10 +156,15 @@ const SCREENING_ITEMS = {
   },
 };
 
-const LIKERT = ["Nunca", "Raramente", "Frequentemente", "Sempre"];
-const IMPACT_LIKERT = ["Sem impacto", "Impacto ligeiro", "Impacto moderado", "Impacto grave"];
-const EFFICACY_LIKERT = ["Nada", "Pouco", "Moderadamente", "Bastante", "Totalmente"];
-const STRATEGY_FREQ = ["Nunca usei", "Raramente", "Às vezes", "Frequentemente"];
+// Escalas 1-7: texto nos extremos (1, 7) e no meio (4), números nos restantes
+const SCALES = {
+  likert:   { 1: "Nunca", 4: "Às vezes", 7: "Sempre" },
+  impact:   { 1: "Sem impacto", 4: "Moderado", 7: "Muito grave" },
+  efficacy: { 1: "Nada", 4: "Moderadamente", 7: "Totalmente" },
+  strategy: { 1: "Nunca", 4: "Às vezes", 7: "Sempre" },
+};
+
+const STRATEGY_LABELS = SCALES.strategy; // alias
 
 const STRATEGIES = [
   { id: "s1", cat: "attention", text: "Dividir tarefas em blocos pequenos" },
@@ -225,7 +229,7 @@ function computeProfile(responses) {
   sc.att = (sc.inattention + sc.hyperactivity) / 2;
   sc.lang = (sc.comprehension + sc.expression + sc.pragmatics) / 3;
 
-  const CUT = 1.5;
+  const CUT = 4;
   const aR = sc.att >= CUT, lR = sc.lang >= CUT;
   let profile, pColor, pIcon;
   if (aR && lR) { profile = "Perfil Misto"; pColor = "#7C5CBF"; pIcon = "🔄"; }
@@ -234,10 +238,10 @@ function computeProfile(responses) {
   else          { profile = "Risco Baixo"; pColor = "#2D9B6E"; pIcon = "✅"; }
 
   const mx = Math.max(sc.att, sc.lang);
-  const hi = sc.impact >= 2;
+  const hi = sc.impact >= 5;
   let dec, dColor;
-  if (mx >= 2 && hi)                  { dec = "Encaminhar"; dColor = "#D94F4F"; }
-  else if (mx >= 1.5 || (mx >= 1 && hi)) { dec = "Monitorizar"; dColor = "#D4940A"; }
+  if (mx >= 5 && hi)                  { dec = "Encaminhar"; dColor = "#D94F4F"; }
+  else if (mx >= 4 || (mx >= 3 && hi)) { dec = "Monitorizar"; dColor = "#D4940A"; }
   else                                 { dec = "Implementar estratégias e reavaliar"; dColor = "#2D9B6E"; }
 
   const strats = [];
@@ -272,7 +276,7 @@ function Pill({ selected, color, children, onClick }) {
   }}>{children}</button>;
 }
 
-function Bar({ label, value, max = 3, color }) {
+function Bar({ label, value, max = 7, color }) {
   const pct = max > 0 ? (value / max) * 100 : 0;
   return <div style={{ marginBottom: "10px" }}>
     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px", marginBottom: "4px" }}>
@@ -296,6 +300,29 @@ function Warning({ children }) {
   </div>;
 }
 
+function Scale7({ value, onChange, scale }) {
+  return <div>
+    <div style={{ display: "flex", gap: "4px", justifyContent: "center" }}>
+      {[1,2,3,4,5,6,7].map(n => {
+        const sel = value === n;
+        return <button key={n} onClick={() => onChange(n)} style={{
+          width: "38px", height: "38px", borderRadius: "50%",
+          border: `2px solid ${sel ? "var(--teal)" : "var(--border)"}`,
+          background: sel ? "var(--teal)" : "var(--surface)",
+          color: sel ? "#fff" : "var(--text)", fontSize: "14px", fontWeight: sel ? 700 : 500,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          transition: "all 0.15s",
+        }}>{n}</button>;
+      })}
+    </div>
+    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px", fontSize: "11px", color: "var(--text3)" }}>
+      <span style={{ maxWidth: "60px", textAlign: "center" }}>{scale[1]}</span>
+      <span style={{ maxWidth: "80px", textAlign: "center" }}>{scale[4]}</span>
+      <span style={{ maxWidth: "60px", textAlign: "center" }}>{scale[7]}</span>
+    </div>
+  </div>;
+}
+
 // ─── PARTE 1: PERFIL DO PROFESSOR ───────────────────────────
 
 function TeacherProfile({ onComplete }) {
@@ -311,14 +338,23 @@ function TeacherProfile({ onComplete }) {
   const [eff, setEff] = useState(Array(5).fill(null));
   const [stratUse, setStratUse] = useState({});
   const [vig, setVig] = useState({
-    v1: { refer: null, referTo: "", hypothesis: "", strategies: "", confianca: 50 },
-    v2: { refer: null, referTo: "", hypothesis: "", strategies: "", confianca: 50 },
+    v1: { refer: null, referTo: [], hypothesis: "", topStrategies: [], gravidade: null, polo: null, confianca: 50 },
+    v2: { refer: null, referTo: [], hypothesis: "", topStrategies: [], gravidade: null, polo: null, confianca: 50 },
   });
 
-  const totalQ = VF_ITEMS.length + EFFICACY_ITEMS.length + STRATEGIES.length + 2;
+  const vigCount = (v) => {
+    let c = 0;
+    if (v.hypothesis) c++;
+    if (v.gravidade) c++;
+    if (v.refer) c++;
+    if ((v.topStrategies||[]).length >= 2) c++;
+    c++; // confianca slider always has value
+    return c;
+  };
+  const totalQ = VF_ITEMS.length + EFFICACY_ITEMS.length + STRATEGIES.length + 10;
   const filledQ = vf.filter(v => v !== null).length + eff.filter(v => v !== null).length +
     Object.values(stratUse).filter(v => v !== null).length +
-    (vig.v1.hypothesis ? 1 : 0) + (vig.v2.hypothesis ? 1 : 0);
+    vigCount(vig.v1) + vigCount(vig.v2);
 
   const steps = [
     { l: "Consentimento", i: "✓" }, { l: "Sobre si", i: "👤" },
@@ -333,8 +369,8 @@ function TeacherProfile({ onComplete }) {
       case 2: return vf.every(v => v !== null);
       case 3: return eff.every(v => v !== null);
       case 4: return STRATEGIES.every(s => stratUse[s.id] !== undefined && stratUse[s.id] !== null);
-      case 5: return vig.v1.hypothesis;
-      case 6: return vig.v2.hypothesis;
+      case 5: return vig.v1.hypothesis && vig.v1.polo && vig.v1.gravidade && vig.v1.refer && (vig.v1.topStrategies||[]).length >= 2 && (vig.v1.refer !== "Sim" || (vig.v1.referTo||[]).length > 0);
+      case 6: return vig.v2.hypothesis && vig.v2.polo && vig.v2.gravidade && vig.v2.refer && (vig.v2.topStrategies||[]).length >= 2 && (vig.v2.refer !== "Sim" || (vig.v2.referTo||[]).length > 0);
       default: return true;
     }
   };
@@ -359,8 +395,26 @@ function TeacherProfile({ onComplete }) {
       case 2: { const n = vf.filter(v => v === null).length; return `Faltam ${n} afirmações por responder`; }
       case 3: { const n = eff.filter(v => v === null).length; return `Faltam ${n} itens por responder`; }
       case 4: { const n = STRATEGIES.filter(s => stratUse[s.id] === undefined || stratUse[s.id] === null).length; return `Faltam ${n} estratégias por responder`; }
-      case 5: return "Indique a sua hipótese sobre o Caso A";
-      case 6: return "Indique a sua hipótese sobre o Caso B";
+      case 5: {
+        const m = [];
+        if (!vig.v1.hypothesis) m.push("hipótese");
+        if (!vig.v1.polo) m.push("polo atenção/linguagem");
+        if (!vig.v1.gravidade) m.push("gravidade");
+        if (!vig.v1.refer) m.push("encaminhamento");
+        if (vig.v1.refer === "Sim" && !(vig.v1.referTo||[]).length) m.push("para quem encaminha");
+        if ((vig.v1.topStrategies||[]).length < 2) m.push("mínimo 2 estratégias");
+        return `Caso A — faltam: ${m.join(", ")}`;
+      }
+      case 6: {
+        const m = [];
+        if (!vig.v2.hypothesis) m.push("hipótese");
+        if (!vig.v2.polo) m.push("polo atenção/linguagem");
+        if (!vig.v2.gravidade) m.push("gravidade");
+        if (!vig.v2.refer) m.push("encaminhamento");
+        if (vig.v2.refer === "Sim" && !(vig.v2.referTo||[]).length) m.push("para quem encaminha");
+        if ((vig.v2.topStrategies||[]).length < 2) m.push("mínimo 2 estratégias");
+        return `Caso B — faltam: ${m.join(", ")}`;
+      }
       default: return "";
     }
   };
@@ -430,7 +484,7 @@ function TeacherProfile({ onComplete }) {
       <p style={{ fontSize: "14px", color: "var(--text2)", marginBottom: "20px" }}>Dados gerais e anónimos — ajudam-nos a compreender melhor quem utiliza esta ferramenta</p>
       {[
         { k: "distrito", l: "Distrito / Região", type: "select", opts: ["Aveiro","Beja","Braga","Bragança","Castelo Branco","Coimbra","Évora","Faro","Guarda","Leiria","Lisboa","Portalegre","Porto","Santarém","Setúbal","Viana do Castelo","Vila Real","Viseu","R.A. Açores","R.A. Madeira"] },
-        { k: "cycle", l: "Ciclo de ensino", type: "select", opts: ["Pré-escolar","1.º Ciclo","2.º Ciclo","3.º Ciclo"] },
+        { k: "cycle", l: "Ciclo de ensino", type: "select", opts: ["Pré-escolar","1.º Ciclo","2.º Ciclo","3.º Ciclo","Ensino Superior"] },
         { k: "yearsExp", l: "Anos de experiência docente", type: "select", opts: ["0-5","6-10","11-20","21-30","30+"] },
         { k: "age", l: "Faixa etária", type: "select", opts: ["20-29","30-39","40-49","50-59","60+"] },
         { k: "gender", l: "Género", type: "select", opts: ["Feminino","Masculino","Outro","Prefiro não responder"] },
@@ -472,7 +526,7 @@ function TeacherProfile({ onComplete }) {
   const S2 = () => (
     <Card>
       <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "4px" }}>📚 O que sabe sobre atenção e linguagem</h3>
-      <p style={{ fontSize: "14px", color: "var(--text2)", marginBottom: "20px" }}>Indique Verdadeiro ou Falso para cada afirmação ({vf.filter(v=>v!==null).length}/{VF_ITEMS.length})</p>
+      <p style={{ fontSize: "14px", color: "var(--text2)", marginBottom: "20px" }}>Para cada afirmação, indique se considera Verdadeiro, Falso, ou Não sei ({vf.filter(v=>v!==null).length}/{VF_ITEMS.length})</p>
       {VF_ITEMS.map((item, i) => (
         <div key={i} style={{ padding: "14px 16px", background: i%2===0 ? "var(--surface)" : "var(--surface2)", borderRadius: "10px", marginBottom: "6px", border: "1px solid var(--border)" }}>
           <p style={{ fontSize: "15px", marginBottom: "10px", lineHeight: 1.5 }}>
@@ -481,43 +535,36 @@ function TeacherProfile({ onComplete }) {
           <div style={{ display: "flex", gap: "8px" }}>
             <Pill selected={vf[i]===true} color="var(--teal)" onClick={() => { const n=[...vf]; n[i]=true; setVf(n); }}>Verdadeiro</Pill>
             <Pill selected={vf[i]===false} color="var(--teal)" onClick={() => { const n=[...vf]; n[i]=false; setVf(n); }}>Falso</Pill>
+            <Pill selected={vf[i]==="ns"} color="var(--text3)" onClick={() => { const n=[...vf]; n[i]="ns"; setVf(n); }}>Não sei</Pill>
           </div>
         </div>
       ))}
     </Card>
   );
 
-  // Step 3 — Autoeficácia
+  // Step 3 — Autoeficácia (1-7)
   const S3 = () => (
     <Card>
       <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "4px" }}>💪 Como se sente no dia-a-dia</h3>
       <p style={{ fontSize: "14px", color: "var(--text2)", marginBottom: "20px" }}>Quão preparado/a se sente para lidar com estas situações?</p>
       {EFFICACY_ITEMS.map((item, i) => (
-        <div key={i} style={{ marginBottom: "16px" }}>
-          <p style={{ fontSize: "14px", fontWeight: 500, marginBottom: "8px" }}>{item}</p>
-          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-            {EFFICACY_LIKERT.map((l, li) => (
-              <Pill key={li} selected={eff[i]===li} onClick={() => { const n=[...eff]; n[i]=li; setEff(n); }}>{l}</Pill>
-            ))}
-          </div>
+        <div key={i} style={{ marginBottom: "20px", padding: "14px", background: i%2===0 ? "var(--surface)" : "var(--surface2)", borderRadius: "10px", border: "1px solid var(--border)" }}>
+          <p style={{ fontSize: "14px", fontWeight: 500, marginBottom: "10px" }}>{item}</p>
+          <Scale7 value={eff[i]} onChange={v => { const n=[...eff]; n[i]=v; setEff(n); }} scale={SCALES.efficacy} />
         </div>
       ))}
     </Card>
   );
 
-  // Step 4 — Estratégias
+  // Step 4 — Estratégias (1-7)
   const S4 = () => (
     <Card>
       <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "4px" }}>🛠 O que já faz</h3>
       <p style={{ fontSize: "14px", color: "var(--text2)", marginBottom: "20px" }}>Com que frequência usa cada estratégia?</p>
       {STRATEGIES.map((s, i) => (
-        <div key={s.id} style={{ marginBottom: "14px" }}>
-          <p style={{ fontSize: "14px", fontWeight: 500, marginBottom: "8px" }}>{s.text}</p>
-          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-            {STRATEGY_FREQ.map((f, fi) => (
-              <Pill key={fi} selected={stratUse[s.id]===fi} onClick={() => setStratUse({...stratUse, [s.id]: fi})}>{f}</Pill>
-            ))}
-          </div>
+        <div key={s.id} style={{ marginBottom: "20px", padding: "14px", background: i%2===0 ? "var(--surface)" : "var(--surface2)", borderRadius: "10px", border: "1px solid var(--border)" }}>
+          <p style={{ fontSize: "14px", fontWeight: 500, marginBottom: "10px" }}>{s.text}</p>
+          <Scale7 value={stratUse[s.id]} onChange={v => setStratUse({...stratUse, [s.id]: v})} scale={SCALES.strategy} />
         </div>
       ))}
     </Card>
@@ -528,6 +575,16 @@ function TeacherProfile({ onComplete }) {
     const v = VIGNETTES[vIdx];
     const r = vig[v.id];
     const upd = (field, val) => setVig({...vig, [v.id]: {...r, [field]: val}});
+    const toggleRef = (opt) => {
+      const arr = r.referTo || [];
+      upd("referTo", arr.includes(opt) ? arr.filter(x => x !== opt) : [...arr, opt]);
+    };
+    const toggleStrat = (sid) => {
+      const arr = r.topStrategies || [];
+      if (arr.includes(sid)) { upd("topStrategies", arr.filter(x => x !== sid)); }
+      else if (arr.length < 3) { upd("topStrategies", [...arr, sid]); }
+    };
+    let q = 1;
     return (
       <Card>
         <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "12px" }}>📖 {v.title}</h3>
@@ -536,28 +593,9 @@ function TeacherProfile({ onComplete }) {
           <span style={{ fontSize: "14px", color: "var(--text2)", fontStyle: "italic", marginLeft: "8px" }}>Caso apresentado oralmente — responda abaixo</span>
         </div>
 
+        {/* 1. Hipótese */}
         <div style={{ marginBottom: "16px" }}>
-          <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>Encaminharia esta criança para avaliação especializada?</p>
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            {["Sim","Não","Não tenho a certeza"].map(o => (
-              <Pill key={o} selected={r.refer===o} onClick={() => upd("refer", o)}>{o}</Pill>
-            ))}
-          </div>
-        </div>
-
-        {r.refer === "Sim" && (
-          <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontSize: "13px", fontWeight: 600, marginBottom: "6px" }}>Para quem?</p>
-            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-              {REFERRAL_OPTIONS.map(o => (
-                <Pill key={o} selected={r.referTo===o} color="var(--coral)" onClick={() => upd("referTo", o)}>{o}</Pill>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div style={{ marginBottom: "16px" }}>
-          <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>Qual a sua principal hipótese?</p>
+          <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>{q++}. Qual a sua principal hipótese sobre as dificuldades desta criança?</p>
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             {HYPOTHESIS_OPTIONS.map(o => (
               <Pill key={o} selected={r.hypothesis===o} color="var(--blue)" onClick={() => upd("hypothesis", o)}>{o}</Pill>
@@ -565,17 +603,71 @@ function TeacherProfile({ onComplete }) {
           </div>
         </div>
 
-        <div>
-          <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>Que estratégias aplicaria em primeiro lugar?</p>
-          <textarea value={r.strategies} onChange={e => upd("strategies", e.target.value)}
-            placeholder="Descreva 2-3 estratégias..." rows={3}
-            style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1.5px solid var(--border)", fontSize: "14px", resize: "vertical", fontFamily: "inherit" }}
-          />
+        {/* 2. Polo atenção vs linguagem (bipolar 1-7) */}
+        <div style={{ marginBottom: "16px" }}>
+          <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "10px" }}>{q++}. Este caso parece-lhe situar-se mais em que polo?</p>
+          <Scale7 value={r.polo} onChange={v => upd("polo", v)} scale={{ 1: "Claramente atenção", 4: "Ambos por igual", 7: "Claramente linguagem" }} />
         </div>
 
-        {/* Slider: confiança */}
+        {/* 3. Gravidade */}
+        <div style={{ marginBottom: "16px" }}>
+          <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "10px" }}>{q++}. Quão preocupante considera este caso?</p>
+          <Scale7 value={r.gravidade} onChange={v => upd("gravidade", v)} scale={{ 1: "Nada preocupante", 4: "Moderado", 7: "Muito preocupante" }} />
+        </div>
+
+        {/* 4. Encaminhamento */}
+        <div style={{ marginBottom: "16px" }}>
+          <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>{q++}. Encaminharia esta criança para avaliação especializada?</p>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            {["Sim","Não","Não tenho a certeza"].map(o => (
+              <Pill key={o} selected={r.refer===o} onClick={() => upd("refer", o)}>{o}</Pill>
+            ))}
+          </div>
+        </div>
+
+        {/* 5. Para quem (multi-seleção, condicional) */}
+        {r.refer === "Sim" && (
+          <div style={{ marginBottom: "16px" }}>
+            <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "6px" }}>{q++}. Para quem? (pode selecionar mais do que um)</p>
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+              {REFERRAL_OPTIONS.map(o => (
+                <Pill key={o} selected={(r.referTo||[]).includes(o)} color="var(--coral)" onClick={() => toggleRef(o)}>{o}</Pill>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 6. Top 3 estratégias */}
+        <div style={{ marginBottom: "16px" }}>
+          <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "6px" }}>
+            {q++}. Que estratégias aplicaria em primeiro lugar? (selecione 2 a 3)
+          </p>
+          <p style={{ fontSize: "12px", color: (r.topStrategies||[]).length >= 2 ? "var(--green)" : "var(--text3)", marginBottom: "8px" }}>
+            Selecionadas: {(r.topStrategies||[]).length}/3 {(r.topStrategies||[]).length < 2 ? "— mínimo 2" : "✓"}
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            {STRATEGIES.map(s => {
+              const sel = (r.topStrategies||[]).includes(s.id);
+              const full = (r.topStrategies||[]).length >= 3 && !sel;
+              return <button key={s.id} onClick={() => !full && toggleStrat(s.id)} style={{
+                padding: "10px 14px", borderRadius: "8px", textAlign: "left", fontSize: "14px",
+                border: `1.5px solid ${sel ? "var(--teal)" : "var(--border)"}`,
+                background: sel ? "var(--teal-light)" : "var(--surface)",
+                color: full ? "var(--text3)" : "var(--text)",
+                opacity: full ? 0.5 : 1,
+              }}>
+                {sel ? "✓ " : ""}{s.text}
+                <span style={{ fontSize: "11px", color: "var(--text3)", marginLeft: "6px" }}>({s.cat === "attention" ? "atenção" : "linguagem"})</span>
+              </button>;
+            })}
+          </div>
+        </div>
+
+        {/* 7. Confiança */}
         <div style={{ padding: "16px", background: "var(--surface2)", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}>
-          <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "10px" }}>Quão confiante está nas suas respostas a este caso?</p>
+          <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "10px" }}>
+            {q++}. Quão confiante está nas suas respostas a este caso?
+          </p>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "6px" }}>
             <span style={{ color: "var(--text3)" }}>Nada confiante</span>
             <span style={{ color: "var(--text3)" }}>Totalmente confiante</span>
@@ -713,6 +805,7 @@ function Screening({ students, setStudents, teacherData }) {
       </Card>
       <Warning><strong>Grave os resultados antes de sair!</strong><br/>Faça uma captura de ecrã desta página. Se fechar ou atualizar a aplicação, os resultados serão perdidos.</Warning>
       <div style={{ display: "flex", gap: "8px" }}>
+        <button onClick={() => window.print()} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--blue)", color: "#fff", fontSize: "14px", fontWeight: 600 }}>🖨 Guardar / Imprimir</button>
         <button onClick={startNew} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--teal)", color: "#fff", fontSize: "14px", fontWeight: 600 }}>+ Novo rastreio</button>
         <button onClick={() => setMode("list")} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--surface)", color: "var(--text)", border: "1.5px solid var(--border)", fontSize: "14px" }}>Ver todos</button>
       </div>
@@ -724,7 +817,7 @@ function Screening({ students, setStudents, teacherData }) {
     const dom = domains[sStep];
     const items = SCREENING_ITEMS[dom];
     const isImpact = dom === "impact";
-    const labels = isImpact ? IMPACT_LIKERT : LIKERT;
+    const scaleType = isImpact ? SCALES.impact : SCALES.likert;
 
     return <div>
       {/* Progress */}
@@ -741,7 +834,7 @@ function Screening({ students, setStudents, teacherData }) {
           {[
             { k: "initials", l: "Iniciais", ph: "Ex: MF" },
             { k: "age", l: "Idade", ph: "Ex: 7" },
-            { k: "cycle", l: "Ciclo", type: "select", opts: ["Pré-escolar","1.º Ciclo","2.º Ciclo"] },
+            { k: "cycle", l: "Ciclo", type: "select", opts: ["Pré-escolar","1.º Ciclo","2.º Ciclo","3.º Ciclo"] },
             { k: "knownDx", l: "Diagnóstico conhecido?", type: "select", opts: ["Nenhum","PHDA","Perturbação da linguagem","Outro","Em avaliação"] },
           ].map(f => (
             <div key={f.k} style={{ marginBottom: "12px" }}>
@@ -768,19 +861,15 @@ function Screening({ students, setStudents, teacherData }) {
           <span style={{ fontSize: "12px", color: "var(--text3)", marginLeft: "auto" }}>{sStep+1}/{domains.length}</span>
         </div>
         {items.items.map((item, i) => (
-          <div key={i} style={{ padding: "12px 0", borderBottom: i < items.items.length-1 ? "1px solid var(--border)" : "none" }}>
-            <p style={{ fontSize: "15px", marginBottom: "8px", lineHeight: 1.5 }}>{item}</p>
-            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-              {labels.map((l, li) => (
-                <Pill key={li} selected={(resp[dom]||[])[i]===li} onClick={() => {
-                  const n = {...resp};
-                  if (!n[dom]) n[dom] = Array(items.items.length).fill(null);
-                  n[dom] = [...n[dom]];
-                  n[dom][i] = li;
-                  setResp(n);
-                }}>{l}</Pill>
-              ))}
-            </div>
+          <div key={i} style={{ padding: "14px 0", borderBottom: i < items.items.length-1 ? "1px solid var(--border)" : "none" }}>
+            <p style={{ fontSize: "15px", marginBottom: "10px", lineHeight: 1.5 }}>{item}</p>
+            <Scale7 value={(resp[dom]||[])[i]} onChange={v => {
+              const n = {...resp};
+              if (!n[dom]) n[dom] = Array(items.items.length).fill(null);
+              n[dom] = [...n[dom]];
+              n[dom][i] = v;
+              setResp(n);
+            }} scale={scaleType} />
           </div>
         ))}
       </Card>
