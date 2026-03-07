@@ -50,6 +50,22 @@
 <script type="text/babel">
 const { useState, useMemo } = React;
 
+// Error boundary for debugging
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) {
+      return React.createElement("div", {style:{padding:"40px",color:"red",fontFamily:"monospace"}},
+        React.createElement("h2", null, "Erro na aplicação"),
+        React.createElement("pre", {style:{whiteSpace:"pre-wrap"}}, this.state.error.toString()),
+        React.createElement("pre", {style:{whiteSpace:"pre-wrap",fontSize:"12px"}}, this.state.error.stack)
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════
 // CRIANÇAS NO MUNDO DA LUA? — Rastreio Atenção e Linguagem
 // Joana Miguel & Joana Carvalho · NIDCAIDI
@@ -57,7 +73,8 @@ const { useState, useMemo } = React;
 
 // ─── CONFIGURAÇÃO ───────────────────────────────────────────
 // Cole aqui o URL do Google Apps Script após deploy:
-const API_URL = "https://script.google.com/macros/s/AKfycbxEw7bzcQ0ycMKGaiOApeEZMg1DEiF2w86E7gzB0PZaYEb3WmgKoqi74PYYY-o7NlUi/exec";
+const API_URL = "";
+// Exemplo: "https://script.google.com/macros/s/AKfycbx.../exec"
 
 async function sendToSheet(action, payload) {
   if (!API_URL) { console.warn("API_URL vazio"); return; }
@@ -2010,7 +2027,7 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(ErrorBoundary, null, React.createElement(App)));
 </script>
 </body>
 </html>
