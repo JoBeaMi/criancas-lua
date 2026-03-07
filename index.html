@@ -58,7 +58,6 @@ const { useState, useMemo } = React;
 // ─── CONFIGURAÇÃO ───────────────────────────────────────────
 // Cole aqui o URL do Google Apps Script após deploy:
 const API_URL = "https://script.google.com/macros/s/AKfycbxEw7bzcQ0ycMKGaiOApeEZMg1DEiF2w86E7gzB0PZaYEb3WmgKoqi74PYYY-o7NlUi/exec";
-// Exemplo: "https://script.google.com/macros/s/AKfycbx.../exec"
 
 async function sendToSheet(action, payload) {
   if (!API_URL) { console.warn("API_URL vazio"); return; }
