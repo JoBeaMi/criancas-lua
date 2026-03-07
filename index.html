@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Crianças no Mundo da Lua?</title>
   <meta name="description" content="Ferramenta de rastreio de dificuldades de atenção e linguagem em contexto escolar." />
-  <meta name="author" content="Joana Miguel & Joana Carvalho — NID" />
+  <meta name="author" content="Joana Miguel & Joana Carvalho — NIDCAIDI" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌙</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -52,12 +52,12 @@ const { useState, useMemo } = React;
 
 // ═══════════════════════════════════════════════════════════════
 // CRIANÇAS NO MUNDO DA LUA? — Rastreio Atenção e Linguagem
-// Joana Miguel & Joana Carvalho · NID
+// Joana Miguel & Joana Carvalho · NIDCAIDI
 // ═══════════════════════════════════════════════════════════════
 
 // ─── CONFIGURAÇÃO ───────────────────────────────────────────
 // Cole aqui o URL do Google Apps Script após deploy:
-const API_URL = "https://script.google.com/macros/library/d/1vmlB19Em1NgMAY-oGrq-v5hNhnAWd8S4_4NacwRD0nJNv-0JMKNMF_JX/5";
+const API_URL = "https://script.google.com/macros/s/AKfycbxEw7bzcQ0ycMKGaiOApeEZMg1DEiF2w86E7gzB0PZaYEb3WmgKoqi74PYYY-o7NlUi/exec";
 
 async function sendToSheet(action, payload) {
   if (!API_URL) { console.warn("API_URL vazio"); return; }
@@ -87,9 +87,9 @@ async function sendToSheet(action, payload) {
 
 // ─── DADOS ──────────────────────────────────────────────────
 
-const SCREENING_ITEMS = {
+const SCREENING_ITEMS_DEFAULT = {
   inattention: {
-    label: "Desatenção", icon: "🔍", color: "#EF4444",
+    label: "Atenção e concentração", icon: "🔍", color: "#EF4444",
     items: [
       "Distrai-se facilmente com estímulos irrelevantes (ruídos, movimentos de colegas)",
       "Tem dificuldade em manter a atenção em tarefas ou atividades prolongadas",
@@ -101,7 +101,7 @@ const SCREENING_ITEMS = {
     ],
   },
   hyperactivity: {
-    label: "Hiperatividade / Impulsividade", icon: "⚡", color: "#F97316",
+    label: "Inquietação / Impulsividade", icon: "⚡", color: "#F97316",
     items: [
       "Mexe-se excessivamente na cadeira ou levanta-se quando deveria estar sentado/a",
       "Mostra inquietação motora persistente (mexe mãos/pés, não consegue estar parado/a)",
@@ -155,6 +155,362 @@ const SCREENING_ITEMS = {
     ],
   },
 };
+// SCREENING_BY_CYCLE
+// Mesma estrutura por ciclo: 7 inat + 7 hiper + 6 comp + 6 expr + 5 prag + 5 impact = 36
+
+const SCREENING_BY_CYCLE = {
+
+"Pré-escolar": {
+  inattention: {
+    label: "Atenção e concentração", icon: "🔍", color: "#EF4444",
+    items: [
+      "Distrai-se facilmente com estímulos do ambiente (ruídos, outros objetos, movimentos)",
+      "Tem dificuldade em manter a atenção numa atividade, mesmo nas que lhe interessam",
+      "Parece não ouvir quando o/a educador/a lhe fala diretamente",
+      "Não segue instruções simples até ao fim (ex: 'vai buscar os sapatos e senta-te')",
+      "Tem dificuldade em organizar os seus materiais e pertences",
+      "Muda rapidamente de atividade sem concluir nenhuma",
+      "Perde ou esquece-se de objetos com frequência (casaco, lancheira, trabalhos)",
+    ],
+  },
+  hyperactivity: {
+    label: "Inquietação / Impulsividade", icon: "⚡", color: "#F97316",
+    items: [
+      "Não consegue permanecer sentado/a durante atividades de grupo (roda, história)",
+      "Mostra inquietação motora constante (mexe mãos/pés, balança o corpo, não para)",
+      "Tem dificuldade em participar em atividades calmas (ouvir uma história, pintar)",
+      "Fala excessivamente e de forma descontrolada",
+      "Age antes de pensar (ex: tira brinquedos a outros, empurra na fila)",
+      "Não consegue esperar pela sua vez em jogos ou atividades",
+      "Interrompe constantemente conversas e atividades dos outros",
+    ],
+  },
+  comprehension: {
+    label: "Compreensão de Instruções", icon: "👂", color: "#3B82F6",
+    items: [
+      "Precisa que se repitam instruções simples de um passo várias vezes",
+      "Necessita de demonstração ou gesto para compreender o que é pedido",
+      "Compreende melhor quando se usam frases muito curtas e simples",
+      "Confunde palavras como 'antes/depois', 'primeiro/último', 'em cima/em baixo'",
+      "Tem dificuldade em compreender perguntas abertas ('O que aconteceu?')",
+      "Olha para os colegas para copiar o que fazer, em vez de seguir a instrução verbal",
+    ],
+  },
+  expression: {
+    label: "Expressão Oral", icon: "💬", color: "#6366F1",
+    items: [
+      "Tem dificuldade em nomear objetos ou pessoas conhecidas (diz 'aquilo', 'o cena')",
+      "Conta experiências de forma confusa ou incompleta (salta passos, não se percebe)",
+      "Usa vocabulário muito limitado para a idade",
+      "Faz frases curtas ou com erros gramaticais frequentes para a idade",
+      "Tem dificuldade em responder a perguntas simples sobre o seu dia",
+      "Sabe o que quer dizer mas não encontra as palavras certas",
+    ],
+  },
+  pragmatics: {
+    label: "Comunicação Social", icon: "🤝", color: "#8B5CF6",
+    items: [
+      "Tem dificuldade em iniciar ou manter uma conversa com colegas",
+      "Não adapta a forma de falar ao contexto (fala da mesma forma com adultos e crianças)",
+      "Tem dificuldade em compreender quando alguém está a brincar ou a falar a sério",
+      "Tem dificuldade em respeitar os turnos de conversa (não por impulsividade, mas por não perceber)",
+      "Isola-se ou fica à margem nas brincadeiras que envolvem muita conversa",
+    ],
+  },
+  impact: {
+    label: "Impacto no Dia-a-dia", icon: "📊", color: "#64748B",
+    items: [
+      "Impacto na aprendizagem e participação nas atividades",
+      "Impacto nas relações com os colegas",
+      "Impacto na relação com os adultos da sala",
+      "Impacto na autonomia nas rotinas diárias",
+      "Impacto na participação em atividades de grupo",
+    ],
+  },
+},
+
+"1.º Ciclo": {
+  inattention: {
+    label: "Atenção e concentração", icon: "🔍", color: "#EF4444",
+    items: [
+      "Distrai-se facilmente com estímulos irrelevantes (ruídos, movimentos de colegas)",
+      "Tem dificuldade em manter a atenção em tarefas ou atividades prolongadas",
+      "Parece não ouvir quando o/a professor/a lhe fala diretamente",
+      "Não segue instruções até ao fim e não termina trabalhos",
+      "Tem dificuldade em organizar tarefas e materiais",
+      "Evita ou resiste a tarefas que exigem esforço mental sustentado (leitura, escrita)",
+      "Perde materiais necessários para as atividades (lápis, cadernos, fichas)",
+    ],
+  },
+  hyperactivity: {
+    label: "Inquietação / Impulsividade", icon: "⚡", color: "#F97316",
+    items: [
+      "Mexe-se excessivamente na cadeira ou levanta-se quando deveria estar sentado/a",
+      "Mostra inquietação motora persistente (mexe mãos/pés, não consegue estar parado/a)",
+      "Tem dificuldade em realizar atividades de forma calma e organizada",
+      "Fala excessivamente",
+      "Responde antes de a pergunta ser completada",
+      "Tem dificuldade em esperar pela sua vez",
+      "Interrompe ou intromete-se nas atividades dos outros",
+    ],
+  },
+  comprehension: {
+    label: "Compreensão de Instruções e Linguagem Académica", icon: "👂", color: "#3B82F6",
+    items: [
+      "Tem dificuldade em seguir instruções com mais de dois passos",
+      "Necessita de exemplos concretos/demonstrações para compreender o que é pedido",
+      "A compreensão melhora claramente quando a instrução é reformulada com linguagem mais simples",
+      "Confunde relações temporais, causais ou condicionais (antes/depois, se…então, porque…)",
+      "Tem dificuldade em compreender perguntas dos testes quando estas são formuladas de forma diferente do que foi ensinado",
+      "Parece 'desligar' mas consegue realizar a tarefa quando vê um modelo/exemplo",
+    ],
+  },
+  expression: {
+    label: "Expressão Oral e Organização Verbal", icon: "💬", color: "#6366F1",
+    items: [
+      "Tem dificuldade em explicar o que fez ou como resolveu uma tarefa",
+      "Conta experiências de forma desorganizada (salta passos, omite informação essencial)",
+      "Usa vocabulário limitado ou impreciso para a idade",
+      "Tem dificuldade em justificar respostas ('Porque é que achas isso?')",
+      "Utiliza poucos conectores (e depois… e depois…) em vez de estruturas mais complexas",
+      "Sabe a resposta mas tem dificuldade em expressá-la verbalmente",
+    ],
+  },
+  pragmatics: {
+    label: "Comunicação Social", icon: "🤝", color: "#8B5CF6",
+    items: [
+      "Interpreta mensagens de forma demasiado literal",
+      "Tem dificuldade em compreender quando alguém está a brincar ou a ser irónico",
+      "Tem dificuldade na gestão de turnos de conversa (por razões comunicativas, não impulsivas)",
+      "Não adapta o discurso ao interlocutor ou contexto",
+      "Tem dificuldade em manter o tópico de conversa ou em acompanhar conversas de grupo",
+    ],
+  },
+  impact: {
+    label: "Impacto Funcional", icon: "📊", color: "#64748B",
+    items: [
+      "Impacto na aprendizagem da leitura e da escrita",
+      "Impacto nas relações com pares",
+      "Impacto nas relações com adultos",
+      "Impacto na autonomia nas tarefas escolares",
+      "Impacto na participação em atividades de grupo",
+    ],
+  },
+},
+
+"2.º Ciclo": {
+  inattention: {
+    label: "Atenção e concentração", icon: "🔍", color: "#EF4444",
+    items: [
+      "Distrai-se facilmente durante aulas expositivas ou tarefas de escuta prolongada",
+      "Tem dificuldade em manter a atenção em tarefas que exigem leitura prolongada",
+      "Parece não ouvir quando o/a professor/a dá instruções à turma",
+      "Não termina trabalhos de aula ou entrega-os incompletos",
+      "Tem dificuldade em organizar o caderno, os materiais e o estudo",
+      "Evita ou adia tarefas que exigem esforço mental sustentado (composições, projetos)",
+      "Esquece-se de entregar trabalhos, trazer materiais ou de compromissos escolares",
+    ],
+  },
+  hyperactivity: {
+    label: "Inquietação / Impulsividade", icon: "⚡", color: "#F97316",
+    items: [
+      "Mexe-se excessivamente na cadeira, balança-se ou levanta-se sem motivo aparente",
+      "Mostra inquietação que o/a impede de trabalhar de forma organizada e produtiva",
+      "Tem dificuldade em trabalhar em silêncio durante períodos de trabalho individual",
+      "Fala excessivamente ou faz comentários inapropriados durante a aula",
+      "Responde impulsivamente sem levantar a mão ou esperar pela sua vez",
+      "Tem dificuldade em esperar em situações de grupo (filas, debates, jogos)",
+      "Intromete-se em conversas ou trabalhos alheios sem ser convidado/a",
+    ],
+  },
+  comprehension: {
+    label: "Compreensão de Instruções e Linguagem Académica", icon: "👂", color: "#3B82F6",
+    items: [
+      "Tem dificuldade em seguir instruções com vários passos em contexto de aula",
+      "Necessita que as instruções dos testes sejam explicadas individualmente",
+      "A compreensão melhora claramente quando a linguagem é simplificada",
+      "Confunde vocabulário específico das disciplinas (ex: 'analisa', 'justifica', 'compara')",
+      "Tem dificuldade em compreender textos de estudo com frases longas ou complexas",
+      "Parece compreender na aula mas não consegue aplicar sozinho/a nos exercícios",
+    ],
+  },
+  expression: {
+    label: "Expressão Oral e Organização Verbal", icon: "💬", color: "#6366F1",
+    items: [
+      "Tem dificuldade em apresentar trabalhos oralmente de forma organizada",
+      "Escreve textos desorganizados, com ideias soltas ou sem estrutura clara",
+      "Usa vocabulário repetitivo ou impreciso, especialmente na escrita",
+      "Tem dificuldade em argumentar ou justificar as suas respostas",
+      "Utiliza frases simples e curtas mesmo quando o contexto exige maior complexidade",
+      "Sabe o conteúdo mas tem dificuldade em expressá-lo (oral ou escrito)",
+    ],
+  },
+  pragmatics: {
+    label: "Comunicação Social", icon: "🤝", color: "#8B5CF6",
+    items: [
+      "Interpreta mensagens de forma demasiado literal (não percebe indiretas ou subtexto)",
+      "Tem dificuldade em compreender sarcasmo, ironia ou gíria dos colegas",
+      "Tem dificuldade em participar em discussões de grupo (intervém fora do tempo ou do tema)",
+      "Não adapta a linguagem ao contexto (fala com o professor como fala com um colega)",
+      "Tem dificuldade em resolver conflitos verbalmente (recorre a comportamento ou retrai-se)",
+    ],
+  },
+  impact: {
+    label: "Impacto Funcional", icon: "📊", color: "#64748B",
+    items: [
+      "Impacto no desempenho académico nas várias disciplinas",
+      "Impacto nas relações com pares (amizades, inclusão no grupo)",
+      "Impacto nas relações com professores e outros adultos",
+      "Impacto na autonomia no estudo e nos trabalhos",
+      "Impacto na participação em atividades de grupo e projetos",
+    ],
+  },
+},
+
+"3.º Ciclo": {
+  inattention: {
+    label: "Atenção e concentração", icon: "🔍", color: "#EF4444",
+    items: [
+      "Distrai-se frequentemente durante aulas ou estudo, mesmo quando tenta concentrar-se",
+      "Tem dificuldade em sustentar a atenção em textos longos ou tarefas complexas",
+      "Perde-se em instruções dadas à turma e precisa de repetição individual",
+      "Não completa trabalhos ou entrega-os com erros por falta de atenção ao detalhe",
+      "Tem grande dificuldade na organização pessoal (agenda, materiais, prazos)",
+      "Procrastina ou evita sistematicamente tarefas que exigem concentração prolongada",
+      "Esquece-se de compromissos, datas de entrega e materiais com frequência",
+    ],
+  },
+  hyperactivity: {
+    label: "Inquietação / Impulsividade", icon: "⚡", color: "#F97316",
+    items: [
+      "Mostra inquietação física constante que interfere com o trabalho (mexe-se, rabisca)",
+      "Tem dificuldade em permanecer numa tarefa sem se levantar ou mudar de atividade",
+      "Parece constantemente acelerado/a ou com dificuldade em abrandar",
+      "Fala excessivamente ou faz comentários impulsivos que perturbam a dinâmica de aula",
+      "Age impulsivamente sem considerar consequências (respostas precipitadas, decisões sem reflexão)",
+      "Tem dificuldade em esperar, tolerar atrasos ou adiar recompensas",
+      "Intromete-se em conversas, trabalhos ou espaços alheios",
+    ],
+  },
+  comprehension: {
+    label: "Compreensão de Instruções e Linguagem Académica", icon: "👂", color: "#3B82F6",
+    items: [
+      "Tem dificuldade em interpretar enunciados de testes e exames de forma autónoma",
+      "Precisa que o professor reformule ou simplifique instruções para compreender",
+      "Tem dificuldade com vocabulário académico abstrato (analisa, sintetiza, demonstra, fundamenta)",
+      "Confunde significados de palavras dependendo do contexto disciplinar",
+      "Tem dificuldade em extrair informação de textos complexos (manuais, artigos, enunciados)",
+      "Compreende a matéria quando explicada oralmente mas falha nos testes escritos",
+    ],
+  },
+  expression: {
+    label: "Expressão Oral e Escrita", icon: "💬", color: "#6366F1",
+    items: [
+      "Tem dificuldade em estruturar apresentações orais ou escritas de forma coerente",
+      "Os textos escritos são desorganizados, repetitivos ou com pouca profundidade",
+      "Usa vocabulário abaixo do esperado para o nível de escolaridade",
+      "Tem dificuldade em construir argumentos ou fundamentar posições",
+      "Utiliza frases simples mesmo em contextos que exigem linguagem académica elaborada",
+      "O conhecimento demonstrado oralmente é superior ao que consegue expressar por escrito",
+    ],
+  },
+  pragmatics: {
+    label: "Comunicação Social", icon: "🤝", color: "#8B5CF6",
+    items: [
+      "Tem dificuldade em compreender subtilezas da comunicação (sarcasmo, duplo sentido, ironia)",
+      "Interpreta situações sociais de forma desadequada, levando a mal-entendidos",
+      "Tem dificuldade em participar em debates ou discussões de grupo de forma pertinente",
+      "Não adapta o registo de linguagem ao contexto (formal/informal, professor/colega)",
+      "Tem dificuldade em manter amizades ou em gerir conflitos verbalmente",
+    ],
+  },
+  impact: {
+    label: "Impacto Funcional", icon: "📊", color: "#64748B",
+    items: [
+      "Impacto no rendimento escolar global",
+      "Impacto nas relações sociais e inclusão no grupo de pares",
+      "Impacto na relação com professores e figuras de autoridade",
+      "Impacto na autonomia no estudo, organização e gestão de prazos",
+      "Impacto na participação em atividades escolares e extracurriculares",
+    ],
+  },
+},
+
+"Ensino Superior": {
+  inattention: {
+    label: "Atenção e concentração", icon: "🔍", color: "#EF4444",
+    items: [
+      "Distrai-se facilmente durante aulas ou sessões longas, mesmo em temas do seu interesse",
+      "Tem dificuldade em sustentar a concentração durante a leitura de textos académicos",
+      "Perde informação dada em contexto de aula por não conseguir acompanhar o ritmo",
+      "Entrega trabalhos incompletos ou com erros por falta de revisão e atenção ao detalhe",
+      "Tem grande dificuldade em organizar-se (prazos, materiais, compromissos múltiplos)",
+      "Procrastina sistematicamente trabalhos e estudo, deixando tudo para o último momento",
+      "Esquece-se de compromissos académicos (datas de entrega, reuniões, inscrições)",
+    ],
+  },
+  hyperactivity: {
+    label: "Inquietação / Impulsividade", icon: "⚡", color: "#F97316",
+    items: [
+      "Mostra inquietação física durante aulas ou períodos de trabalho prolongado",
+      "Tem dificuldade em permanecer numa tarefa sem interrupções autogeradas",
+      "Parece sempre 'acelerado/a' ou tem dificuldade em gerir o ritmo de trabalho",
+      "Intervém de forma excessiva ou desproporcional em contextos de grupo (aulas, seminários)",
+      "Toma decisões precipitadas sem ponderar consequências (inscrições, mudanças, gastos)",
+      "Tem dificuldade em esperar ou tolerar atrasos (filas, processos burocráticos, feedback)",
+      "Tem tendência a interromper colegas ou professores durante apresentações ou debates",
+    ],
+  },
+  comprehension: {
+    label: "Compreensão de Linguagem Académica", icon: "👂", color: "#3B82F6",
+    items: [
+      "Tem dificuldade em interpretar enunciados de exames ou orientações de trabalho",
+      "Precisa de reler textos académicos várias vezes para extrair a informação essencial",
+      "Tem dificuldade com vocabulário académico especializado e linguagem abstrata",
+      "Confunde conceitos semelhantes ou mistura terminologia de diferentes unidades curriculares",
+      "Tem dificuldade em seguir apresentações orais com linguagem complexa e ritmo rápido",
+      "Compreende melhor quando a informação é acompanhada de esquemas ou exemplos visuais",
+    ],
+  },
+  expression: {
+    label: "Expressão Oral e Escrita Académica", icon: "💬", color: "#6366F1",
+    items: [
+      "Tem dificuldade em estruturar trabalhos escritos de forma coerente e bem argumentada",
+      "A escrita académica é pobre em vocabulário específico ou com estrutura repetitiva",
+      "Tem dificuldade em apresentar trabalhos oralmente de forma clara e organizada",
+      "Não consegue articular ideias complexas, mesmo quando demonstra compreensão do conteúdo",
+      "Tem dificuldade em redigir emails formais, relatórios ou outros textos funcionais",
+      "O desempenho oral (quando pode explicar) é significativamente superior ao escrito",
+    ],
+  },
+  pragmatics: {
+    label: "Comunicação Social e Profissional", icon: "🤝", color: "#8B5CF6",
+    items: [
+      "Tem dificuldade em adaptar a comunicação ao contexto académico/profissional (formal vs. informal)",
+      "Interpreta comentários ou feedback de forma literal ou desproporcionada",
+      "Tem dificuldade em participar construtivamente em trabalhos de grupo e seminários",
+      "Tem dificuldade em comunicar necessidades a professores ou serviços de apoio (auto-advocacia)",
+      "Tende a isolar-se ou a evitar situações sociais que envolvam comunicação complexa",
+    ],
+  },
+  impact: {
+    label: "Impacto Funcional", icon: "📊", color: "#64748B",
+    items: [
+      "Impacto no rendimento académico e nos resultados das avaliações",
+      "Impacto nas relações com colegas e na participação social",
+      "Impacto na relação com professores e orientadores",
+      "Impacto na autonomia na gestão da vida académica (inscrições, prazos, organização)",
+      "Impacto na preparação para a transição para o mercado de trabalho",
+    ],
+  },
+},
+
+};
+
+function getScreeningItems(cycle) {
+  return SCREENING_BY_CYCLE[cycle] || SCREENING_ITEMS_DEFAULT;
+}
+
 
 // Escalas 1-7: texto nos extremos (1, 7) e no meio (4), números nos restantes
 const SCALES = {
@@ -168,7 +524,7 @@ const STRATEGY_LABELS = SCALES.strategy; // alias
 
 const STRATEGIES_GENERIC = [
   { id: "s1", cat: "attention", text: "Dividir tarefas em etapas curtas",
-    desc: "Fragmente atividades longas em etapas claras. Dê uma instrução de cada vez e espere que seja cumprida antes de dar a seguinte. Trabalhos de casa demoram 3x mais a um aluno com PHDA — reduzir o volume é essencial, não é facilitação.",
+    desc: "Fragmente atividades longas em etapas claras. Dê uma instrução de cada vez e espere que seja cumprida antes de dar a seguinte. Trabalhos de casa demoram 3x mais a um aluno com dificuldades de atenção — reduzir o volume é essencial, não é facilitação.",
     how: "Ex: Em vez de 'Faz os exercícios da página 12', diga 'Faz o exercício 1. Quando acabares, mostra-me.' Use checklists com caixas para riscar." },
   { id: "s2", cat: "attention", text: "Supervisão frequente e próxima",
     desc: "Passe pela mesa do aluno regularmente para verificar o progresso e redirecionar se necessário. O contacto breve e positivo é mais eficaz do que instruções longas à distância.",
@@ -178,10 +534,10 @@ const STRATEGIES_GENERIC = [
     how: "Ex: Lugar na 1.ª fila, ao centro, com colega calmo ao lado. Evitar corredor e porta. Para comorbilidade: sentar com par de confiança que possa ajudar a clarificar — NÃO punir por pedir ajuda ao colega." },
   { id: "s4", cat: "attention", text: "Feedback imediato e específico",
     desc: "Reforce o comportamento adequado no momento exato em que acontece. O elogio específico é muito mais eficaz do que o genérico. Nunca dê reforço apenas no final do dia.",
-    how: "Ex: 'Boa, começaste logo a trabalhar!' é mais eficaz do que 'Portaste-te bem hoje.' Para PHDA: sistema de pontos com recompensas a curto prazo." },
+    how: "Ex: 'Boa, começaste logo a trabalhar!' é mais eficaz do que 'Portaste-te bem hoje.' Para dificuldades de atenção: sistema de pontos com recompensas a curto prazo." },
   { id: "s5", cat: "attention", text: "Sinais não-verbais combinados",
     desc: "Combine um gesto ou sinal visual com o aluno para o redirecionar sem interromper a aula. Isto preserva a relação e evita exposição perante os pares.",
-    how: "Ex: Toque na mesa, aponte para a ficha, ou use um cartão amarelo/verde combinado previamente. Para PHDA+DLD: usar suporte visual para sequenciar o que aconteceu antes de pedir explicação verbal." },
+    how: "Ex: Toque na mesa, aponte para a ficha, ou use um cartão amarelo/verde combinado previamente. Para dificuldades combinadas: usar suporte visual para sequenciar o que aconteceu antes de pedir explicação verbal." },
   { id: "s6", cat: "language", text: "Simplificar a linguagem das instruções",
     desc: "Use frases curtas, vocabulário concreto, e evite instruções com múltiplas condições. Chamar o nome da criança ANTES de dar a instrução. Dar instruções na ordem em que devem ser seguidas — evitar 'antes' e 'depois' de forma abstrata.",
     how: "Ex: Em vez de 'Quando acabarem de copiar, se não tiverem dúvidas, podem avançar para o exercício seguinte', diga 'Primeiro: copiar. Segundo: fazer o exercício.' Nunca dar instruções enquanto a criança se move." },
@@ -190,9 +546,9 @@ const STRATEGIES_GENERIC = [
     how: "Ex: Afixe uma sequência visual dos passos da tarefa. Use mural de palavras na sala. Para o 2.º ciclo: resumos visuais das matérias (mapas mentais, infográficos, esquemas)." },
   { id: "s8", cat: "language", text: "Repetição com reformulação",
     desc: "Repita a instrução usando palavras diferentes e mais simples — não apenas a mesma frase mais alto. Fazer pausas entre pontos-chave. Reduzir ruído de fundo: fechar portas, uma pessoa fala de cada vez.",
-    how: "Ex: Se disse 'Identifica os elementos do texto' e o aluno não compreendeu, reformule: 'O que encontras no texto? Quem está? O que acontece?' Para DLD: corrigir modelando a forma correta com naturalidade — 'Ah, foste à loja!' (não corrigir diretamente)." },
+    how: "Ex: Se disse 'Identifica os elementos do texto' e o aluno não compreendeu, reformule: 'O que encontras no texto? Quem está? O que acontece?' Para dificuldades de linguagem: corrigir modelando a forma correta com naturalidade — 'Ah, foste à loja!' (não corrigir diretamente)." },
   { id: "s9", cat: "language", text: "Verificação ativa da compreensão",
-    desc: "Peça ao aluno para explicar o que vai fazer ANTES de começar. Nunca assuma que silêncio = compreensão. Use perguntas de escolha ('Vais buscar o casaco ou a mochila?'), não perguntas abertas. Para DLD: ensinar o aluno a reconhecer quando não compreende e a pedir ajuda de forma discreta.",
+    desc: "Peça ao aluno para explicar o que vai fazer ANTES de começar. Nunca assuma que silêncio = compreensão. Use perguntas de escolha ('Vais buscar o casaco ou a mochila?'), não perguntas abertas. Para dificuldades de linguagem: ensinar o aluno a reconhecer quando não compreende e a pedir ajuda de forma discreta.",
     how: "Ex: 'Diz-me lá, o que vais fazer primeiro?' — se não consegue explicar, a instrução não foi compreendida. Para o 2.º ciclo: ensinar explicitamente o vocabulário dos exames — 'descreve', 'compara', 'explica', 'analisa'." },
   { id: "s10", cat: "language", text: "Modelar estruturas de resposta",
     desc: "Dê ao aluno um modelo de resposta e peça-lhe que o complete ou adapte. Fornecer frameworks narrativos visuais para escrita: caixas para início/meio/fim. Aceitar respostas orais, em pontos, ou em formato visual como alternativas.",
@@ -204,7 +560,7 @@ const STRATEGIES_GENERIC = [
 
 const STRATEGIES_BY_CYCLE = {
   "Pré-escolar": {
-    context: "Nesta faixa etária, a DLD normalmente não é formalmente diagnosticada, mas sinais de alerta podem e devem levar a encaminhamento precoce para terapia da fala. A medicação para PHDA não é recomendada — o treino parental é a primeira linha.",
+    context: "Nesta faixa etária, as dificuldades de linguagem podem não ser ainda evidentes, mas sinais de alerta podem e devem levar a encaminhamento precoce para terapia da fala. Nesta idade, a intervenção comportamental e o treino parental são a primeira linha.",
     attention: [
       { id:"pre-a1", text:"Rotinas visuais claras", desc:"Criar rotinas visuais para manhã e tarde; avisar com antecedência qualquer mudança; manter espaço com poucos estímulos.", how:"Ex: Quadro de rotinas com fotografias reais da sequência do dia. Avisar '5 minutos para arrumar' antes da transição." },
       { id:"pre-a2", text:"Um pedido de cada vez", desc:"Dar frases muito curtas, um pedido de cada vez. Dar tempo antes de repetir — não adicionar mais linguagem.", how:"Ex: 'Vai buscar os sapatos.' Esperar. Só depois: 'Agora veste o casaco.'" },
@@ -226,7 +582,7 @@ const STRATEGIES_BY_CYCLE = {
   },
 
   "1.º Ciclo": {
-    context: "Entre os 6 e os 8 anos, a criança está a aprender a aprender. Precisa de processamento linguístico eficiente, vocabulário robusto e capacidade de participar em discussões de grupo. Crianças com DLD precisam de 36 exposições a uma palavra nova para a aprender, contra 12 dos seus pares.",
+    context: "Entre os 6 e os 8 anos, a criança está a aprender a aprender. Precisa de processamento linguístico eficiente, vocabulário robusto e capacidade de participar em discussões de grupo. Crianças com dificuldades de linguagem precisam de 36 exposições a uma palavra nova para a aprender, contra 12 dos seus pares.",
     attention: [
       { id:"c1-a1", text:"Posição estratégica na sala", desc:"Sentar perto do professor, longe de janelas e portas. Preferencialmente secretária individual ou com par calmo.", how:"Ex: 1.ª fila, ao centro. Pedir para voltar à sala 2 minutos antes do fim do recreio para se reorientar." },
       { id:"c1-a2", text:"Antevisão da aula", desc:"Dar uma antevisão do que vai acontecer na aula antes de começar. Reduz incerteza e insegurança.", how:"Ex: 'Hoje vamos primeiro fazer cópia, depois matemática, e a seguir vamos ao recreio.'" },
@@ -246,7 +602,7 @@ const STRATEGIES_BY_CYCLE = {
     ],
     both: [
       { id:"c1-b1", text:"Sentar com par de confiança", desc:"Para comorbilidade: sentar com par que possa ajudar a clarificar. NÃO punir por pedir ajuda ao colega.", how:"Ex: Combinado: 'O João pode ajudar-te a perceber o que é para fazer. Podem falar baixinho.'" },
-      { id:"c1-b2", text:"Reduzir volume de trabalhos de casa", desc:"Trabalhos de casa demoram 3x mais a um aluno com PHDA — reduzir volume é essencial, não é facilitação.", how:"Ex: Se a turma faz 10 exercícios, o aluno faz 5 (os mais importantes). Aceitar resposta oral como alternativa." },
+      { id:"c1-b2", text:"Reduzir volume de trabalhos de casa", desc:"Trabalhos de casa demoram 3x mais a um aluno com dificuldades de atenção — reduzir volume é essencial, não é facilitação.", how:"Ex: Se a turma faz 10 exercícios, o aluno faz 5 (os mais importantes). Aceitar resposta oral como alternativa." },
     ]
   },
 
@@ -271,12 +627,12 @@ const STRATEGIES_BY_CYCLE = {
     both: [
       { id:"c2-b1", text:"Buddy system", desc:"Par de confiança ou mentor de pares (rodar semanalmente). Estruturar recreios com opções.", how:"Ex: 'Esta semana o teu buddy é a Sara. Podem rever juntos as instruções dos trabalhos.'" },
       { id:"c2-b2", text:"Sinal discreto de 'não compreendo'", desc:"Ensinar o aluno a reconhecer quando não compreende e a pedir ajuda de forma discreta.", how:"Ex: Cartão vermelho/verde na mesa. Semáforo pessoal. Combinado: levantar a borracha = 'preciso de ajuda'." },
-      { id:"c2-b3", text:"Conflitos: sequenciar antes de explicar", desc:"Para PHDA+DLD: em conflitos, usar suporte visual para sequenciar o que aconteceu antes de pedir explicação verbal.", how:"Ex: 'Vamos desenhar o que aconteceu. Primeiro... depois... e a seguir...' Só depois discutir." },
+      { id:"c2-b3", text:"Conflitos: sequenciar antes de explicar", desc:"Para dificuldades combinadas: em conflitos, usar suporte visual para sequenciar o que aconteceu antes de pedir explicação verbal.", how:"Ex: 'Vamos desenhar o que aconteceu. Primeiro... depois... e a seguir...' Só depois discutir." },
     ]
   },
 
   "3.º Ciclo": {
-    context: "A transição é crítica. As exigências académicas, sociais e cognitivas intensificam-se. Alunos que no básico compensavam podem colapsar. De 17% a 50% dos alunos com DLD também têm dificuldades de leitura. Alunos com DLD e PHDA estão sobre-representados em absentismo e problemas de saúde mental.",
+    context: "A transição é crítica. As exigências académicas, sociais e cognitivas intensificam-se. Alunos que no básico compensavam podem colapsar. De 17% a 50% dos alunos com dificuldades de linguagem também têm dificuldades de leitura. Alunos com estas dificuldades estão sobre-representados em absentismo e problemas de saúde mental.",
     attention: [
       { id:"c3-a1", text:"Ensinar estratégias de memória", desc:"Ensinar explicitamente: mnemónicas, chunking, dual coding, associação de palavras.", how:"Ex: Para memorizar uma lista, criar uma frase com as iniciais. Usar imagens junto ao texto. Resumir com pares." },
       { id:"c3-a2", text:"Modelar estratégias de apontamentos", desc:"Mapas mentais, sticky notes, símbolos, marcações. Não assumir que sabem tirar notas.", how:"Ex: 'Vou mostrar como eu tiro notas desta apresentação. Olhem: título, 3 pontos-chave, exemplo.'" },
@@ -287,20 +643,20 @@ const STRATEGIES_BY_CYCLE = {
     language: [
       { id:"c3-l1", text:"Reduzir comprimento das instruções", desc:"Uma ideia por frase. Evitar cláusulas encaixadas. Quando apresentar informação nova, ativar conhecimento prévio.", how:"Ex: Em vez de 'Tendo em conta o que discutimos sobre a revolução industrial, analise...', dizer 'Lembram-se da revolução industrial? (pausa) Agora vamos analisar...'" },
       { id:"c3-l2", text:"Scaffolding de palavras-chave", desc:"Mostrar como usar palavras-chave na pesquisa. Usar sinónimos e descrições para clarificar definições.", how:"Ex: 'Fotossíntese — vamos decompor: foto = luz, síntese = juntar. A planta junta luz com água para fazer alimento.'" },
-      { id:"c3-l3", text:"Ferramentas auditivas e visuais", desc:"Audiobooks, leitores de ecrã, text-to-speech para alunos com DLD. Diagramas junto a instruções escritas.", how:"Ex: Disponibilizar versão áudio dos textos. Vídeos complementares. Sempre diagrama + texto, nunca só texto." },
+      { id:"c3-l3", text:"Ferramentas auditivas e visuais", desc:"Audiobooks, leitores de ecrã, text-to-speech para alunos com dificuldades de linguagem. Diagramas junto a instruções escritas.", how:"Ex: Disponibilizar versão áudio dos textos. Vídeos complementares. Sempre diagrama + texto, nunca só texto." },
       { id:"c3-l4", text:"Formas alternativas de demonstrar aprendizagem", desc:"Apresentações orais ou vídeo, storyboards, mapas mentais, bullet points em vez de ensaio escrito.", how:"Ex: 'Podes escolher: texto escrito, apresentação oral com slides, ou vídeo de 3 minutos.'" },
       { id:"c3-l5", text:"Preparar linguagem dos exames por disciplina", desc:"Praticar explicitamente o que 'analisa', 'compara', 'justifica' significa em cada disciplina.", how:"Ex: 'Em História, JUSTIFICA = diz o que aconteceu E porquê. Em Ciências, JUSTIFICA = dá evidência da experiência.'" },
       { id:"c3-l6", text:"Flexibilidade temporal", desc:"Tempo adicional para ler instruções. Materiais disponibilizados antecipadamente. Pré-ensinar vocabulário.", how:"Ex: Enviar o PowerPoint antes da aula. Dar 5 minutos extra nos testes para ler as perguntas." },
     ],
     both: [
       { id:"c3-b1", text:"Ferramentas de apoio à memória de trabalho", desc:"Calculadoras, fichas de factos, mapas de processo, flow charts — não como facilitação, como compensação.", how:"Ex: Permitir folha de fórmulas em matemática. Checklist de passos para resolução de problemas." },
-      { id:"c3-b2", text:"Monitorizar saúde mental", desc:"Alunos com DLD e PHDA estão em risco aumentado de isolamento, bullying e deterioração da saúde mental.", how:"Ex: Check-in regular: 'Como te sentes esta semana, de 1 a 5?' Identificar adultos de confiança na escola." },
+      { id:"c3-b2", text:"Monitorizar saúde mental", desc:"Alunos com dificuldades de atenção e/ou linguagem estão em risco aumentado de isolamento, bullying e deterioração da saúde mental.", how:"Ex: Check-in regular: 'Como te sentes esta semana, de 1 a 5?' Identificar adultos de confiança na escola." },
       { id:"c3-b3", text:"Roleplay de situações sociais", desc:"Como pedir ajuda a um professor, resolver um conflito, participar numa discussão de grupo.", how:"Ex: 'Vamos praticar: eu sou o professor de matemática e tu vais pedir ajuda. O que dizes primeiro?'" },
     ]
   },
 
   "Ensino Superior": {
-    context: "Os desafios de linguagem e de organização não desaparecem — mas o apoio estruturado da escola diminui drasticamente. A chave é a auto-advocacia. Jovens adultos com DLD podem ter boa expressão oral mas dificuldades significativas na compreensão de textos complexos e na escrita académica. 81% de jovens com perturbações emocionais/comportamentais têm défices de linguagem não identificados.",
+    context: "Os desafios de linguagem e de organização não desaparecem — mas o apoio estruturado da escola diminui drasticamente. A chave é a auto-advocacia. Jovens adultos com dificuldades de linguagem podem ter boa expressão oral mas dificuldades significativas na compreensão de textos complexos e na escrita académica. 81% de jovens com perturbações emocionais/comportamentais têm défices de linguagem não identificados.",
     attention: [
       { id:"es-a1", text:"Sistemas digitais de gestão", desc:"Apps de calendário, lembretes, listas de tarefas. Experimentar até encontrar o que funciona.", how:"Ex: Google Calendar com alertas. Todoist ou Notion para projetos. Dividir dissertações em marcos parciais com datas." },
       { id:"es-a2", text:"Não deixar para o último momento", desc:"Dividir projetos e dissertações em marcos parciais com datas. Criar accountability.", how:"Ex: 'O trabalho é para dia 30. Marco 1 (pesquisa): dia 10. Marco 2 (estrutura): dia 17. Marco 3 (rascunho): dia 24.'" },
@@ -316,7 +672,7 @@ const STRATEGIES_BY_CYCLE = {
     ],
     both: [
       { id:"es-b1", text:"Relação com tutores que compreendam", desc:"Desenvolver relação com tutores/mentores académicos que compreendam as perturbações.", how:"Ex: 'Posso falar consigo no início do semestre? Tenho algumas necessidades que gostava de explicar.'" },
-      { id:"es-b2", text:"Monitorizar saúde mental", desc:"Prevalência significativamente aumentada de burnout, ansiedade e depressão. Normalizar procura de apoio.", how:"Ex: Serviço de psicologia da universidade. Terapeutas familiarizados com DLD que usem abordagens visuais/escritas." },
+      { id:"es-b2", text:"Monitorizar saúde mental", desc:"Prevalência significativamente aumentada de burnout, ansiedade e depressão. Normalizar procura de apoio.", how:"Ex: Serviço de psicologia da universidade. Terapeutas familiarizados com dificuldades de linguagem que usem abordagens visuais/escritas." },
       { id:"es-b3", text:"Preparação para o mercado de trabalho", desc:"Praticar linguagem de entrevistas. Discutir se/quando divulgar. Identificar ambientes adequados.", how:"Ex: 'Em entrevista, responde assim: Situação → Tarefa → Ação → Resultado. Vamos praticar com exemplos teus.'" },
     ]
   }
@@ -340,9 +696,9 @@ function getCycleStrategiesByType(cycle, profile) {
   const c = STRATEGIES_BY_CYCLE[cycle];
   if (!c) return STRATEGIES_GENERIC;
   const strats = [];
-  if (profile.includes("Atenção") || profile.includes("Misto")) strats.push(...(c.attention||[]));
-  if (profile.includes("Linguagem") || profile.includes("Misto")) strats.push(...(c.language||[]));
-  strats.push(...(c.both||[]));
+  if (profile.includes("atenção")) strats.push(...(c.attention||[]).map(s => ({...s, cat:"attention"})));
+  if (profile.includes("linguagem")) strats.push(...(c.language||[]).map(s => ({...s, cat:"language"})));
+  strats.push(...(c.both||[]).map(s => ({...s, cat:"both"})));
   if (!strats.length) return [...(c.attention||[]).slice(0,3), ...(c.language||[]).slice(0,3)];
   return strats;
 }
@@ -409,7 +765,7 @@ function getProfileExplanation(scores, age, cycle) {
   const parts = [];
   const ageNum = parseInt(age) || 0;
   const domainNames = {
-    inattention: "desatenção", hyperactivity: "hiperatividade/impulsividade",
+    inattention: "atenção e concentração", hyperactivity: "inquietação/impulsividade",
     comprehension: "compreensão de instruções", expression: "expressão oral",
     pragmatics: "uso social da linguagem", impact: "impacto funcional"
   };
@@ -432,9 +788,9 @@ function getProfileExplanation(scores, age, cycle) {
   }
 
   if (scores.att >= 4 && scores.lang >= 4) {
-    parts.push("Quando a PHDA e as dificuldades de linguagem coexistem, os desafios multiplicam-se: a criança não consegue prestar atenção E tem dificuldade em processar a linguagem que ouve. A avaliação multidisciplinar é particularmente importante nestes casos.");
+    parts.push("Quando as dificuldades de atenção e de linguagem coexistem, os desafios multiplicam-se: o aluno não consegue manter a concentração E tem dificuldade em processar a linguagem que ouve. A avaliação multidisciplinar é particularmente importante nestes casos.");
   } else if (scores.lang >= 4 && scores.att < 3) {
-    parts.push("As dificuldades parecem centrar-se na linguagem. Atenção: a DLD pode ser confundida com PHDA — uma criança que não começa a tarefa após a instrução pode não ter processado o que lhe foi pedido, e não estar a ser teimosa ou desatenta.");
+    parts.push("As dificuldades parecem centrar-se na linguagem e comunicação. Atenção: dificuldades de linguagem podem ser confundidas com falta de atenção — um aluno que não começa a tarefa após a instrução pode não ter processado o que lhe foi pedido, e não estar a ser teimoso ou desatento.");
   } else if (scores.att >= 4 && scores.lang < 3) {
     parts.push("As dificuldades parecem centrar-se na atenção e/ou no comportamento. No entanto, verifique se a compreensão de instruções está realmente adequada — um aluno que parece não ouvir pode ter dificuldades de processamento linguístico que passam despercebidas.");
   }
@@ -444,7 +800,7 @@ function getProfileExplanation(scores, age, cycle) {
       parts.push("Nesta faixa etária, alguma imaturidade na expressão e na comunicação social é esperada. Valorize sobretudo a compreensão e o impacto no dia-a-dia.");
     }
     if (scores.hyperactivity >= 4) {
-      parts.push("A inquietação motora no pré-escolar é frequente. Considere se os comportamentos são desproporcionados face aos pares da mesma idade. A medicação para PHDA não é recomendada antes dos 6 anos — o treino parental é a primeira linha.");
+      parts.push("A inquietação motora no pré-escolar é frequente. Considere se os comportamentos são desproporcionados face aos pares da mesma idade.");
     }
   } else if (cycle === "1.º Ciclo" || (ageNum >= 6 && ageNum <= 8)) {
     if (scores.comprehension >= 4 || scores.expression >= 4) {
@@ -455,7 +811,7 @@ function getProfileExplanation(scores, age, cycle) {
       parts.push("A partir do 2.º ciclo, a linguagem curricular torna-se mais abstrata e as exigências aumentam dramaticamente. Dificuldades na compreensão de instruções nesta fase são particularmente impactantes.");
     }
     if (scores.pragmatics >= 4) {
-      parts.push("A comunicação entre pares nesta faixa etária torna-se mais nuançada (sarcasmo, gíria, ironia) — área de grande dificuldade para alunos com perturbação da linguagem.");
+      parts.push("A comunicação entre pares nesta faixa etária torna-se mais nuançada (sarcasmo, gíria, ironia) — área de grande dificuldade para alunos com fragilidades na linguagem.");
     }
   }
 
@@ -486,10 +842,10 @@ function computeProfile(responses, age, cycle) {
   const CUT = 4;
   const aR = sc.att >= CUT, lR = sc.lang >= CUT;
   let profile, pColor, pIcon;
-  if (aR && lR) { profile = "Perfil Misto"; pColor = "#7C5CBF"; pIcon = "🔄"; }
-  else if (aR)  { profile = "Predominância Atenção"; pColor = "#EF4444"; pIcon = "⚡"; }
-  else if (lR)  { profile = "Predominância Linguagem"; pColor = "#3B82F6"; pIcon = "💬"; }
-  else          { profile = "Risco Baixo"; pColor = "#2D9B6E"; pIcon = "✅"; }
+  if (aR && lR) { profile = "Dificuldades de atenção e linguagem"; pColor = "#7C5CBF"; pIcon = "🔄"; }
+  else if (aR)  { profile = "Dificuldades de atenção e comportamento"; pColor = "#EF4444"; pIcon = "⚡"; }
+  else if (lR)  { profile = "Dificuldades de linguagem e comunicação"; pColor = "#3B82F6"; pIcon = "💬"; }
+  else          { profile = "Sem dificuldades significativas"; pColor = "#2D9B6E"; pIcon = "✅"; }
 
   const mx = Math.max(sc.att, sc.lang);
   const hi = sc.impact >= 5;
@@ -594,8 +950,8 @@ function TeacherProfile({ onComplete }) {
   const [eff, setEff] = useState(Array(5).fill(null));
   const [stratUse, setStratUse] = useState({});
   const [vig, setVig] = useState({
-    v1: { refer: null, referTo: [], hypothesis: "", topStrategies: [], gravidade: null, polo: null, confianca: null },
-    v2: { refer: null, referTo: [], hypothesis: "", topStrategies: [], gravidade: null, polo: null, confianca: null },
+    v1: { refer: null, referTo: [], hypothesis: "", topStrategies: [], gravidade: null, polo: null, confianca: 0, confTouched: false },
+    v2: { refer: null, referTo: [], hypothesis: "", topStrategies: [], gravidade: null, polo: null, confianca: 0, confTouched: false },
   });
 
   const vigCount = (v) => {
@@ -606,7 +962,7 @@ function TeacherProfile({ onComplete }) {
     if (v.refer) c++;
     if (v.refer === "Sim" && (v.referTo||[]).length > 0) c++;
     if ((v.topStrategies||[]).length >= 2) c++;
-    if (v.confianca !== null) c++;
+    if (v.confTouched) c++;
     return c;
   };
   const vigTotal = (v) => v.refer === "Sim" ? 7 : 6; // 6 base + referTo if Sim
@@ -628,8 +984,8 @@ function TeacherProfile({ onComplete }) {
       case 2: return vf.every(v => v !== null);
       case 3: return eff.every(v => v !== null);
       case 4: return getStrategiesForCycle(demo.cycle).every(s => stratUse[s.id] !== undefined && stratUse[s.id] !== null);
-      case 5: return vig.v1.hypothesis && vig.v1.polo && vig.v1.gravidade && vig.v1.refer && vig.v1.confianca !== null && (vig.v1.topStrategies||[]).length >= 2 && (vig.v1.refer !== "Sim" || (vig.v1.referTo||[]).length > 0);
-      case 6: return vig.v2.hypothesis && vig.v2.polo && vig.v2.gravidade && vig.v2.refer && vig.v2.confianca !== null && (vig.v2.topStrategies||[]).length >= 2 && (vig.v2.refer !== "Sim" || (vig.v2.referTo||[]).length > 0);
+      case 5: return vig.v1.hypothesis && vig.v1.polo && vig.v1.gravidade && vig.v1.refer && vig.v1.confTouched && (vig.v1.topStrategies||[]).length >= 2 && (vig.v1.refer !== "Sim" || (vig.v1.referTo||[]).length > 0);
+      case 6: return vig.v2.hypothesis && vig.v2.polo && vig.v2.gravidade && vig.v2.refer && vig.v2.confTouched && (vig.v2.topStrategies||[]).length >= 2 && (vig.v2.refer !== "Sim" || (vig.v2.referTo||[]).length > 0);
       default: return true;
     }
   };
@@ -663,7 +1019,7 @@ function TeacherProfile({ onComplete }) {
         if (!vig.v1.refer) m.push("encaminhamento");
         if (vig.v1.refer === "Sim" && !(vig.v1.referTo||[]).length) m.push("para quem encaminha");
         if ((vig.v1.topStrategies||[]).length < 2) m.push("mínimo 2 estratégias");
-        if (vig.v1.confianca === null) m.push("confiança");
+        if (!vig.v1.confTouched) m.push("confiança");
         return `Caso A — faltam: ${m.join(", ")}`;
       }
       case 6: {
@@ -674,7 +1030,7 @@ function TeacherProfile({ onComplete }) {
         if (!vig.v2.refer) m.push("encaminhamento");
         if (vig.v2.refer === "Sim" && !(vig.v2.referTo||[]).length) m.push("para quem encaminha");
         if ((vig.v2.topStrategies||[]).length < 2) m.push("mínimo 2 estratégias");
-        if (vig.v2.confianca === null) m.push("confiança");
+        if (!vig.v2.confTouched) m.push("confiança");
         return `Caso B — faltam: ${m.join(", ")}`;
       }
       default: return "";
@@ -701,10 +1057,19 @@ function TeacherProfile({ onComplete }) {
   const S0 = () => (
     <Card>
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
-        <div style={{ fontSize: "48px", marginBottom: "8px" }}>🌙</div>
+        <div style={{ display: "inline-block", background: "var(--teal-dark)", borderRadius: "12px", padding: "8px 16px", marginBottom: "12px" }}>
+          <img src="Caidi-logo-Branco-1080.png" alt="CAIDI" style={{ height: "40px", objectFit: "contain", display: "block" }}
+            onError={e => { e.target.parentElement.innerHTML='<span style="font-size:48px">🌙</span>'; }} />
+        </div>
         <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--teal-dark)" }}>Crianças no Mundo da Lua?</h2>
-        <p style={{ fontSize: "13px", color: "var(--text3)", marginTop: "4px" }}>
-          Joana Miguel &amp; Joana Carvalho · NID — Núcleo de Investigação e Desenvolvimento
+        <p style={{ fontSize: "13px", color: "var(--text2)", marginTop: "4px" }}>
+          Instrumento de rastreio de dificuldades de atenção e linguagem
+        </p>
+        <p style={{ fontSize: "12px", color: "var(--text3)", marginTop: "6px" }}>
+          Joana Miguel &amp; Joana Carvalho
+        </p>
+        <p style={{ fontSize: "11px", color: "var(--text3)" }}>
+          NIDCAIDI — Núcleo de Investigação e Desenvolvimento
         </p>
       </div>
       <div style={{ background: "var(--teal-light)", padding: "20px", borderRadius: "var(--radius)", lineHeight: 1.8, fontSize: "14px", borderLeft: "4px solid var(--teal)", marginBottom: "20px" }}>
@@ -931,7 +1296,7 @@ function TeacherProfile({ onComplete }) {
         </div>
 
         {/* 7. Confiança */}
-        <div style={{ padding: "16px", background: "var(--surface2)", borderRadius: "var(--radius)", border: `1px solid ${r.confianca !== null ? "var(--border)" : "var(--amber)"}` }}>
+        <div style={{ padding: "16px", background: "var(--surface2)", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}>
           <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "10px" }}>
             {q++}. Quão confiante está nas suas respostas a este caso?
           </p>
@@ -939,19 +1304,14 @@ function TeacherProfile({ onComplete }) {
             <span style={{ color: "var(--text3)" }}>Nada confiante</span>
             <span style={{ color: "var(--text3)" }}>Totalmente confiante</span>
           </div>
-          {r.confianca === null ? (
-            <button onClick={() => upd("confianca", 50)} style={{
-              width: "100%", padding: "12px", borderRadius: "8px", fontSize: "14px",
-              border: "1.5px dashed var(--border)", background: "var(--surface)", color: "var(--text2)", cursor: "pointer"
-            }}>Toque para definir o nível de confiança</button>
-          ) : (
-            <div>
-              <input type="range" min="0" max="100" value={r.confianca}
-                onChange={e => upd("confianca", parseInt(e.target.value))}
-                style={{ width: "100%", accentColor: "var(--teal)" }} />
-              <p style={{ textAlign: "center", fontSize: "13px", color: "var(--text2)", marginTop: "4px" }}>{r.confianca}%</p>
-            </div>
-          )}
+          <input type="range" min="0" max="100" value={r.confianca}
+            onChange={e => setVig({...vig, [v.id]: {...r, confianca: parseInt(e.target.value), confTouched: true}})}
+            onMouseDown={() => { if (!r.confTouched) setVig({...vig, [v.id]: {...r, confTouched: true}}); }}
+            onTouchStart={() => { if (!r.confTouched) setVig({...vig, [v.id]: {...r, confTouched: true}}); }}
+            style={{ width: "100%", accentColor: r.confTouched ? "var(--teal)" : "var(--text3)" }} />
+          <p style={{ textAlign: "center", fontSize: "13px", color: r.confTouched ? "var(--text2)" : "var(--text3)", marginTop: "4px" }}>
+            {r.confTouched ? `${r.confianca}%` : "Deslize para responder"}
+          </p>
         </div>
       </Card>
     );
@@ -1075,7 +1435,7 @@ function generateStudentDoc(result, info) {
   <div style="font-size:40px">${result.pIcon}</div>
   <h1>Plano de Acomodação Pedagógica</h1>
   <p class="sub">Medidas universais · Diferenciação e acomodação</p>
-  <p class="sub">Joana Miguel & Joana Carvalho · NID</p>
+  <p class="sub">Joana Miguel & Joana Carvalho · NIDCAIDI</p>
 </div>
 
 <div class="grid">
@@ -1098,8 +1458,8 @@ function generateStudentDoc(result, info) {
 
 <h2>📊 Resultados por domínio</h2>
 ${[
-  {l:"Desatenção",v:result.scores.inattention,c:"#EF4444"},
-  {l:"Hiperatividade",v:result.scores.hyperactivity,c:"#F97316"},
+  {l:"Atenção",v:result.scores.inattention,c:"#EF4444"},
+  {l:"Inquietação",v:result.scores.hyperactivity,c:"#F97316"},
   {l:"Compreensão",v:result.scores.comprehension,c:"#3B82F6"},
   {l:"Expressão",v:result.scores.expression,c:"#6366F1"},
   {l:"Pragmática",v:result.scores.pragmatics,c:"#8B5CF6"},
@@ -1135,7 +1495,8 @@ ${[
 <p class="no-print" style="text-align:center;font-size:13px;color:#6B6860;margin:8px 0">Dica: Para guardar como PDF, escolha "Guardar como PDF" na opção de impressora.</p>
 
 <div class="footer">
-  🌙 Crianças no Mundo da Lua? · Joana Miguel & Joana Carvalho · NID — Núcleo de Investigação e Desenvolvimento<br>
+  🌙 Crianças no Mundo da Lua? · Joana Miguel & Joana Carvalho · NIDCAIDI<br>
+  © ${new Date().getFullYear()} Todos os direitos reservados. Instrumento de uso exclusivamente educativo e clínico.<br>
   Documento gerado em ${new Date().toLocaleDateString("pt-PT")} · Este documento é editável e pode ser adaptado ao contexto de cada aluno/a.
 </div>
 
@@ -1154,13 +1515,13 @@ function Screening({ students, setStudents, teacherData }) {
   const [result, setResult] = useState(null);
 
   const domains = ["inattention","hyperactivity","comprehension","expression","pragmatics","impact"];
-  const totalItems = domains.reduce((a,d) => a + SCREENING_ITEMS[d].items.length, 0);
+  const totalItems = domains.reduce((a,d) => a + getScreeningItems(info.cycle)[d].items.length, 0);
   const answered = Object.values(resp).flat().filter(v => v !== null && v !== undefined).length;
 
   const startNew = () => {
     setInfo({ initials: "", age: "", cycle: "", knownDx: "" });
     const r = {};
-    domains.forEach(d => { r[d] = Array(SCREENING_ITEMS[d].items.length).fill(null); });
+    domains.forEach(d => { r[d] = Array(getScreeningItems(info.cycle)[d].items.length).fill(null); });
     setResp(r);
     setSStep(0);
     setMode("new");
@@ -1211,8 +1572,8 @@ function Screening({ students, setStudents, teacherData }) {
         <h4 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "4px" }}>📊 Resultados por domínio</h4>
         <p style={{ fontSize: "12px", color: "var(--text3)", marginBottom: "14px" }}>Escala 1-7 · Zona de preocupação: ≥ 4</p>
         {[
-          { l: "Desatenção", v: result.scores.inattention, c: "#EF4444" },
-          { l: "Hiperatividade", v: result.scores.hyperactivity, c: "#F97316" },
+          { l: "Atenção", v: result.scores.inattention, c: "#EF4444" },
+          { l: "Inquietação", v: result.scores.hyperactivity, c: "#F97316" },
           { l: "Compreensão", v: result.scores.comprehension, c: "#3B82F6" },
           { l: "Expressão", v: result.scores.expression, c: "#6366F1" },
           { l: "Pragmática", v: result.scores.pragmatics, c: "#8B5CF6" },
@@ -1308,7 +1669,7 @@ function Screening({ students, setStudents, teacherData }) {
   // ─ New screening
   if (mode === "new") {
     const dom = domains[sStep];
-    const items = SCREENING_ITEMS[dom];
+    const items = getScreeningItems(info.cycle)[dom];
     const isImpact = dom === "impact";
     const scaleType = isImpact ? SCALES.impact : SCALES.likert;
 
@@ -1370,7 +1731,7 @@ function Screening({ students, setStudents, teacherData }) {
       {(() => {
         const domResp = resp[dom] || [];
         const missing = domResp.filter(v => v === null || v === undefined).length;
-        const infoMissing = sStep === 0 && (!info.initials || !info.age);
+        const infoMissing = sStep === 0 && (!info.initials || !info.age || !info.cycle);
         const valid = missing === 0 && !infoMissing;
         return <>
           {!valid && (
@@ -1379,7 +1740,7 @@ function Screening({ students, setStudents, teacherData }) {
               borderRadius: "var(--radius)", padding: "12px 16px", marginTop: "12px",
               fontSize: "14px", color: "#9A3412", textAlign: "center",
             }}>
-              ⚠️ {infoMissing ? "Preencha as iniciais e a idade do aluno" : `Faltam ${missing} itens por responder`}
+              ⚠️ {infoMissing ? "Preencha as iniciais, idade e ciclo do aluno" : `Faltam ${missing} itens por responder`}
             </div>
           )}
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "16px" }}>
@@ -1444,9 +1805,10 @@ function Dashboard({ students, teacherData }) {
   const counts = useMemo(() => {
     const c = { att: 0, lang: 0, mix: 0, low: 0 };
     students.forEach(s => {
-      if (s.profile.includes("Misto")) c.mix++;
-      else if (s.profile.includes("Atenção")) c.att++;
-      else if (s.profile.includes("Linguagem")) c.lang++;
+      const p = s.profile || "";
+      if (p.includes("atenção") && p.includes("linguagem")) c.mix++;
+      else if (p.includes("atenção")) c.att++;
+      else if (p.includes("linguagem")) c.lang++;
       else c.low++;
     });
     return c;
@@ -1470,8 +1832,8 @@ function Dashboard({ students, teacherData }) {
           {[
             { l: "Atenção", n: counts.att, c: "#EF4444", i: "⚡" },
             { l: "Linguagem", n: counts.lang, c: "#3B82F6", i: "💬" },
-            { l: "Misto", n: counts.mix, c: "#7C5CBF", i: "🔄" },
-            { l: "Risco Baixo", n: counts.low, c: "#2D9B6E", i: "✅" },
+            { l: "Ambas", n: counts.mix, c: "#7C5CBF", i: "🔄" },
+            { l: "Sem dificuldades", n: counts.low, c: "#2D9B6E", i: "✅" },
           ].map(p => (
             <div key={p.l} style={{ padding: "14px", borderRadius: "10px", border: `1.5px solid ${p.c}30`, background: `${p.c}08`, textAlign: "center" }}>
               <div style={{ fontSize: "24px" }}>{p.i}</div>
@@ -1487,8 +1849,8 @@ function Dashboard({ students, teacherData }) {
       <Card>
         <h4 style={{ fontSize: "14px", fontWeight: 600, marginBottom: "12px" }}>Médias por domínio</h4>
         {[
-          { l: "Desatenção", k: "inattention", c: "#EF4444" },
-          { l: "Hiperatividade", k: "hyperactivity", c: "#F97316" },
+          { l: "Atenção", k: "inattention", c: "#EF4444" },
+          { l: "Inquietação", k: "hyperactivity", c: "#F97316" },
           { l: "Compreensão", k: "comprehension", c: "#3B82F6" },
           { l: "Expressão", k: "expression", c: "#6366F1" },
           { l: "Pragmática", k: "pragmatics", c: "#8B5CF6" },
@@ -1538,11 +1900,14 @@ function App() {
     return (
       <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, var(--teal-light) 0%, var(--bg) 50%, var(--coral-light) 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
         <div style={{ maxWidth: "480px", textAlign: "center" }}>
-          <div style={{ fontSize: "64px", marginBottom: "12px" }}>🌙</div>
+          <div style={{ display: "inline-block", background: "var(--teal-dark)", borderRadius: "16px", padding: "12px 20px", marginBottom: "16px" }}>
+            <img src="Caidi-logo-Branco-1080.png" alt="CAIDI" style={{ height: "52px", objectFit: "contain", display: "block" }}
+              onError={e => { e.target.parentElement.innerHTML='<span style="font-size:64px">🌙</span>'; }} />
+          </div>
           <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--teal-dark)", marginBottom: "4px" }}>Crianças no Mundo da Lua?</h1>
-          <p style={{ fontSize: "14px", color: "var(--coral)", fontWeight: 600, marginBottom: "4px" }}>Ferramenta de Rastreio · Atenção e Linguagem</p>
-          <p style={{ fontSize: "12px", color: "var(--text2)", marginBottom: "2px" }}>Joana Miguel &amp; Joana Carvalho</p>
-          <p style={{ fontSize: "11px", color: "var(--text3)", fontStyle: "italic", marginBottom: "28px" }}>NID — Núcleo de Investigação e Desenvolvimento</p>
+          <p style={{ fontSize: "14px", color: "var(--text2)", fontWeight: 500, marginBottom: "8px" }}>Instrumento de rastreio de dificuldades de atenção e linguagem</p>
+          <p style={{ fontSize: "12px", color: "var(--text3)", marginBottom: "2px" }}>Joana Miguel &amp; Joana Carvalho</p>
+          <p style={{ fontSize: "11px", color: "var(--text3)", marginBottom: "28px" }}>NIDCAIDI — Núcleo de Investigação e Desenvolvimento</p>
           <Card>
             <p style={{ fontSize: "14px", lineHeight: 1.7, marginBottom: "16px", textAlign: "left" }}>
               Aplicação para apoiar educadores na identificação precoce de dificuldades de <strong style={{ color: "var(--teal)" }}>atenção</strong> e <strong style={{ color: "var(--coral)" }}>linguagem</strong>, fornecendo estratégias práticas de intervenção.
@@ -1576,10 +1941,13 @@ function App() {
         <div style={{ maxWidth: "640px", margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "22px" }}>🌙</span>
+              <div style={{ background: "var(--teal-dark)", borderRadius: "6px", padding: "4px 8px", display: "flex", alignItems: "center" }}>
+                <img src="Caidi-logo-Branco-1080.png" alt="" style={{ height: "22px", objectFit: "contain" }}
+                  onError={e => { e.target.parentElement.innerHTML='<span style="font-size:22px">🌙</span>'; }} />
+              </div>
               <div>
                 <h1 style={{ fontSize: "15px", fontWeight: 700, color: "var(--teal-dark)", lineHeight: 1.2 }}>Crianças no Mundo da Lua?</h1>
-                <span style={{ fontSize: "10px", color: "var(--text3)" }}>J. Miguel &amp; J. Carvalho · NID</span>
+                <span style={{ fontSize: "10px", color: "var(--text3)" }}>J. Miguel &amp; J. Carvalho · NIDCAIDI</span>
               </div>
             </div>
             {teacherData && <span style={{ fontSize: "10px", color: "var(--green)", fontWeight: 600, padding: "3px 8px", background: "var(--green-light)", borderRadius: "10px" }}>✓ Perfil OK</span>}
@@ -1616,6 +1984,12 @@ function App() {
         )}
         {tab === 1 && <Screening students={students} setStudents={setStudents} teacherData={teacherData} />}
         {tab === 2 && <Dashboard students={students} teacherData={teacherData} />}
+        <div style={{ textAlign: "center", padding: "20px 16px 12px", marginTop: "16px", borderTop: "1px solid var(--border)" }}>
+          <p style={{ fontSize: "11px", color: "var(--text3)", lineHeight: 1.6 }}>
+            © {new Date().getFullYear()} Joana Miguel &amp; Joana Carvalho · NIDCAIDI<br/>
+            Todos os direitos reservados. Instrumento de uso exclusivamente educativo e clínico.
+          </p>
+        </div>
       </div>
     </div>
   );
