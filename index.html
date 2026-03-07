@@ -58,7 +58,6 @@ const { useState, useMemo } = React;
 // ─── CONFIGURAÇÃO ───────────────────────────────────────────
 // Cole aqui o URL do Google Apps Script após deploy:
 const API_URL = "https://script.google.com/macros/library/d/1vmlB19Em1NgMAY-oGrq-v5hNhnAWd8S4_4NacwRD0nJNv-0JMKNMF_JX/5";
-// Exemplo: "https://script.google.com/macros/s/AKfycbx.../exec"
 
 async function sendToSheet(action, payload) {
   if (!API_URL) { console.warn("API_URL vazio"); return; }
@@ -595,20 +594,23 @@ function TeacherProfile({ onComplete }) {
   const [eff, setEff] = useState(Array(5).fill(null));
   const [stratUse, setStratUse] = useState({});
   const [vig, setVig] = useState({
-    v1: { refer: null, referTo: [], hypothesis: "", topStrategies: [], gravidade: null, polo: null, confianca: 50 },
-    v2: { refer: null, referTo: [], hypothesis: "", topStrategies: [], gravidade: null, polo: null, confianca: 50 },
+    v1: { refer: null, referTo: [], hypothesis: "", topStrategies: [], gravidade: null, polo: null, confianca: null },
+    v2: { refer: null, referTo: [], hypothesis: "", topStrategies: [], gravidade: null, polo: null, confianca: null },
   });
 
   const vigCount = (v) => {
     let c = 0;
     if (v.hypothesis) c++;
+    if (v.polo) c++;
     if (v.gravidade) c++;
     if (v.refer) c++;
+    if (v.refer === "Sim" && (v.referTo||[]).length > 0) c++;
     if ((v.topStrategies||[]).length >= 2) c++;
-    c++; // confianca slider always has value
+    if (v.confianca !== null) c++;
     return c;
   };
-  const totalQ = VF_ITEMS.length + EFFICACY_ITEMS.length + getStrategiesForCycle(demo.cycle).length + 10;
+  const vigTotal = (v) => v.refer === "Sim" ? 7 : 6; // 6 base + referTo if Sim
+  const totalQ = VF_ITEMS.length + EFFICACY_ITEMS.length + getStrategiesForCycle(demo.cycle).length + vigTotal(vig.v1) + vigTotal(vig.v2);
   const filledQ = vf.filter(v => v !== null).length + eff.filter(v => v !== null).length +
     Object.values(stratUse).filter(v => v !== null).length +
     vigCount(vig.v1) + vigCount(vig.v2);
@@ -626,8 +628,8 @@ function TeacherProfile({ onComplete }) {
       case 2: return vf.every(v => v !== null);
       case 3: return eff.every(v => v !== null);
       case 4: return getStrategiesForCycle(demo.cycle).every(s => stratUse[s.id] !== undefined && stratUse[s.id] !== null);
-      case 5: return vig.v1.hypothesis && vig.v1.polo && vig.v1.gravidade && vig.v1.refer && (vig.v1.topStrategies||[]).length >= 2 && (vig.v1.refer !== "Sim" || (vig.v1.referTo||[]).length > 0);
-      case 6: return vig.v2.hypothesis && vig.v2.polo && vig.v2.gravidade && vig.v2.refer && (vig.v2.topStrategies||[]).length >= 2 && (vig.v2.refer !== "Sim" || (vig.v2.referTo||[]).length > 0);
+      case 5: return vig.v1.hypothesis && vig.v1.polo && vig.v1.gravidade && vig.v1.refer && vig.v1.confianca !== null && (vig.v1.topStrategies||[]).length >= 2 && (vig.v1.refer !== "Sim" || (vig.v1.referTo||[]).length > 0);
+      case 6: return vig.v2.hypothesis && vig.v2.polo && vig.v2.gravidade && vig.v2.refer && vig.v2.confianca !== null && (vig.v2.topStrategies||[]).length >= 2 && (vig.v2.refer !== "Sim" || (vig.v2.referTo||[]).length > 0);
       default: return true;
     }
   };
@@ -661,6 +663,7 @@ function TeacherProfile({ onComplete }) {
         if (!vig.v1.refer) m.push("encaminhamento");
         if (vig.v1.refer === "Sim" && !(vig.v1.referTo||[]).length) m.push("para quem encaminha");
         if ((vig.v1.topStrategies||[]).length < 2) m.push("mínimo 2 estratégias");
+        if (vig.v1.confianca === null) m.push("confiança");
         return `Caso A — faltam: ${m.join(", ")}`;
       }
       case 6: {
@@ -671,6 +674,7 @@ function TeacherProfile({ onComplete }) {
         if (!vig.v2.refer) m.push("encaminhamento");
         if (vig.v2.refer === "Sim" && !(vig.v2.referTo||[]).length) m.push("para quem encaminha");
         if ((vig.v2.topStrategies||[]).length < 2) m.push("mínimo 2 estratégias");
+        if (vig.v2.confianca === null) m.push("confiança");
         return `Caso B — faltam: ${m.join(", ")}`;
       }
       default: return "";
@@ -927,7 +931,7 @@ function TeacherProfile({ onComplete }) {
         </div>
 
         {/* 7. Confiança */}
-        <div style={{ padding: "16px", background: "var(--surface2)", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}>
+        <div style={{ padding: "16px", background: "var(--surface2)", borderRadius: "var(--radius)", border: `1px solid ${r.confianca !== null ? "var(--border)" : "var(--amber)"}` }}>
           <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "10px" }}>
             {q++}. Quão confiante está nas suas respostas a este caso?
           </p>
@@ -935,10 +939,19 @@ function TeacherProfile({ onComplete }) {
             <span style={{ color: "var(--text3)" }}>Nada confiante</span>
             <span style={{ color: "var(--text3)" }}>Totalmente confiante</span>
           </div>
-          <input type="range" min="0" max="100" value={r.confianca}
-            onChange={e => upd("confianca", parseInt(e.target.value))}
-            style={{ width: "100%", accentColor: "var(--teal)" }} />
-          <p style={{ textAlign: "center", fontSize: "13px", color: "var(--text2)", marginTop: "4px" }}>{r.confianca}%</p>
+          {r.confianca === null ? (
+            <button onClick={() => upd("confianca", 50)} style={{
+              width: "100%", padding: "12px", borderRadius: "8px", fontSize: "14px",
+              border: "1.5px dashed var(--border)", background: "var(--surface)", color: "var(--text2)", cursor: "pointer"
+            }}>Toque para definir o nível de confiança</button>
+          ) : (
+            <div>
+              <input type="range" min="0" max="100" value={r.confianca}
+                onChange={e => upd("confianca", parseInt(e.target.value))}
+                style={{ width: "100%", accentColor: "var(--teal)" }} />
+              <p style={{ textAlign: "center", fontSize: "13px", color: "var(--text2)", marginTop: "4px" }}>{r.confianca}%</p>
+            </div>
+          )}
         </div>
       </Card>
     );
@@ -1005,6 +1018,133 @@ function TeacherProfile({ onComplete }) {
 }
 
 // ─── PARTE 2: RASTREIO DE ALUNOS ────────────────────────────
+
+// ─── GERADOR DE DOCUMENTO EDITÁVEL ──────────────────────────
+
+function generateStudentDoc(result, info) {
+  const cycle = info.cycle || "—";
+  const strats = STRATEGIES_BY_CYCLE[cycle];
+  const ctx = strats?.context || "";
+
+  const stratSection = (title, emoji, color, items) => {
+    if (!items || !items.length) return "";
+    return `<h3 style="color:${color};margin:20px 0 10px;border-bottom:2px solid ${color};padding-bottom:6px">${emoji} ${title}</h3>` +
+      items.map(s => `
+        <div style="margin-bottom:14px;padding:12px 16px;background:#f9f9f7;border-left:4px solid ${color};border-radius:6px">
+          <p style="font-weight:700;margin:0 0 4px">${s.text}</p>
+          <p style="margin:0 0 4px;color:#444;font-size:14px">${s.desc}</p>
+          <p style="margin:0;color:#777;font-size:13px;font-style:italic">${s.how}</p>
+          <div style="margin-top:8px;padding:8px 12px;border:1.5px dashed #ccc;border-radius:6px;min-height:40px;color:#999;font-size:13px" contenteditable="true">Notas do professor: adaptar esta estratégia ao meu contexto...</div>
+        </div>
+      `).join("");
+  };
+
+  const html = `<!DOCTYPE html>
+<html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plano de Acomodação — ${info.initials}</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; max-width: 800px; margin: 0 auto; padding: 30px 24px; color: #2D2B27; line-height: 1.6; }
+  h1 { font-size: 22px; color: #1F5F55; margin-bottom: 4px; }
+  h2 { font-size: 17px; color: #2D2B27; margin: 24px 0 12px; }
+  h3 { font-size: 15px; }
+  .header { text-align: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #E2E0D9; }
+  .header .sub { color: #6B6860; font-size: 13px; }
+  .profile-badge { display: inline-block; padding: 8px 24px; border-radius: 99px; font-weight: 700; font-size: 16px; margin: 12px 0; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .grid-item { padding: 8px 12px; background: #f5f3ee; border-radius: 8px; font-size: 14px; }
+  .grid-item strong { display: block; font-size: 12px; color: #6B6860; margin-bottom: 2px; }
+  .bar-wrap { margin-bottom: 8px; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 3px; }
+  .bar-bg { height: 8px; background: #E8E4DC; border-radius: 99px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 99px; }
+  .section { margin: 24px 0; }
+  .explanation { padding: 16px; background: #E8F0ED; border-radius: 10px; border-left: 4px solid #2A7C6F; font-size: 14px; line-height: 1.7; margin-bottom: 20px; }
+  .next-step { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+  .next-step-icon { font-size: 18px; flex-shrink: 0; }
+  .next-step-text { font-size: 14px; }
+  .next-step-text strong { display: block; margin-bottom: 2px; }
+  .editable-area { margin-top: 24px; padding: 16px; border: 2px dashed #ccc; border-radius: 10px; min-height: 100px; font-size: 14px; color: #999; }
+  .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #E2E0D9; text-align: center; font-size: 11px; color: #9E9B93; }
+  .print-btn { display: block; width: 100%; padding: 14px; margin: 20px 0; background: #2A7C6F; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  @media print { .print-btn, .no-print { display: none !important; } [contenteditable] { border-style: solid !important; } }
+</style></head><body>
+
+<div class="header">
+  <div style="font-size:40px">${result.pIcon}</div>
+  <h1>Plano de Acomodação Pedagógica</h1>
+  <p class="sub">Medidas universais · Diferenciação e acomodação</p>
+  <p class="sub">Joana Miguel & Joana Carvalho · NID</p>
+</div>
+
+<div class="grid">
+  <div class="grid-item"><strong>Aluno/a</strong>${info.initials}</div>
+  <div class="grid-item"><strong>Idade</strong>${info.age} anos</div>
+  <div class="grid-item"><strong>Ciclo</strong>${cycle}</div>
+  <div class="grid-item"><strong>Data</strong>${result.date}</div>
+</div>
+
+<div style="text-align:center">
+  <span class="profile-badge" style="background:${result.pColor}20;color:${result.pColor}">${result.pIcon} ${result.profile}</span>
+</div>
+
+<div style="text-align:center;padding:12px;background:${result.dColor}12;border:1.5px solid ${result.dColor};border-radius:10px;margin:12px 0">
+  <span style="font-size:12px;color:#6B6860;text-transform:uppercase;letter-spacing:0.5px">Decisão recomendada</span>
+  <p style="font-size:18px;font-weight:700;color:${result.dColor};margin-top:4px">${result.decision}</p>
+</div>
+
+<div class="explanation">${result.explanation}<br><em style="font-size:12px;color:#6B6860;margin-top:8px;display:block">Este rastreio é indicativo e não substitui uma avaliação formal.</em></div>
+
+<h2>📊 Resultados por domínio</h2>
+${[
+  {l:"Desatenção",v:result.scores.inattention,c:"#EF4444"},
+  {l:"Hiperatividade",v:result.scores.hyperactivity,c:"#F97316"},
+  {l:"Compreensão",v:result.scores.comprehension,c:"#3B82F6"},
+  {l:"Expressão",v:result.scores.expression,c:"#6366F1"},
+  {l:"Pragmática",v:result.scores.pragmatics,c:"#8B5CF6"},
+  {l:"Impacto",v:result.scores.impact,c:"#64748B"},
+].map(b => `<div class="bar-wrap"><div class="bar-label"><span>${b.l}</span><span style="font-weight:600;color:${b.v>=4?b.c:'#9E9B93'}">${b.v.toFixed(1)}/7</span></div><div class="bar-bg"><div class="bar-fill" style="width:${(b.v/7)*100}%;background:${b.v>=4?b.c:'#2D9B6E'}"></div></div></div>`).join("")}
+
+<div class="section">
+  <h2>📋 Estratégias Recomendadas para ${cycle}</h2>
+  ${ctx ? `<p style="margin-bottom:16px;padding:10px 14px;background:#E8F0ED;border-radius:8px;font-size:13px"><strong>Contexto:</strong> ${ctx}</p>` : ""}
+  ${stratSection("Atenção e comportamento", "⚡", "#EF4444", strats?.attention)}
+  ${stratSection("Linguagem e comunicação", "💬", "#3B82F6", strats?.language)}
+  ${stratSection("Atenção + Linguagem (comorbilidade)", "🔄", "#7C5CBF", strats?.both)}
+</div>
+
+<div class="section">
+  <h2>🎯 Próximos passos</h2>
+  ${(result.nextSteps||[]).map(ns => `<div class="next-step"><span class="next-step-icon">${ns.icon}</span><div class="next-step-text"><strong>${ns.text}</strong><span style="color:#6B6860">${ns.desc}</span></div></div>`).join("")}
+</div>
+
+<div class="section">
+  <h2>✏️ Notas adicionais do professor</h2>
+  <div class="editable-area" contenteditable="true">
+    Clique aqui para adicionar as suas notas, observações e adaptações específicas para este aluno/a. Este documento é editável — pode modificar qualquer secção antes de imprimir ou guardar como PDF.<br><br>
+    Outras medidas a implementar:<br>
+    •<br>•<br>•<br><br>
+    Profissionais a contactar:<br>
+    •<br><br>
+    Data de reavaliação prevista: ___/___/______
+  </div>
+</div>
+
+<button class="print-btn no-print" onclick="window.print()">🖨 Imprimir / Guardar como PDF</button>
+<p class="no-print" style="text-align:center;font-size:13px;color:#6B6860;margin:8px 0">Dica: Para guardar como PDF, escolha "Guardar como PDF" na opção de impressora.</p>
+
+<div class="footer">
+  🌙 Crianças no Mundo da Lua? · Joana Miguel & Joana Carvalho · NID — Núcleo de Investigação e Desenvolvimento<br>
+  Documento gerado em ${new Date().toLocaleDateString("pt-PT")} · Este documento é editável e pode ser adaptado ao contexto de cada aluno/a.
+</div>
+
+</body></html>`;
+
+  const w = window.open("", "_blank");
+  if (w) { w.document.write(html); w.document.close(); }
+  else { alert("Pop-up bloqueado. Permita pop-ups para gerar o documento."); }
+}
 
 function Screening({ students, setStudents, teacherData }) {
   const [mode, setMode] = useState("list");
@@ -1153,10 +1293,13 @@ function Screening({ students, setStudents, teacherData }) {
         ))}
       </Card>
 
-      <Warning><strong>Grave os resultados antes de sair!</strong><br/>Faça uma captura de ecrã ou utilize o botão Imprimir abaixo. Se fechar a aplicação, os resultados serão perdidos.</Warning>
+      <Warning><strong>Grave os resultados!</strong> Gere o documento abaixo ou faça captura de ecrã. Se fechar a aplicação, os resultados serão perdidos.</Warning>
       <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-        <button onClick={() => window.print()} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--blue)", color: "#fff", fontSize: "14px", fontWeight: 600, minWidth: "120px" }}>🖨 Guardar / Imprimir</button>
-        <button onClick={startNew} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--teal)", color: "#fff", fontSize: "14px", fontWeight: 600, minWidth: "120px" }}>+ Novo rastreio</button>
+        <button onClick={() => generateStudentDoc(result, info)} style={{ flex: 2, padding: "14px", borderRadius: "8px", background: "var(--teal)", color: "#fff", fontSize: "15px", fontWeight: 700, minWidth: "200px" }}>📄 Gerar Plano de Acomodação</button>
+        <button onClick={() => window.print()} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--surface)", color: "var(--text)", border: "1.5px solid var(--border)", fontSize: "14px", minWidth: "100px" }}>🖨 Imprimir</button>
+      </div>
+      <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+        <button onClick={startNew} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--blue)", color: "#fff", fontSize: "14px", fontWeight: 600, minWidth: "120px" }}>+ Novo rastreio</button>
         <button onClick={() => setMode("list")} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--surface)", color: "var(--text)", border: "1.5px solid var(--border)", fontSize: "14px", minWidth: "120px" }}>Ver todos</button>
       </div>
     </div>;
