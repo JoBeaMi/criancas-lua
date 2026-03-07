@@ -859,6 +859,8 @@ function computeProfile(responses, age, cycle) {
     strats.push(...getStrategiesForCycle(cycle).filter(s => s.cat === "attention"));
   }
   if (lR) strats.push(...getStrategiesForCycle(cycle).filter(s => s.cat === "language"));
+  // Always add both/comorbidity strategies if any risk
+  if (aR || lR) strats.push(...getStrategiesForCycle(cycle).filter(s => s.cat === "both"));
   if (!strats.length) strats.push(...getStrategiesForCycle(cycle).slice(0, 5));
 
   const explanation = getProfileExplanation(sc, age, cycle);
@@ -1057,10 +1059,8 @@ function TeacherProfile({ onComplete }) {
   const S0 = () => (
     <Card>
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
-        <div style={{ display: "inline-block", background: "var(--teal-dark)", borderRadius: "12px", padding: "8px 16px", marginBottom: "12px" }}>
-          <img src="Caidi-logo-Branco-1080.png" alt="CAIDI" style={{ height: "40px", objectFit: "contain", display: "block" }}
-            onError={e => { e.target.parentElement.innerHTML='<span style="font-size:48px">🌙</span>'; }} />
-        </div>
+        <img src="Caidi-logo-Branco-1080.png" alt="CAIDI" style={{ height: "48px", marginBottom: "12px", objectFit: "contain", filter: "brightness(0)" }}
+          onError={e => { e.target.style.display="none"; }} />
         <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--teal-dark)" }}>Crianças no Mundo da Lua?</h2>
         <p style={{ fontSize: "13px", color: "var(--text2)", marginTop: "4px" }}>
           Instrumento de rastreio de dificuldades de atenção e linguagem
@@ -1095,7 +1095,7 @@ function TeacherProfile({ onComplete }) {
       </div>
       {!consent && (
         <p style={{ fontSize: "13px", color: "var(--text3)", marginTop: "10px", textAlign: "center", lineHeight: 1.5 }}>
-          Pode continuar sem aceitar. As suas respostas serão recolhidas mas não serão incluídas em análises ou publicações.
+          Pode continuar sem aceitar. As suas respostas poderão ser registadas para funcionamento da ferramenta, mas não serão incluídas em análises científicas nem em publicações.
         </p>
       )}
     </Card>
@@ -1383,8 +1383,11 @@ function TeacherProfile({ onComplete }) {
 
 function generateStudentDoc(result, info) {
   const cycle = info.cycle || "—";
-  const strats = STRATEGIES_BY_CYCLE[cycle];
-  const ctx = strats?.context || "";
+  const cycleData = STRATEGIES_BY_CYCLE[cycle];
+  const ctx = cycleData?.context || "";
+  const attStrats = result.strategies.filter(s => s.cat === "attention");
+  const langStrats = result.strategies.filter(s => s.cat === "language");
+  const bothStrats = result.strategies.filter(s => s.cat === "both");
 
   const stratSection = (title, emoji, color, items) => {
     if (!items || !items.length) return "";
@@ -1401,7 +1404,7 @@ function generateStudentDoc(result, info) {
 
   const html = `<!DOCTYPE html>
 <html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Plano de Acomodação — ${info.initials}</title>
+<title>Plano de Estratégias — ${info.initials}</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1433,8 +1436,8 @@ function generateStudentDoc(result, info) {
 
 <div class="header">
   <div style="font-size:40px">${result.pIcon}</div>
-  <h1>Plano de Acomodação Pedagógica</h1>
-  <p class="sub">Medidas universais · Diferenciação e acomodação</p>
+  <h1>Plano de Estratégias Pedagógicas</h1>
+  <p class="sub">Medidas universais · Diferenciação pedagógica</p>
   <p class="sub">Joana Miguel & Joana Carvalho · NIDCAIDI</p>
 </div>
 
@@ -1469,9 +1472,9 @@ ${[
 <div class="section">
   <h2>📋 Estratégias Recomendadas para ${cycle}</h2>
   ${ctx ? `<p style="margin-bottom:16px;padding:10px 14px;background:#E8F0ED;border-radius:8px;font-size:13px"><strong>Contexto:</strong> ${ctx}</p>` : ""}
-  ${stratSection("Atenção e comportamento", "⚡", "#EF4444", strats?.attention)}
-  ${stratSection("Linguagem e comunicação", "💬", "#3B82F6", strats?.language)}
-  ${stratSection("Atenção + Linguagem (comorbilidade)", "🔄", "#7C5CBF", strats?.both)}
+  ${stratSection("Atenção e comportamento", "⚡", "#EF4444", attStrats)}
+  ${stratSection("Linguagem e comunicação", "💬", "#3B82F6", langStrats)}
+  ${stratSection("Estratégias transversais", "🔄", "#7C5CBF", bothStrats)}
 </div>
 
 <div class="section">
@@ -1504,7 +1507,16 @@ ${[
 
   const w = window.open("", "_blank");
   if (w) { w.document.write(html); w.document.close(); }
-  else { alert("Pop-up bloqueado. Permita pop-ups para gerar o documento."); }
+  else {
+    // Fallback: download as HTML file
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Plano_${info.initials || "aluno"}_${new Date().toISOString().slice(0,10)}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 }
 
 function Screening({ students, setStudents, teacherData }) {
@@ -1519,9 +1531,10 @@ function Screening({ students, setStudents, teacherData }) {
   const answered = Object.values(resp).flat().filter(v => v !== null && v !== undefined).length;
 
   const startNew = () => {
-    setInfo({ initials: "", age: "", cycle: "", knownDx: "" });
+    const emptyInfo = { initials: "", age: "", cycle: "", knownDx: "" };
+    setInfo(emptyInfo);
     const r = {};
-    domains.forEach(d => { r[d] = Array(getScreeningItems(info.cycle)[d].items.length).fill(null); });
+    domains.forEach(d => { r[d] = Array(getScreeningItems(emptyInfo.cycle)[d].items.length).fill(null); });
     setResp(r);
     setSStep(0);
     setMode("new");
@@ -1626,7 +1639,7 @@ function Screening({ students, setStudents, teacherData }) {
       {bothStrats.length > 0 && (
         <Card>
           <h4 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "18px" }}>🔄</span> Estratégias para atenção e linguagem em conjunto
+            <span style={{ fontSize: "18px" }}>🔄</span> Estratégias transversais úteis neste perfil
           </h4>
           {bothStrats.map((s,i) => (
             <div key={s.id} style={{ marginBottom: "16px", padding: "14px", background: "#F5F3FF", borderRadius: "10px", borderLeft: "4px solid #7C5CBF" }}>
@@ -1654,10 +1667,9 @@ function Screening({ students, setStudents, teacherData }) {
         ))}
       </Card>
 
-      <Warning><strong>Grave os resultados!</strong> Gere o documento abaixo ou faça captura de ecrã. Se fechar a aplicação, os resultados serão perdidos.</Warning>
+      <Warning><strong>Não se esqueça de guardar.</strong> Se fechar a aplicação, os resultados serão perdidos. Utilize o botão abaixo para gerar um documento que pode guardar.</Warning>
       <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-        <button onClick={() => generateStudentDoc(result, info)} style={{ flex: 2, padding: "14px", borderRadius: "8px", background: "var(--teal)", color: "#fff", fontSize: "15px", fontWeight: 700, minWidth: "200px" }}>📄 Gerar Plano de Acomodação</button>
-        <button onClick={() => window.print()} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--surface)", color: "var(--text)", border: "1.5px solid var(--border)", fontSize: "14px", minWidth: "100px" }}>🖨 Imprimir</button>
+        <button onClick={() => generateStudentDoc(result, info)} style={{ flex: 2, padding: "14px", borderRadius: "8px", background: "var(--teal)", color: "#fff", fontSize: "15px", fontWeight: 700, minWidth: "200px" }}>📄 Gerar Plano de Estratégias</button>
       </div>
       <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
         <button onClick={startNew} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--blue)", color: "#fff", fontSize: "14px", fontWeight: 600, minWidth: "120px" }}>+ Novo rastreio</button>
@@ -1683,12 +1695,18 @@ function Screening({ students, setStudents, teacherData }) {
       </div>
 
       {sStep === 0 && (
+        <div style={{ padding: "12px 16px", background: "var(--amber-light, #FEF3C7)", borderRadius: "var(--radius)", border: "1px solid #F59E0B40", marginBottom: "12px", fontSize: "13px", lineHeight: 1.6, color: "#7C5F00" }}>
+          ℹ️ Esta ferramenta não guarda automaticamente os dados. No final, poderá guardar o relatório como PDF ou gerar um documento editável.
+        </div>
+      )}
+
+      {sStep === 0 && (
         <Card style={{ marginBottom: "16px" }}>
           <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "16px" }}>👧 Dados do Aluno</h3>
           {[
             { k: "initials", l: "Iniciais", ph: "Ex: MF" },
             { k: "age", l: "Idade", ph: "Ex: 7" },
-            { k: "cycle", l: "Ciclo", type: "select", opts: ["Pré-escolar","1.º Ciclo","2.º Ciclo","3.º Ciclo"] },
+            { k: "cycle", l: "Ciclo", type: "select", opts: ["Pré-escolar","1.º Ciclo","2.º Ciclo","3.º Ciclo","Ensino Superior"] },
             { k: "knownDx", l: "Diagnóstico conhecido?", type: "select", opts: ["Nenhum","PHDA","Perturbação da linguagem","Outro","Em avaliação"] },
           ].map(f => (
             <div key={f.k} style={{ marginBottom: "12px" }}>
@@ -1794,7 +1812,7 @@ function Screening({ students, setStudents, teacherData }) {
       ))
     )}
     {students.length > 0 && (
-      <Warning><strong>Grave os resultados antes de sair!</strong><br/>Faça uma captura de ecrã. Se fechar a aplicação, todos os dados serão perdidos.</Warning>
+      <Warning>Se fechar a aplicação, os dados serão perdidos. Guarde o que precisa antes de sair.</Warning>
     )}
   </div>;
 }
@@ -1877,7 +1895,7 @@ function Dashboard({ students, teacherData }) {
     )}
 
     {students.length > 0 && (
-      <Warning><strong>Grave os resultados!</strong><br/>Faça captura de ecrã antes de fechar a aplicação.</Warning>
+      <Warning>Se fechar a aplicação, os dados serão perdidos. Guarde o que precisa antes de sair.</Warning>
     )}
   </div>;
 }
@@ -1900,10 +1918,8 @@ function App() {
     return (
       <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, var(--teal-light) 0%, var(--bg) 50%, var(--coral-light) 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
         <div style={{ maxWidth: "480px", textAlign: "center" }}>
-          <div style={{ display: "inline-block", background: "var(--teal-dark)", borderRadius: "16px", padding: "12px 20px", marginBottom: "16px" }}>
-            <img src="Caidi-logo-Branco-1080.png" alt="CAIDI" style={{ height: "52px", objectFit: "contain", display: "block" }}
-              onError={e => { e.target.parentElement.innerHTML='<span style="font-size:64px">🌙</span>'; }} />
-          </div>
+          <img src="Caidi-logo-Branco-1080.png" alt="CAIDI" style={{ height: "64px", marginBottom: "16px", objectFit: "contain", filter: "brightness(0)" }}
+            onError={e => { e.target.style.display="none"; }} />
           <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--teal-dark)", marginBottom: "4px" }}>Crianças no Mundo da Lua?</h1>
           <p style={{ fontSize: "14px", color: "var(--text2)", fontWeight: 500, marginBottom: "8px" }}>Instrumento de rastreio de dificuldades de atenção e linguagem</p>
           <p style={{ fontSize: "12px", color: "var(--text3)", marginBottom: "2px" }}>Joana Miguel &amp; Joana Carvalho</p>
@@ -1941,10 +1957,8 @@ function App() {
         <div style={{ maxWidth: "640px", margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <div style={{ background: "var(--teal-dark)", borderRadius: "6px", padding: "4px 8px", display: "flex", alignItems: "center" }}>
-                <img src="Caidi-logo-Branco-1080.png" alt="" style={{ height: "22px", objectFit: "contain" }}
-                  onError={e => { e.target.parentElement.innerHTML='<span style="font-size:22px">🌙</span>'; }} />
-              </div>
+              <img src="Caidi-logo-Branco-1080.png" alt="" style={{ height: "24px", objectFit: "contain", filter: "brightness(0)" }}
+                onError={e => { e.target.style.display="none"; }} />
               <div>
                 <h1 style={{ fontSize: "15px", fontWeight: 700, color: "var(--teal-dark)", lineHeight: 1.2 }}>Crianças no Mundo da Lua?</h1>
                 <span style={{ fontSize: "10px", color: "var(--text3)" }}>J. Miguel &amp; J. Carvalho · NIDCAIDI</span>
