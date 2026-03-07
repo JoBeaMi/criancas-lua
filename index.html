@@ -105,8 +105,8 @@ const SCREENING_ITEMS = {
     label: "Hiperatividade / Impulsividade", icon: "⚡", color: "#F97316",
     items: [
       "Mexe-se excessivamente na cadeira ou levanta-se quando deveria estar sentado/a",
-      "Corre ou trepa em situações inapropriadas",
-      "Tem dificuldade em brincar ou realizar atividades calmamente",
+      "Mostra inquietação motora persistente (mexe mãos/pés, não consegue estar parado/a)",
+      "Tem dificuldade em realizar atividades de forma calma e organizada",
       "Fala excessivamente",
       "Responde antes de a pergunta ser completada",
       "Tem dificuldade em esperar pela sua vez",
@@ -167,18 +167,187 @@ const SCALES = {
 
 const STRATEGY_LABELS = SCALES.strategy; // alias
 
-const STRATEGIES = [
-  { id: "s1", cat: "attention", text: "Dividir tarefas em blocos pequenos" },
-  { id: "s2", cat: "attention", text: "Supervisão frequente" },
-  { id: "s3", cat: "attention", text: "Posicionamento estratégico na sala" },
-  { id: "s4", cat: "attention", text: "Feedback imediato" },
-  { id: "s5", cat: "attention", text: "Sinais não-verbais combinados" },
-  { id: "s6", cat: "language", text: "Simplificar a linguagem utilizada" },
-  { id: "s7", cat: "language", text: "Apoios visuais (imagens, esquemas)" },
-  { id: "s8", cat: "language", text: "Repetição com reformulação" },
-  { id: "s9", cat: "language", text: "Verificação ativa da compreensão" },
-  { id: "s10", cat: "language", text: "Modelar estruturas frásicas" },
+const STRATEGIES_GENERIC = [
+  { id: "s1", cat: "attention", text: "Dividir tarefas em etapas curtas",
+    desc: "Fragmente atividades longas em etapas claras. Dê uma instrução de cada vez e espere que seja cumprida antes de dar a seguinte. Trabalhos de casa demoram 3x mais a um aluno com PHDA — reduzir o volume é essencial, não é facilitação.",
+    how: "Ex: Em vez de 'Faz os exercícios da página 12', diga 'Faz o exercício 1. Quando acabares, mostra-me.' Use checklists com caixas para riscar." },
+  { id: "s2", cat: "attention", text: "Supervisão frequente e próxima",
+    desc: "Passe pela mesa do aluno regularmente para verificar o progresso e redirecionar se necessário. O contacto breve e positivo é mais eficaz do que instruções longas à distância.",
+    how: "Ex: A cada 5 minutos, passe pela mesa, dê um reforço breve ('Estás no bom caminho') e siga. Rácio 3:1 — três comentários positivos por cada corretivo." },
+  { id: "s3", cat: "attention", text: "Posicionamento estratégico na sala",
+    desc: "Sente o aluno perto de si, longe de janelas, portas e outros estímulos. Preferencialmente secretária individual ou com par calmo. Peça ao aluno para voltar à sala 2 minutos antes do fim do recreio para se reorientar.",
+    how: "Ex: Lugar na 1.ª fila, ao centro, com colega calmo ao lado. Evitar corredor e porta. Para comorbilidade: sentar com par de confiança que possa ajudar a clarificar — NÃO punir por pedir ajuda ao colega." },
+  { id: "s4", cat: "attention", text: "Feedback imediato e específico",
+    desc: "Reforce o comportamento adequado no momento exato em que acontece. O elogio específico é muito mais eficaz do que o genérico. Nunca dê reforço apenas no final do dia.",
+    how: "Ex: 'Boa, começaste logo a trabalhar!' é mais eficaz do que 'Portaste-te bem hoje.' Para PHDA: sistema de pontos com recompensas a curto prazo." },
+  { id: "s5", cat: "attention", text: "Sinais não-verbais combinados",
+    desc: "Combine um gesto ou sinal visual com o aluno para o redirecionar sem interromper a aula. Isto preserva a relação e evita exposição perante os pares.",
+    how: "Ex: Toque na mesa, aponte para a ficha, ou use um cartão amarelo/verde combinado previamente. Para PHDA+DLD: usar suporte visual para sequenciar o que aconteceu antes de pedir explicação verbal." },
+  { id: "s6", cat: "language", text: "Simplificar a linguagem das instruções",
+    desc: "Use frases curtas, vocabulário concreto, e evite instruções com múltiplas condições. Chamar o nome da criança ANTES de dar a instrução. Dar instruções na ordem em que devem ser seguidas — evitar 'antes' e 'depois' de forma abstrata.",
+    how: "Ex: Em vez de 'Quando acabarem de copiar, se não tiverem dúvidas, podem avançar para o exercício seguinte', diga 'Primeiro: copiar. Segundo: fazer o exercício.' Nunca dar instruções enquanto a criança se move." },
+  { id: "s7", cat: "language", text: "Apoios visuais permanentes",
+    desc: "Acompanhe a instrução oral com suportes visuais: calendário visual, palavras-chave a cores, listas de tarefas com caixas para riscar. Rotinas com as mesmas palavras todos os dias. Pictogramas para sequenciar atividades.",
+    how: "Ex: Afixe uma sequência visual dos passos da tarefa. Use mural de palavras na sala. Para o 2.º ciclo: resumos visuais das matérias (mapas mentais, infográficos, esquemas)." },
+  { id: "s8", cat: "language", text: "Repetição com reformulação",
+    desc: "Repita a instrução usando palavras diferentes e mais simples — não apenas a mesma frase mais alto. Fazer pausas entre pontos-chave. Reduzir ruído de fundo: fechar portas, uma pessoa fala de cada vez.",
+    how: "Ex: Se disse 'Identifica os elementos do texto' e o aluno não compreendeu, reformule: 'O que encontras no texto? Quem está? O que acontece?' Para DLD: corrigir modelando a forma correta com naturalidade — 'Ah, foste à loja!' (não corrigir diretamente)." },
+  { id: "s9", cat: "language", text: "Verificação ativa da compreensão",
+    desc: "Peça ao aluno para explicar o que vai fazer ANTES de começar. Nunca assuma que silêncio = compreensão. Use perguntas de escolha ('Vais buscar o casaco ou a mochila?'), não perguntas abertas. Para DLD: ensinar o aluno a reconhecer quando não compreende e a pedir ajuda de forma discreta.",
+    how: "Ex: 'Diz-me lá, o que vais fazer primeiro?' — se não consegue explicar, a instrução não foi compreendida. Para o 2.º ciclo: ensinar explicitamente o vocabulário dos exames — 'descreve', 'compara', 'explica', 'analisa'." },
+  { id: "s10", cat: "language", text: "Modelar estruturas de resposta",
+    desc: "Dê ao aluno um modelo de resposta e peça-lhe que o complete ou adapte. Fornecer frameworks narrativos visuais para escrita: caixas para início/meio/fim. Aceitar respostas orais, em pontos, ou em formato visual como alternativas.",
+    how: "Ex: 'Começa a frase assim: O personagem sentiu-se... porque...' em vez de 'O que achas que ele sentiu?' Dar listas de conjunções e explicar como usá-las: 'e', 'mas', 'porque', 'portanto', 'no entanto'." },
 ];
+// STRATEGIES_BY_CYCLE - extracted from PHDA_DLD Guide
+// Each cycle has attention[], language[], both[] arrays
+// Each strategy: { id, text, desc, how }
+
+const STRATEGIES_BY_CYCLE = {
+  "Pré-escolar": {
+    context: "Nesta faixa etária, a DLD normalmente não é formalmente diagnosticada, mas sinais de alerta podem e devem levar a encaminhamento precoce para terapia da fala. A medicação para PHDA não é recomendada — o treino parental é a primeira linha.",
+    attention: [
+      { id:"pre-a1", text:"Rotinas visuais claras", desc:"Criar rotinas visuais para manhã e tarde; avisar com antecedência qualquer mudança; manter espaço com poucos estímulos.", how:"Ex: Quadro de rotinas com fotografias reais da sequência do dia. Avisar '5 minutos para arrumar' antes da transição." },
+      { id:"pre-a2", text:"Um pedido de cada vez", desc:"Dar frases muito curtas, um pedido de cada vez. Dar tempo antes de repetir — não adicionar mais linguagem.", how:"Ex: 'Vai buscar os sapatos.' Esperar. Só depois: 'Agora veste o casaco.'" },
+      { id:"pre-a3", text:"Ignorar e elogiar", desc:"Ignorar comportamento indesejado; elogiar imediatamente o comportamento correto. Rácio 3:1 positivo.", how:"Ex: Em vez de 'Pára de te levantar!', esperar que se sente e dizer 'Boa, sentaste-te muito bem!'" },
+      { id:"pre-a4", text:"Pausas de movimento", desc:"Incluir pausas de movimento entre atividades. Objetos de manipulação. Tarefas de 2-5 minutos máximo.", how:"Ex: Após 3 minutos sentado, fazer 'sacudir o corpo' antes da atividade seguinte. Usar bolas de apertar." },
+      { id:"pre-a5", text:"Verificar compreensão pedindo repetição", desc:"Pedir à criança para repetir o que foi pedido com as suas palavras.", how:"Ex: 'O que é que vais fazer agora? Diz-me.' Se não consegue, a instrução não foi processada." },
+    ],
+    language: [
+      { id:"pre-l1", text:"Rotinas com as mesmas palavras", desc:"Usar sempre as mesmas palavras para os mesmos momentos. Pictogramas para sequenciar atividades. Pouco ruído de fundo.", how:"Ex: Dizer sempre 'Hora de arrumar' (não variar entre 'guardar', 'pôr no lugar', etc.). Usar pictogramas na rotina." },
+      { id:"pre-l2", text:"Parar, baixar, falar", desc:"Frases simples e curtas; gesto + palavra; parar, baixar ao nível da criança, contacto visual antes de falar.", how:"Ex: Ajoelhar, tocar no ombro, olhar nos olhos, e só depois dizer 'Vamos lavar as mãos.'" },
+      { id:"pre-l3", text:"Perguntas de escolha, não abertas", desc:"Usar perguntas de escolha: 'Vais buscar o casaco ou a mochila?' — não perguntas abertas. Nunca assumir que silêncio = compreensão.", how:"Ex: Em vez de 'O que queres fazer?', perguntar 'Queres pintar ou brincar com blocos?'" },
+      { id:"pre-l4", text:"Palavras novas em contexto real", desc:"Introduzir palavras novas com objetos concretos. Repetir múltiplas vezes. Ligar cada palavra a objeto + imagem + gesto.", how:"Ex: Para ensinar 'enorme', mostrar algo grande, fazer gesto de grande, usar em 5 contextos: 'O elefante é enorme', 'A torre é enorme'..." },
+      { id:"pre-l5", text:"Corrigir modelando, nunca diretamente", desc:"Modelar a forma correta com naturalidade. Nunca corrigir frontalmente. Criar pockets de sucesso.", how:"Ex: Se a criança diz 'Eu fazi um desenho', responder: 'Fizeste um desenho? Que bonito! O que desenhaste?'" },
+      { id:"pre-l6", text:"Atividades multissensoriais", desc:"Tocar, experimentar, ver ao mesmo tempo que ouvir. Associar aprendizagem ao movimento.", how:"Ex: Saltar sílabas, dançar para aprender palavras, cantar rotinas." },
+    ],
+    both: [
+      { id:"pre-b1", text:"Rotina visual + verbal + gestual", desc:"Mostrar, dizer e fazer ao mesmo tempo, com as mesmas palavras sempre. Nunca dar instruções enquanto a criança se move.", how:"Ex: Parar, baixar, contacto visual, UMA frase curta + gesto. Verificar sempre com escolha binária ('A ou B?')." },
+    ]
+  },
+
+  "1.º Ciclo": {
+    context: "Entre os 6 e os 8 anos, a criança está a aprender a aprender. Precisa de processamento linguístico eficiente, vocabulário robusto e capacidade de participar em discussões de grupo. Crianças com DLD precisam de 36 exposições a uma palavra nova para a aprender, contra 12 dos seus pares.",
+    attention: [
+      { id:"c1-a1", text:"Posição estratégica na sala", desc:"Sentar perto do professor, longe de janelas e portas. Preferencialmente secretária individual ou com par calmo.", how:"Ex: 1.ª fila, ao centro. Pedir para voltar à sala 2 minutos antes do fim do recreio para se reorientar." },
+      { id:"c1-a2", text:"Antevisão da aula", desc:"Dar uma antevisão do que vai acontecer na aula antes de começar. Reduz incerteza e insegurança.", how:"Ex: 'Hoje vamos primeiro fazer cópia, depois matemática, e a seguir vamos ao recreio.'" },
+      { id:"c1-a3", text:"Timers visuais", desc:"Usar timers visuais (ex: Time Timer) para delimitar tempo de trabalho e pausa.", how:"Ex: 'Tens 10 minutos para esta ficha. Olha para o relógio — quando o vermelho acabar, paramos.'" },
+      { id:"c1-a4", text:"Objetos de manipulação", desc:"Permitir bolas de apertar, tangle toys, se a escola o permitir. Reduz inquietação sem perturbar.", how:"Ex: Combinado discreto: 'Podes usar a bola, mas só na mão que não escreve.'" },
+      { id:"c1-a5", text:"Variar tom e ritmo", desc:"Variar tom de voz e ritmo para manter atenção. Usar frases-gatilho.", how:"Ex: 'Atenção, aqui vem a parte importante!' — sinalizar momentos-chave com mudança de voz." },
+      { id:"c1-a6", text:"Instrução oral + escrita no quadro", desc:"Para comorbilidade: dar instrução oral + escrevê-la no quadro + exemplo visual + verificação.", how:"Ex: Dizer a instrução, apontar para o quadro onde está escrita, mostrar exemplo, perguntar 'O que vais fazer primeiro?'" },
+    ],
+    language: [
+      { id:"c1-l1", text:"Nome antes da instrução", desc:"Chamar o nome da criança ANTES de dar a instrução — atrair a atenção primeiro.", how:"Ex: 'Miguel! (pausa) Agora abre o livro na página 12.' — não dar a instrução enquanto não tem atenção." },
+      { id:"c1-l2", text:"Reduzir ruído de fundo", desc:"Fechar portas, uma pessoa fala de cada vez. Fazer pausas entre pontos-chave.", how:"Ex: Nunca falar demasiado tempo sem pausa. Depois de uma instrução-chave, parar 3 segundos." },
+      { id:"c1-l3", text:"Instruções na ordem de execução", desc:"Dar instruções na ordem em que devem ser seguidas. Evitar 'antes' e 'depois' de forma abstrata.", how:"Ex: 'Primeiro copia. Depois faz o exercício.' — não 'Antes de fazeres o exercício, copia o que está no quadro.'" },
+      { id:"c1-l4", text:"Suporte visual permanente", desc:"Calendário visual, palavras-chave a cores, listas de tarefas com caixas para riscar.", how:"Ex: Afixar na parede: 'Para começar uma tarefa: 1. Ler 2. Pensar 3. Perguntar se não sei 4. Fazer'" },
+      { id:"c1-l5", text:"Perguntas de escolha (Modelo Blank)", desc:"Verificar compreensão com perguntas de escolha (Nível 1-2 do modelo Blank), não perguntas abertas.", how:"Ex: Em vez de 'O que aprendeste?', perguntar 'Aprendemos sobre os animais ou sobre as plantas?'" },
+      { id:"c1-l6", text:"Pré-ensinar vocabulário", desc:"Ensinar o vocabulário da matéria ANTES de a introduzir à turma. Enviar listas para casa. Redes de palavras.", how:"Ex: Antes da unidade sobre o corpo humano, ensinar 'esqueleto', 'músculo', 'órgão' com imagens. Mural de palavras na sala." },
+      { id:"c1-l7", text:"Palavras de uso académico", desc:"Ensinar 'tier 2' — palavras de uso académico transversal. Caderno de palavras novas.", how:"Ex: Ensinar explicitamente o que significa 'explica', 'resume', 'descreve', 'compara' — com exemplos concretos." },
+    ],
+    both: [
+      { id:"c1-b1", text:"Sentar com par de confiança", desc:"Para comorbilidade: sentar com par que possa ajudar a clarificar. NÃO punir por pedir ajuda ao colega.", how:"Ex: Combinado: 'O João pode ajudar-te a perceber o que é para fazer. Podem falar baixinho.'" },
+      { id:"c1-b2", text:"Reduzir volume de trabalhos de casa", desc:"Trabalhos de casa demoram 3x mais a um aluno com PHDA — reduzir volume é essencial, não é facilitação.", how:"Ex: Se a turma faz 10 exercícios, o aluno faz 5 (os mais importantes). Aceitar resposta oral como alternativa." },
+    ]
+  },
+
+  "2.º Ciclo": {
+    context: "As exigências curriculares e linguísticas aumentam dramaticamente. Alunos do 7.º ano são expostos a 3-4 vezes mais palavras novas por dia. A comunicação entre pares torna-se mais nuançada (sarcasmo, gíria, ironia). ATENÇÃO AO CICLO DE FRACASSO: iniciar sempre por tarefas que o aluno JÁ consegue.",
+    attention: [
+      { id:"c2-a1", text:"Dividir projetos em entregas parciais", desc:"Dividir projetos longos em marcos intermédios com prazos e checklists.", how:"Ex: Trabalho de grupo: marco 1 (pesquisa), marco 2 (estrutura), marco 3 (escrita), marco 4 (revisão). Cada um com data." },
+      { id:"c2-a2", text:"Agenda + backup", desc:"Agenda de trabalhos de casa + método de backup (foto do quadro, email do professor).", how:"Ex: Tirar foto do quadro com os TPC. Professor envia resumo por email às famílias semanalmente." },
+      { id:"c2-a3", text:"Verbalizar os passos antes de começar", desc:"Pedir ao aluno para verbalizar os passos que vai fazer antes de começar.", how:"Ex: 'Diz-me lá, o que vais fazer primeiro neste exercício? E depois?'" },
+      { id:"c2-a4", text:"Trabalhos de casa na escola", desc:"Considerar completar trabalhos de casa na escola, onde há mais estrutura e menos distrações.", how:"Ex: Apoio ao estudo na escola com professor. Reduzir volume em casa." },
+      { id:"c2-a5", text:"Thinking space", desc:"Espaço calmo onde o aluno pode ir quando sobrecarregado — não como punição. Convidar a regressar com calor.", how:"Ex: 'Parece que precisas de um momento. Vai ao cantinho e volta quando estiveres pronto. Estou aqui.'" },
+    ],
+    language: [
+      { id:"c2-l1", text:"Glossários por disciplina", desc:"Glossários de vocabulário específico por disciplina; pré-ensinar antes de cada unidade.", how:"Ex: Antes da unidade de história sobre os Descobrimentos, lista com: 'expansão', 'navegação', 'especiarias', 'rota'..." },
+      { id:"c2-l2", text:"Resumos visuais das matérias", desc:"Mapas mentais, infográficos, esquemas. Resumos visuais das matérias.", how:"Ex: Mapa mental do ciclo da água com imagens + setas + palavras-chave. Código de cores por tema." },
+      { id:"c2-l3", text:"Linguagem direta e literal", desc:"Evitar sarcasmo, expressões idiomáticas e linguagem ambígua. Usar linguagem direta e literal.", how:"Ex: Em vez de 'Isso está brilhante!' (irónico), dizer claramente 'Isso precisa de ser melhorado. Vou ajudar-te.'" },
+      { id:"c2-l4", text:"Vocabulário dos exames", desc:"Ensinar explicitamente o vocabulário dos exames: 'descreve', 'compara', 'explica', 'analisa', 'justifica'.", how:"Ex: 'Quando o teste diz COMPARA, tens de dizer o que é igual E o que é diferente. Vamos praticar.'" },
+      { id:"c2-l5", text:"Tempo adicional em testes", desc:"Não como vantagem, mas como compensação pelo tempo de processamento linguístico.", how:"Ex: 25% mais tempo. Ler as instruções em voz alta antes do teste. Verificar que compreendeu o que é pedido." },
+      { id:"c2-l6", text:"Frameworks narrativos para escrita", desc:"Caixas para início/meio/fim; templates para géneros textuais; listas de conjunções.", how:"Ex: Template: 'Na minha opinião... porque... Por outro lado... Em conclusão...' Dar início de frase." },
+      { id:"c2-l7", text:"Aceitar formatos alternativos", desc:"Aceitar respostas orais, em pontos, em formato visual (mapa mental, diagrama) como alternativas à escrita.", how:"Ex: 'Podes fazer um esquema em vez de um texto, desde que incluas as ideias principais.'" },
+    ],
+    both: [
+      { id:"c2-b1", text:"Buddy system", desc:"Par de confiança ou mentor de pares (rodar semanalmente). Estruturar recreios com opções.", how:"Ex: 'Esta semana o teu buddy é a Sara. Podem rever juntos as instruções dos trabalhos.'" },
+      { id:"c2-b2", text:"Sinal discreto de 'não compreendo'", desc:"Ensinar o aluno a reconhecer quando não compreende e a pedir ajuda de forma discreta.", how:"Ex: Cartão vermelho/verde na mesa. Semáforo pessoal. Combinado: levantar a borracha = 'preciso de ajuda'." },
+      { id:"c2-b3", text:"Conflitos: sequenciar antes de explicar", desc:"Para PHDA+DLD: em conflitos, usar suporte visual para sequenciar o que aconteceu antes de pedir explicação verbal.", how:"Ex: 'Vamos desenhar o que aconteceu. Primeiro... depois... e a seguir...' Só depois discutir." },
+    ]
+  },
+
+  "3.º Ciclo": {
+    context: "A transição é crítica. As exigências académicas, sociais e cognitivas intensificam-se. Alunos que no básico compensavam podem colapsar. De 17% a 50% dos alunos com DLD também têm dificuldades de leitura. Alunos com DLD e PHDA estão sobre-representados em absentismo e problemas de saúde mental.",
+    attention: [
+      { id:"c3-a1", text:"Ensinar estratégias de memória", desc:"Ensinar explicitamente: mnemónicas, chunking, dual coding, associação de palavras.", how:"Ex: Para memorizar uma lista, criar uma frase com as iniciais. Usar imagens junto ao texto. Resumir com pares." },
+      { id:"c3-a2", text:"Modelar estratégias de apontamentos", desc:"Mapas mentais, sticky notes, símbolos, marcações. Não assumir que sabem tirar notas.", how:"Ex: 'Vou mostrar como eu tiro notas desta apresentação. Olhem: título, 3 pontos-chave, exemplo.'" },
+      { id:"c3-a3", text:"Promover metacognição", desc:"'Já fiz isto antes? Como abordei? O que foi fácil/difícil? O que aprendi?'", how:"Ex: Ficha de reflexão no final de cada projeto: 'O que correu bem? O que faria diferente? O que aprendi sobre mim?'" },
+      { id:"c3-a4", text:"Gestão de tempo e prioridades", desc:"Ensinar gestão de tempo para exames e entregas — não assumir que são capacidades inatas.", how:"Ex: Planeador semanal com cores: vermelho = urgente, amarelo = esta semana, verde = pode esperar." },
+      { id:"c3-a5", text:"Explorar condições ótimas de atenção", desc:"Ajudar o aluno a refletir sobre como maximiza a atenção: sozinho ou em grupo? Com auscultadores? Em silêncio?", how:"Ex: 'Experimenta estudar com música, sem música, e com auscultadores. Qual funciona melhor para ti?'" },
+    ],
+    language: [
+      { id:"c3-l1", text:"Reduzir comprimento das instruções", desc:"Uma ideia por frase. Evitar cláusulas encaixadas. Quando apresentar informação nova, ativar conhecimento prévio.", how:"Ex: Em vez de 'Tendo em conta o que discutimos sobre a revolução industrial, analise...', dizer 'Lembram-se da revolução industrial? (pausa) Agora vamos analisar...'" },
+      { id:"c3-l2", text:"Scaffolding de palavras-chave", desc:"Mostrar como usar palavras-chave na pesquisa. Usar sinónimos e descrições para clarificar definições.", how:"Ex: 'Fotossíntese — vamos decompor: foto = luz, síntese = juntar. A planta junta luz com água para fazer alimento.'" },
+      { id:"c3-l3", text:"Ferramentas auditivas e visuais", desc:"Audiobooks, leitores de ecrã, text-to-speech para alunos com DLD. Diagramas junto a instruções escritas.", how:"Ex: Disponibilizar versão áudio dos textos. Vídeos complementares. Sempre diagrama + texto, nunca só texto." },
+      { id:"c3-l4", text:"Formas alternativas de demonstrar aprendizagem", desc:"Apresentações orais ou vídeo, storyboards, mapas mentais, bullet points em vez de ensaio escrito.", how:"Ex: 'Podes escolher: texto escrito, apresentação oral com slides, ou vídeo de 3 minutos.'" },
+      { id:"c3-l5", text:"Preparar linguagem dos exames por disciplina", desc:"Praticar explicitamente o que 'analisa', 'compara', 'justifica' significa em cada disciplina.", how:"Ex: 'Em História, JUSTIFICA = diz o que aconteceu E porquê. Em Ciências, JUSTIFICA = dá evidência da experiência.'" },
+      { id:"c3-l6", text:"Flexibilidade temporal", desc:"Tempo adicional para ler instruções. Materiais disponibilizados antecipadamente. Pré-ensinar vocabulário.", how:"Ex: Enviar o PowerPoint antes da aula. Dar 5 minutos extra nos testes para ler as perguntas." },
+    ],
+    both: [
+      { id:"c3-b1", text:"Ferramentas de apoio à memória de trabalho", desc:"Calculadoras, fichas de factos, mapas de processo, flow charts — não como facilitação, como compensação.", how:"Ex: Permitir folha de fórmulas em matemática. Checklist de passos para resolução de problemas." },
+      { id:"c3-b2", text:"Monitorizar saúde mental", desc:"Alunos com DLD e PHDA estão em risco aumentado de isolamento, bullying e deterioração da saúde mental.", how:"Ex: Check-in regular: 'Como te sentes esta semana, de 1 a 5?' Identificar adultos de confiança na escola." },
+      { id:"c3-b3", text:"Roleplay de situações sociais", desc:"Como pedir ajuda a um professor, resolver um conflito, participar numa discussão de grupo.", how:"Ex: 'Vamos praticar: eu sou o professor de matemática e tu vais pedir ajuda. O que dizes primeiro?'" },
+    ]
+  },
+
+  "Ensino Superior": {
+    context: "Os desafios de linguagem e de organização não desaparecem — mas o apoio estruturado da escola diminui drasticamente. A chave é a auto-advocacia. Jovens adultos com DLD podem ter boa expressão oral mas dificuldades significativas na compreensão de textos complexos e na escrita académica. 81% de jovens com perturbações emocionais/comportamentais têm défices de linguagem não identificados.",
+    attention: [
+      { id:"es-a1", text:"Sistemas digitais de gestão", desc:"Apps de calendário, lembretes, listas de tarefas. Experimentar até encontrar o que funciona.", how:"Ex: Google Calendar com alertas. Todoist ou Notion para projetos. Dividir dissertações em marcos parciais com datas." },
+      { id:"es-a2", text:"Não deixar para o último momento", desc:"Dividir projetos e dissertações em marcos parciais com datas. Criar accountability.", how:"Ex: 'O trabalho é para dia 30. Marco 1 (pesquisa): dia 10. Marco 2 (estrutura): dia 17. Marco 3 (rascunho): dia 24.'" },
+      { id:"es-a3", text:"Ensinar competências de revisão", desc:"Notas, auto-teste, fichas de vocabulário. Criar horário de estudo para os exames.", how:"Ex: Flashcards com o conceito de um lado e a definição do outro. Spaced repetition com apps como Anki." },
+      { id:"es-a4", text:"Ambiente de estudo otimizado", desc:"Ajudar a identificar as condições ótimas: silêncio vs. música, biblioteca vs. casa, manhã vs. noite.", how:"Ex: 'Experimenta uma semana na biblioteca e outra em casa. Onde produzes mais?'" },
+    ],
+    language: [
+      { id:"es-l1", text:"Registar-se nos serviços de apoio", desc:"Registar nos serviços de apoio a estudantes com NEE logo na matrícula — não esperar por dificuldades.", how:"Ex: 'Na matrícula, procura o Gabinete de Apoio ao Estudante e explica as tuas necessidades. Leva relatório.'" },
+      { id:"es-l2", text:"Tecnologia assistiva", desc:"Gravadores de aula, leitores de ecrã, software de text-to-speech/speech-to-text.", how:"Ex: Gravar as aulas com o telemóvel (pedir permissão). Usar text-to-speech para rever apontamentos." },
+      { id:"es-l3", text:"Adaptações em avaliações", desc:"Tempo adicional em exames, transcrições de aulas, acesso antecipado a materiais, avaliação alternativa.", how:"Ex: Solicitar formalmente tempo extra, acesso ao PowerPoint antes da aula, enunciado de exame simplificado." },
+      { id:"es-l4", text:"Literacia funcional adulta", desc:"Preencher formulários, ler contratos, escrever emails formais, falar com figuras de autoridade.", how:"Ex: Praticar: 'Como escrever um email ao professor a pedir ajuda? Assunto, saudação, pedido claro, despedida.'" },
+      { id:"es-l5", text:"Auto-advocacia e passaporte de comunicação", desc:"Ajudar a criar perfil pessoal: pontos fortes, necessidades, estratégias que funcionam, adaptações necessárias.", how:"Ex: 'Tenho dificuldades de processamento linguístico e preciso de: tempo extra, materiais antecipados, instruções escritas.'" },
+    ],
+    both: [
+      { id:"es-b1", text:"Relação com tutores que compreendam", desc:"Desenvolver relação com tutores/mentores académicos que compreendam as perturbações.", how:"Ex: 'Posso falar consigo no início do semestre? Tenho algumas necessidades que gostava de explicar.'" },
+      { id:"es-b2", text:"Monitorizar saúde mental", desc:"Prevalência significativamente aumentada de burnout, ansiedade e depressão. Normalizar procura de apoio.", how:"Ex: Serviço de psicologia da universidade. Terapeutas familiarizados com DLD que usem abordagens visuais/escritas." },
+      { id:"es-b3", text:"Preparação para o mercado de trabalho", desc:"Praticar linguagem de entrevistas. Discutir se/quando divulgar. Identificar ambientes adequados.", how:"Ex: 'Em entrevista, responde assim: Situação → Tarefa → Ação → Resultado. Vamos praticar com exemplos teus.'" },
+    ]
+  }
+};
+
+function getStrategiesForCycle(cycle) {
+  const c = STRATEGIES_BY_CYCLE[cycle];
+  if (!c) return STRATEGIES_GENERIC;
+  return [
+    ...(c.attention||[]).map(s => ({...s, cat: "attention"})),
+    ...(c.language||[]).map(s => ({...s, cat: "language"})),
+    ...(c.both||[]).map(s => ({...s, cat: "both"})),
+  ];
+}
+
+function getCycleContext(cycle) {
+  return STRATEGIES_BY_CYCLE[cycle]?.context || "";
+}
+
+function getCycleStrategiesByType(cycle, profile) {
+  const c = STRATEGIES_BY_CYCLE[cycle];
+  if (!c) return STRATEGIES_GENERIC;
+  const strats = [];
+  if (profile.includes("Atenção") || profile.includes("Misto")) strats.push(...(c.attention||[]));
+  if (profile.includes("Linguagem") || profile.includes("Misto")) strats.push(...(c.language||[]));
+  strats.push(...(c.both||[]));
+  if (!strats.length) return [...(c.attention||[]).slice(0,3), ...(c.language||[]).slice(0,3)];
+  return strats;
+}
+
 
 const VF_ITEMS = [
   { s: "A PHDA é mais frequente nos rapazes do que nas raparigas.", c: true, d: "phda" },
@@ -215,9 +384,94 @@ const VIGNETTES = [
 const REFERRAL_OPTIONS = ["Psicólogo/a","Terapeuta da fala","Pediatra","Neuropediatra","Equipa multidisciplinar","Outro"];
 const HYPOTHESIS_OPTIONS = ["Principalmente atenção/comportamento","Principalmente linguagem","Ambos (atenção e linguagem)","Nenhuma dificuldade significativa"];
 
+// ─── PRÓXIMOS PASSOS E EXPLICAÇÕES ──────────────────────────
+
+const NEXT_STEPS = {
+  "Encaminhar": [
+    { icon: "🔔", text: "Comunicar à família", desc: "Partilhe as suas observações com os pais/encarregados de educação, focando nos comportamentos observados (não em diagnósticos)." },
+    { icon: "📋", text: "Solicitar avaliação especializada", desc: "Encaminhe para o profissional adequado (terapeuta da fala se predominância linguagem; psicólogo/neuropediatra se predominância atenção; equipa multidisciplinar se perfil misto)." },
+    { icon: "📝", text: "Documentar observações", desc: "Registe exemplos concretos de comportamentos em sala de aula — datas, contextos, frequência. Isto será essencial para a avaliação." },
+    { icon: "🔄", text: "Manter estratégias de sala", desc: "Enquanto aguarda avaliação, implemente as estratégias recomendadas. Monitorize e registe se há melhoria." },
+  ],
+  "Monitorizar": [
+    { icon: "📅", text: "Observar durante 4-6 semanas", desc: "Implemente as estratégias recomendadas e observe sistematicamente se há evolução." },
+    { icon: "📝", text: "Registar padrões", desc: "Anote em que contextos as dificuldades são mais evidentes: instruções orais? trabalho autónomo? grupo? Isto ajuda a distinguir atenção de linguagem." },
+    { icon: "🔍", text: "Reavaliar com esta ferramenta", desc: "Após 4-6 semanas, repita o rastreio. Se os valores se mantiverem ou agravarem, considere encaminhamento." },
+    { icon: "👥", text: "Consultar colegas", desc: "Fale com outros professores do aluno. Observam os mesmos padrões? Em que disciplinas é pior?" },
+  ],
+  "Implementar estratégias e reavaliar": [
+    { icon: "✅", text: "Implementar estratégias abaixo", desc: "Experimente as estratégias recomendadas durante 2-4 semanas, de forma consistente." },
+    { icon: "👁", text: "Observar a resposta", desc: "Se as adaptações linguísticas (simplificar, reformular) resultarem melhor do que as adaptações comportamentais, isso pode ser uma pista importante." },
+    { icon: "📊", text: "Reavaliar se necessário", desc: "Se surgirem novas preocupações ou se o desempenho não melhorar, repita o rastreio." },
+  ],
+};
+
+function getProfileExplanation(scores, age, cycle) {
+  const parts = [];
+  const ageNum = parseInt(age) || 0;
+  const domainNames = {
+    inattention: "desatenção", hyperactivity: "hiperatividade/impulsividade",
+    comprehension: "compreensão de instruções", expression: "expressão oral",
+    pragmatics: "uso social da linguagem", impact: "impacto funcional"
+  };
+
+  const concern = Object.entries(scores)
+    .filter(([k,v]) => v >= 4 && domainNames[k])
+    .sort((a,b) => b[1] - a[1]);
+  const watch = Object.entries(scores)
+    .filter(([k,v]) => v >= 3 && v < 4 && domainNames[k])
+    .sort((a,b) => b[1] - a[1]);
+
+  if (concern.length) {
+    parts.push("Foram identificadas dificuldades relevantes em " + concern.map(([k]) => domainNames[k]).join(", ") + ".");
+  }
+  if (watch.length) {
+    parts.push("As áreas de " + watch.map(([k]) => domainNames[k]).join(", ") + " merecem observação continuada.");
+  }
+  if (!concern.length && !watch.length) {
+    parts.push("Não foram identificadas dificuldades significativas nos domínios avaliados.");
+  }
+
+  if (scores.att >= 4 && scores.lang >= 4) {
+    parts.push("Quando a PHDA e as dificuldades de linguagem coexistem, os desafios multiplicam-se: a criança não consegue prestar atenção E tem dificuldade em processar a linguagem que ouve. A avaliação multidisciplinar é particularmente importante nestes casos.");
+  } else if (scores.lang >= 4 && scores.att < 3) {
+    parts.push("As dificuldades parecem centrar-se na linguagem. Atenção: a DLD pode ser confundida com PHDA — uma criança que não começa a tarefa após a instrução pode não ter processado o que lhe foi pedido, e não estar a ser teimosa ou desatenta.");
+  } else if (scores.att >= 4 && scores.lang < 3) {
+    parts.push("As dificuldades parecem centrar-se na atenção e/ou no comportamento. No entanto, verifique se a compreensão de instruções está realmente adequada — um aluno que parece não ouvir pode ter dificuldades de processamento linguístico que passam despercebidas.");
+  }
+
+  if (cycle === "Pré-escolar" || ageNum <= 5) {
+    if (scores.expression >= 3.5 || scores.pragmatics >= 3.5) {
+      parts.push("Nesta faixa etária, alguma imaturidade na expressão e na comunicação social é esperada. Valorize sobretudo a compreensão e o impacto no dia-a-dia.");
+    }
+    if (scores.hyperactivity >= 4) {
+      parts.push("A inquietação motora no pré-escolar é frequente. Considere se os comportamentos são desproporcionados face aos pares da mesma idade. A medicação para PHDA não é recomendada antes dos 6 anos — o treino parental é a primeira linha.");
+    }
+  } else if (cycle === "1.º Ciclo" || (ageNum >= 6 && ageNum <= 8)) {
+    if (scores.comprehension >= 4 || scores.expression >= 4) {
+      parts.push("Entre os 6 e os 8 anos, a criança está a aprender a aprender. Dificuldades na compreensão ou na expressão nesta fase afetam diretamente a aquisição da leitura e da escrita. Considere envolver o terapeuta da fala.");
+    }
+  } else if (ageNum >= 9 || cycle === "2.º Ciclo" || cycle === "3.º Ciclo") {
+    if (scores.comprehension >= 4) {
+      parts.push("A partir do 2.º ciclo, a linguagem curricular torna-se mais abstrata e as exigências aumentam dramaticamente. Dificuldades na compreensão de instruções nesta fase são particularmente impactantes.");
+    }
+    if (scores.pragmatics >= 4) {
+      parts.push("A comunicação entre pares nesta faixa etária torna-se mais nuançada (sarcasmo, gíria, ironia) — área de grande dificuldade para alunos com perturbação da linguagem.");
+    }
+  }
+
+  if (scores.impact >= 5) {
+    parts.push("O impacto no funcionamento diário é elevado, o que reforça a importância de agir — independentemente do perfil identificado.");
+  } else if (scores.impact < 2 && (scores.att >= 4 || scores.lang >= 4)) {
+    parts.push("Apesar das dificuldades identificadas, o impacto funcional reportado é baixo. Isto pode significar que as estratégias atuais estão a compensar, ou que as dificuldades são menos visíveis do que reais. Bom contacto visual mas não compreende é um padrão frequente em crianças que compensam com comportamentos sociais.");
+  }
+
+  return parts.join(" ");
+}
+
 // ─── CÁLCULO DE PERFIL ──────────────────────────────────────
 
-function computeProfile(responses) {
+function computeProfile(responses, age, cycle) {
   const mean = (d) => {
     const v = (responses[d] || []).filter(x => x !== null);
     return v.length ? v.reduce((a,b) => a+b, 0) / v.length : 0;
@@ -247,12 +501,14 @@ function computeProfile(responses) {
 
   const strats = [];
   if (aR) {
-    strats.push(...STRATEGIES.filter(s => s.cat === "attention"));
+    strats.push(...getStrategiesForCycle(cycle).filter(s => s.cat === "attention"));
   }
-  if (lR) strats.push(...STRATEGIES.filter(s => s.cat === "language"));
-  if (!strats.length) strats.push(...STRATEGIES.slice(0, 5));
+  if (lR) strats.push(...getStrategiesForCycle(cycle).filter(s => s.cat === "language"));
+  if (!strats.length) strats.push(...getStrategiesForCycle(cycle).slice(0, 5));
 
-  return { scores: sc, profile, pColor, pIcon, decision: dec, dColor, strategies: strats };
+  const explanation = getProfileExplanation(sc, age, cycle);
+  const nextSteps = NEXT_STEPS[dec] || [];
+  return { scores: sc, profile, pColor, pIcon, decision: dec, dColor, strategies: strats, explanation, nextSteps };
 }
 
 // ─── UI COMPONENTS ──────────────────────────────────────────
@@ -333,7 +589,7 @@ function TeacherProfile({ onComplete }) {
     distrito:"", cycle:"", yearsExp:"", age:"", gender:"", education:"", specialNeeds:"",
     formacaoPHDA:"", formacaoLing:"",
     contactoPHDA:"", contactoLing:"",
-    proporcao: 50,
+    proporcao: null,
   });
   const [vf, setVf] = useState(Array(16).fill(null));
   const [eff, setEff] = useState(Array(5).fill(null));
@@ -352,7 +608,7 @@ function TeacherProfile({ onComplete }) {
     c++; // confianca slider always has value
     return c;
   };
-  const totalQ = VF_ITEMS.length + EFFICACY_ITEMS.length + STRATEGIES.length + 10;
+  const totalQ = VF_ITEMS.length + EFFICACY_ITEMS.length + getStrategiesForCycle(demo.cycle).length + 10;
   const filledQ = vf.filter(v => v !== null).length + eff.filter(v => v !== null).length +
     Object.values(stratUse).filter(v => v !== null).length +
     vigCount(vig.v1) + vigCount(vig.v2);
@@ -366,10 +622,10 @@ function TeacherProfile({ onComplete }) {
   const stepValid = () => {
     switch(step) {
       case 0: return true; // consent is optional
-      case 1: return demo.distrito && demo.cycle && demo.yearsExp && demo.age && demo.gender && demo.education && demo.specialNeeds && demo.formacaoPHDA && demo.formacaoLing && demo.contactoPHDA && demo.contactoLing;
+      case 1: return demo.distrito && demo.cycle && demo.yearsExp && demo.age && demo.gender && demo.education && demo.specialNeeds && demo.formacaoPHDA && demo.formacaoLing && demo.contactoPHDA && demo.contactoLing && demo.proporcao;
       case 2: return vf.every(v => v !== null);
       case 3: return eff.every(v => v !== null);
-      case 4: return STRATEGIES.every(s => stratUse[s.id] !== undefined && stratUse[s.id] !== null);
+      case 4: return getStrategiesForCycle(demo.cycle).every(s => stratUse[s.id] !== undefined && stratUse[s.id] !== null);
       case 5: return vig.v1.hypothesis && vig.v1.polo && vig.v1.gravidade && vig.v1.refer && (vig.v1.topStrategies||[]).length >= 2 && (vig.v1.refer !== "Sim" || (vig.v1.referTo||[]).length > 0);
       case 6: return vig.v2.hypothesis && vig.v2.polo && vig.v2.gravidade && vig.v2.refer && (vig.v2.topStrategies||[]).length >= 2 && (vig.v2.refer !== "Sim" || (vig.v2.referTo||[]).length > 0);
       default: return true;
@@ -391,11 +647,12 @@ function TeacherProfile({ onComplete }) {
         if (!demo.formacaoLing) campos.push("Formação linguagem");
         if (!demo.contactoPHDA) campos.push("Contacto c/ atenção");
         if (!demo.contactoLing) campos.push("Contacto c/ linguagem");
+        if (!demo.proporcao) campos.push("Proporção atenção/linguagem");
         return `Faltam: ${campos.join(", ")}`;
       }
       case 2: { const n = vf.filter(v => v === null).length; return `Faltam ${n} afirmações por responder`; }
       case 3: { const n = eff.filter(v => v === null).length; return `Faltam ${n} itens por responder`; }
-      case 4: { const n = STRATEGIES.filter(s => stratUse[s.id] === undefined || stratUse[s.id] === null).length; return `Faltam ${n} estratégias por responder`; }
+      case 4: { const n = getStrategiesForCycle(demo.cycle).filter(s => stratUse[s.id] === undefined || stratUse[s.id] === null).length; return `Faltam ${n} estratégias por responder`; }
       case 5: {
         const m = [];
         if (!vig.v1.hypothesis) m.push("hipótese");
@@ -505,20 +762,10 @@ function TeacherProfile({ onComplete }) {
         </div>
       ))}
 
-      {/* Slider: proporção percebida */}
+      {/* Proporção percebida — Scale7 bipolar */}
       <div style={{ marginTop: "20px", padding: "20px", background: "var(--surface2)", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}>
         <label style={{ ...labelStyle, marginBottom: "12px" }}>Na sua experiência, as dificuldades que mais observa nos seus alunos são sobretudo de:</label>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "8px" }}>
-          <span style={{ color: "#EF4444", fontWeight: 600 }}>⚡ Atenção</span>
-          <span style={{ color: "var(--text3)" }}>Ambas</span>
-          <span style={{ color: "#3B82F6", fontWeight: 600 }}>💬 Linguagem</span>
-        </div>
-        <input type="range" min="0" max="100" value={demo.proporcao}
-          onChange={e => setDemo({...demo, proporcao: parseInt(e.target.value)})}
-          style={{ width: "100%", accentColor: "var(--teal)" }} />
-        <p style={{ textAlign: "center", fontSize: "13px", color: "var(--text2)", marginTop: "6px" }}>
-          {demo.proporcao < 30 ? "Sobretudo atenção" : demo.proporcao < 45 ? "Mais atenção do que linguagem" : demo.proporcao < 55 ? "Ambas por igual" : demo.proporcao < 70 ? "Mais linguagem do que atenção" : "Sobretudo linguagem"}
-        </p>
+        <Scale7 value={demo.proporcao} onChange={v => setDemo({...demo, proporcao: v})} scale={{ 1: "⚡ Atenção", 4: "Ambas por igual", 7: "💬 Linguagem" }} />
       </div>
     </Card>
   );
@@ -557,19 +804,34 @@ function TeacherProfile({ onComplete }) {
     </Card>
   );
 
-  // Step 4 — Estratégias (1-7)
-  const S4 = () => (
+  // Step 4 — Estratégias por ciclo (1-7)
+  const S4 = () => {
+    const cycleStrats = getStrategiesForCycle(demo.cycle);
+    const ctx = getCycleContext(demo.cycle);
+    return (
     <Card>
       <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "4px" }}>🛠 O que já faz</h3>
-      <p style={{ fontSize: "14px", color: "var(--text2)", marginBottom: "20px" }}>Com que frequência usa cada estratégia?</p>
-      {STRATEGIES.map((s, i) => (
+      <p style={{ fontSize: "14px", color: "var(--text2)", marginBottom: "8px" }}>Com que frequência usa cada estratégia?</p>
+      {demo.cycle && (
+        <div style={{ background: "var(--teal-light)", padding: "12px 16px", borderRadius: "8px", marginBottom: "16px", fontSize: "13px", lineHeight: 1.6 }}>
+          <strong>Estratégias para {demo.cycle}</strong>
+          {ctx && <span style={{ color: "var(--text2)" }}> — {ctx}</span>}
+        </div>
+      )}
+      {!demo.cycle && (
+        <div style={{ background: "var(--amber-light)", padding: "12px", borderRadius: "8px", marginBottom: "16px", fontSize: "14px", color: "#7C5F00", textAlign: "center" }}>
+          ⚠️ Selecione o seu ciclo de ensino no passo "Sobre si" para ver as estratégias adequadas.
+        </div>
+      )}
+      {cycleStrats.map((s, i) => (
         <div key={s.id} style={{ marginBottom: "20px", padding: "14px", background: i%2===0 ? "var(--surface)" : "var(--surface2)", borderRadius: "10px", border: "1px solid var(--border)" }}>
           <p style={{ fontSize: "14px", fontWeight: 500, marginBottom: "10px" }}>{s.text}</p>
           <Scale7 value={stratUse[s.id]} onChange={v => setStratUse({...stratUse, [s.id]: v})} scale={SCALES.strategy} />
         </div>
       ))}
     </Card>
-  );
+    );
+  };
 
   // Step 5-6 — Vinhetas
   const SV = (vIdx) => {
@@ -647,7 +909,7 @@ function TeacherProfile({ onComplete }) {
             Selecionadas: {(r.topStrategies||[]).length}/3 {(r.topStrategies||[]).length < 2 ? "— mínimo 2" : "✓"}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            {STRATEGIES.map(s => {
+            {STRATEGIES_GENERIC.map(s => {
               const sel = (r.topStrategies||[]).includes(s.id);
               const full = (r.topStrategies||[]).length >= 3 && !sel;
               return <button key={s.id} onClick={() => !full && toggleStrat(s.id)} style={{
@@ -766,7 +1028,7 @@ function Screening({ students, setStudents, teacherData }) {
   };
 
   const submit = () => {
-    const p = computeProfile(resp);
+    const p = computeProfile(resp, info.age, info.cycle);
     const rec = { id: `A-${Date.now().toString(36).toUpperCase()}`, ...info, ...p, date: new Date().toLocaleDateString("pt-PT") };
     setStudents([...students, rec]);
     setResult(rec);
@@ -776,18 +1038,38 @@ function Screening({ students, setStudents, teacherData }) {
 
   // ─ Result view
   if (mode === "result" && result) {
+    const attStrats = result.strategies.filter(s => s.cat === "attention");
+    const langStrats = result.strategies.filter(s => s.cat === "language");
+    const bothStrats = result.strategies.filter(s => s.cat === "both");
+
     return <div>
-      <Card style={{ borderTop: `4px solid ${result.pColor}` }}>
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div style={{ fontSize: "48px" }}>{result.pIcon}</div>
-          <h3 style={{ fontSize: "20px", fontWeight: 700, color: result.pColor }}>{result.profile}</h3>
-          <p style={{ fontSize: "13px", color: "var(--text2)" }}>{result.initials} · {result.age} anos · {result.date}</p>
+      {/* Header */}
+      <Card style={{ borderTop: `4px solid ${result.pColor}`, textAlign: "center" }}>
+        <div style={{ fontSize: "56px", marginBottom: "4px" }}>{result.pIcon}</div>
+        <h3 style={{ fontSize: "22px", fontWeight: 700, color: result.pColor, marginBottom: "2px" }}>{result.profile}</h3>
+        <p style={{ fontSize: "14px", color: "var(--text2)" }}>{result.initials} · {result.age} anos · {result.date}</p>
+
+        <div style={{ background: result.dColor+"12", border: `1.5px solid ${result.dColor}`, borderRadius: "var(--radius)", padding: "12px", textAlign: "center", margin: "16px 0" }}>
+          <span style={{ fontSize: "12px", color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Decisão recomendada</span>
+          <p style={{ fontSize: "20px", fontWeight: 700, color: result.dColor, marginTop: "4px" }}>{result.decision}</p>
         </div>
-        <div style={{ background: result.dColor+"15", border: `1.5px solid ${result.dColor}`, borderRadius: "var(--radius)", padding: "14px", textAlign: "center", marginBottom: "20px" }}>
-          <span style={{ fontSize: "12px", color: "var(--text2)" }}>Decisão recomendada</span>
-          <p style={{ fontSize: "18px", fontWeight: 700, color: result.dColor, marginTop: "4px" }}>{result.decision}</p>
-        </div>
-        <h4 style={{ fontSize: "14px", fontWeight: 600, marginBottom: "12px" }}>Pontuações por domínio</h4>
+      </Card>
+
+      {/* Explicação do perfil */}
+      <Card>
+        <h4 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "18px" }}>🔎</span> Porquê este perfil?
+        </h4>
+        <p style={{ fontSize: "14px", lineHeight: 1.7, color: "var(--text)" }}>{result.explanation}</p>
+        <p style={{ fontSize: "12px", lineHeight: 1.5, color: "var(--text3)", marginTop: "10px", fontStyle: "italic" }}>
+          Nota: Este rastreio é indicativo e não substitui uma avaliação formal. Os pontos de corte são orientadores e devem ser interpretados em contexto, considerando a idade e o nível de desenvolvimento da criança.
+        </p>
+      </Card>
+
+      {/* Resultados por domínio */}
+      <Card>
+        <h4 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "4px" }}>📊 Resultados por domínio</h4>
+        <p style={{ fontSize: "12px", color: "var(--text3)", marginBottom: "14px" }}>Escala 1-7 · Zona de preocupação: ≥ 4</p>
         {[
           { l: "Desatenção", v: result.scores.inattention, c: "#EF4444" },
           { l: "Hiperatividade", v: result.scores.hyperactivity, c: "#F97316" },
@@ -795,20 +1077,87 @@ function Screening({ students, setStudents, teacherData }) {
           { l: "Expressão", v: result.scores.expression, c: "#6366F1" },
           { l: "Pragmática", v: result.scores.pragmatics, c: "#8B5CF6" },
           { l: "Impacto", v: result.scores.impact, c: "#64748B" },
-        ].map(b => <Bar key={b.l} label={b.l} value={b.v} color={b.c} />)}
-        <h4 style={{ fontSize: "14px", fontWeight: 600, margin: "16px 0 12px" }}>📋 Estratégias recomendadas</h4>
-        {result.strategies.map((s,i) => (
-          <div key={s.id} style={{ padding: "10px 14px", background: "var(--surface2)", borderRadius: "8px", marginBottom: "6px", fontSize: "14px", display: "flex", gap: "8px", alignItems: "center" }}>
-            <span style={{ width: "22px", height: "22px", borderRadius: "50%", background: "var(--teal)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, flexShrink: 0 }}>{i+1}</span>
-            {s.text}
+        ].map(b => (
+          <div key={b.l} style={{ marginBottom: "10px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px", marginBottom: "4px" }}>
+              <span style={{ fontWeight: 500 }}>{b.l}</span>
+              <span style={{ fontWeight: 600, color: b.v >= 4 ? b.c : "var(--text3)" }}>{b.v.toFixed(1)}</span>
+            </div>
+            <div style={{ height: "10px", background: "var(--surface2)", borderRadius: "99px", overflow: "hidden", position: "relative" }}>
+              <div style={{ position: "absolute", left: `${(4/7)*100}%`, top: 0, bottom: 0, width: "2px", background: "var(--text3)", opacity: 0.3 }} />
+              <div style={{ height: "100%", width: `${(b.v/7)*100}%`, background: b.v >= 4 ? b.c : "var(--green)", borderRadius: "99px", transition: "width 0.3s" }} />
+            </div>
           </div>
         ))}
       </Card>
-      <Warning><strong>Grave os resultados antes de sair!</strong><br/>Faça uma captura de ecrã desta página. Se fechar ou atualizar a aplicação, os resultados serão perdidos.</Warning>
-      <div style={{ display: "flex", gap: "8px" }}>
-        <button onClick={() => window.print()} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--blue)", color: "#fff", fontSize: "14px", fontWeight: 600 }}>🖨 Guardar / Imprimir</button>
-        <button onClick={startNew} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--teal)", color: "#fff", fontSize: "14px", fontWeight: 600 }}>+ Novo rastreio</button>
-        <button onClick={() => setMode("list")} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--surface)", color: "var(--text)", border: "1.5px solid var(--border)", fontSize: "14px" }}>Ver todos</button>
+
+      {/* Estratégias detalhadas */}
+      {attStrats.length > 0 && (
+        <Card>
+          <h4 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "18px" }}>⚡</span> Estratégias para atenção/comportamento
+          </h4>
+          {attStrats.map((s,i) => (
+            <div key={s.id} style={{ marginBottom: "16px", padding: "14px", background: "#FEF2F2", borderRadius: "10px", borderLeft: "4px solid #EF4444" }}>
+              <p style={{ fontSize: "14px", fontWeight: 700, marginBottom: "4px", color: "#991B1B" }}>{s.text}</p>
+              <p style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--text)", marginBottom: "4px" }}>{s.desc}</p>
+              <p style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--text2)", fontStyle: "italic" }}>{s.how}</p>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      {langStrats.length > 0 && (
+        <Card>
+          <h4 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "18px" }}>💬</span> Estratégias para linguagem
+          </h4>
+          {langStrats.map((s,i) => (
+            <div key={s.id} style={{ marginBottom: "16px", padding: "14px", background: "#EFF6FF", borderRadius: "10px", borderLeft: "4px solid #3B82F6" }}>
+              <p style={{ fontSize: "14px", fontWeight: 700, marginBottom: "4px", color: "#1E3A5F" }}>{s.text}</p>
+              <p style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--text)", marginBottom: "4px" }}>{s.desc}</p>
+              <p style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--text2)", fontStyle: "italic" }}>{s.how}</p>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      {bothStrats.length > 0 && (
+        <Card>
+          <h4 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "18px" }}>🔄</span> Estratégias para atenção e linguagem em conjunto
+          </h4>
+          {bothStrats.map((s,i) => (
+            <div key={s.id} style={{ marginBottom: "16px", padding: "14px", background: "#F5F3FF", borderRadius: "10px", borderLeft: "4px solid #7C5CBF" }}>
+              <p style={{ fontSize: "14px", fontWeight: 700, marginBottom: "4px", color: "#4C1D95" }}>{s.text}</p>
+              <p style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--text)", marginBottom: "4px" }}>{s.desc}</p>
+              <p style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--text2)", fontStyle: "italic" }}>{s.how}</p>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      {/* Próximos passos */}
+      <Card style={{ borderLeft: `4px solid ${result.dColor}` }}>
+        <h4 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "18px" }}>🎯</span> Próximos passos
+        </h4>
+        {(result.nextSteps || []).map((ns, i) => (
+          <div key={i} style={{ display: "flex", gap: "12px", marginBottom: "14px", alignItems: "flex-start" }}>
+            <span style={{ fontSize: "20px", flexShrink: 0 }}>{ns.icon}</span>
+            <div>
+              <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "2px" }}>{ns.text}</p>
+              <p style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--text2)" }}>{ns.desc}</p>
+            </div>
+          </div>
+        ))}
+      </Card>
+
+      <Warning><strong>Grave os resultados antes de sair!</strong><br/>Faça uma captura de ecrã ou utilize o botão Imprimir abaixo. Se fechar a aplicação, os resultados serão perdidos.</Warning>
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+        <button onClick={() => window.print()} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--blue)", color: "#fff", fontSize: "14px", fontWeight: 600, minWidth: "120px" }}>🖨 Guardar / Imprimir</button>
+        <button onClick={startNew} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--teal)", color: "#fff", fontSize: "14px", fontWeight: 600, minWidth: "120px" }}>+ Novo rastreio</button>
+        <button onClick={() => setMode("list")} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--surface)", color: "var(--text)", border: "1.5px solid var(--border)", fontSize: "14px", minWidth: "120px" }}>Ver todos</button>
       </div>
     </div>;
   }
