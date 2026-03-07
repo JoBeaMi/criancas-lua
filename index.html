@@ -50,21 +50,6 @@
 <script type="text/babel">
 const { useState, useMemo } = React;
 
-// Error boundary for debugging
-class ErrorBoundary extends React.Component {
-  constructor(props) { super(props); this.state = { error: null }; }
-  static getDerivedStateFromError(error) { return { error }; }
-  render() {
-    if (this.state.error) {
-      return React.createElement("div", {style:{padding:"40px",color:"red",fontFamily:"monospace"}},
-        React.createElement("h2", null, "Erro na aplicação"),
-        React.createElement("pre", {style:{whiteSpace:"pre-wrap"}}, this.state.error.toString()),
-        React.createElement("pre", {style:{whiteSpace:"pre-wrap",fontSize:"12px"}}, this.state.error.stack)
-      );
-    }
-    return this.props.children;
-  }
-}
 
 // ═══════════════════════════════════════════════════════════════
 // CRIANÇAS NO MUNDO DA LUA? — Rastreio Atenção e Linguagem
@@ -216,10 +201,10 @@ const SCREENING_BY_CYCLE = {
   expression: {
     label: "Expressão Oral", icon: "💬", color: "#6366F1",
     items: [
-      "Tem dificuldade em nomear objetos ou pessoas conhecidas (diz 'aquilo', 'o cena')",
+      "Tem dificuldade em nomear objetos ou pessoas conhecidas (diz 'aquilo', 'a cena')",
       "Conta experiências de forma confusa ou incompleta (salta passos, não se percebe)",
       "Usa vocabulário muito limitado para a idade",
-      "Faz frases curtas ou com erros gramaticais frequentes para a idade",
+      "Faz frases curtas ou com erros gramaticais pouco frequentes para a idade",
       "Tem dificuldade em responder a perguntas simples sobre o seu dia",
       "Sabe o que quer dizer mas não encontra as palavras certas",
     ],
@@ -579,120 +564,192 @@ const STRATEGIES_BY_CYCLE = {
   "Pré-escolar": {
     context: "No pré-escolar, muitas dificuldades de atenção e de linguagem ainda não são evidentes, mas os sinais de alerta já podem ser observados. Nesta faixa etária, as rotinas, o ambiente e a forma como comunicamos com a criança fazem toda a diferença.",
     attention: [
-      { id:"pre-a1", q:"Tenho uma rotina visual com fotografias para cada parte do dia", text:"Ter uma rotina visual com fotografias para cada parte do dia", desc:"Criar um quadro com a sequência do dia usando fotografias reais. Avisar sempre com antecedência quando vai haver uma mudança.", how:"Ex: Quadro com fotos: 'Acolhimento → Roda → Atividade → Lanche → Recreio'. Antes de mudar: 'Faltam 5 minutos para arrumar.'" },
-      { id:"pre-a2", q:"Dou apenas um pedido de cada vez e espero antes de repetir", text:"Dar apenas um pedido de cada vez e esperar antes de repetir", desc:"Frases muito curtas. Um pedido de cada vez. Depois de falar, esperar — não repetir logo nem acrescentar mais informação.", how:"Ex: 'Vai buscar os sapatos.' (Esperar 5 segundos.) Só depois: 'Agora veste o casaco.'" },
-      { id:"pre-a3", q:"Ignoro o comportamento indesejado e elogio logo o comportamento correto", text:"Ignorar o comportamento indesejado e elogiar logo o comportamento correto", desc:"Em vez de chamar a atenção para o que está mal, esperar e elogiar imediatamente quando o comportamento correto acontece.", how:"Ex: Em vez de 'Pára de te levantar!', esperar que se sente e dizer logo 'Boa, sentaste-te muito bem!'" },
-      { id:"pre-a4", q:"Faço pausas de movimento entre atividades", text:"Fazer pausas de movimento entre atividades (máximo 2-5 minutos sentado)", desc:"Intercalar atividades calmas com momentos de movimento. Permitir objetos manipuláveis (bolas de apertar, plasticina).", how:"Ex: Após 3 minutos sentado, dizer 'Vamos sacudir o corpo!' antes da atividade seguinte." },
-      { id:"pre-a5", q:"Peço à criança para dizer o que vai fazer antes de começar", text:"Pedir à criança para dizer o que vai fazer antes de começar", desc:"Verificar se a criança percebeu pedindo-lhe que repita com as suas palavras. Se não consegue, a instrução não foi compreendida.", how:"Ex: 'O que é que vais fazer agora? Diz-me.' Se a criança não responde ou diz outra coisa, repetir com calma." },
+      { id:"pre-a1", text:"Ter uma rotina visual com fotografias para cada parte do dia", desc:"Criar um quadro com a sequência do dia usando fotografias reais. Avisar sempre com antecedência quando vai haver uma mudança.", how:"Ex: Quadro com fotos: 'Acolhimento → Roda → Atividade → Lanche → Recreio'. Antes de mudar: 'Faltam 5 minutos para arrumar.'" },
+      { id:"pre-a2", text:"Dar apenas um pedido de cada vez e esperar antes de repetir", desc:"Frases muito curtas. Um pedido de cada vez. Depois de falar, esperar — não repetir logo nem acrescentar mais informação.", how:"Ex: 'Vai buscar os sapatos.' (Esperar 5 segundos.) Só depois: 'Agora veste o casaco.'" },
+      { id:"pre-a3", text:"Ignorar o comportamento indesejado e elogiar logo o comportamento correto", desc:"Em vez de chamar a atenção para o que está mal, esperar e elogiar imediatamente quando o comportamento correto acontece.", how:"Ex: Em vez de 'Pára de te levantar!', esperar que se sente e dizer logo 'Boa, sentaste-te muito bem!'" },
+      { id:"pre-a4", text:"Fazer pausas de movimento entre atividades (máximo 2-5 minutos sentado)", desc:"Intercalar atividades calmas com momentos de movimento. Permitir objetos manipuláveis (bolas de apertar, plasticina).", how:"Ex: Após 3 minutos sentado, dizer 'Vamos sacudir o corpo!' antes da atividade seguinte." },
+      { id:"pre-a5", text:"Pedir à criança para dizer o que vai fazer antes de começar", desc:"Verificar se a criança percebeu pedindo-lhe que repita com as suas palavras. Se não consegue, a instrução não foi compreendida.", how:"Ex: 'O que é que vais fazer agora? Diz-me.' Se a criança não responde ou diz outra coisa, repetir com calma." },
     ],
     language: [
-      { id:"pre-l1", q:"Uso sempre as mesmas palavras para as mesmas rotinas", text:"Usar sempre as mesmas palavras para as mesmas rotinas (não variar)", desc:"Dizer sempre 'Hora de arrumar' — não alternar entre 'guardar', 'pôr no lugar', etc. A repetição ajuda a criança a associar a palavra à ação.", how:"Ex: Usar pictogramas na rotina. Dizer sempre 'Hora de arrumar' com o mesmo gesto." },
-      { id:"pre-l2", q:"Antes de falar, paro, baixo-me ao nível da criança e olho-a nos olhos", text:"Antes de falar: parar, baixar ao nível da criança, olhar nos olhos", desc:"Nunca dar instruções à distância ou enquanto a criança se move. Parar, ajoelhar, tocar no ombro, esperar contacto visual.", how:"Ex: Ajoelhar, tocar no ombro, olhar nos olhos, e só depois dizer 'Vamos lavar as mãos.'" },
-      { id:"pre-l3", q:"Faço perguntas com duas opções em vez de perguntas abertas", text:"Fazer perguntas com duas opções em vez de perguntas abertas", desc:"Em vez de 'O que queres?', dar duas opções. Nunca assumir que silêncio significa que a criança compreendeu.", how:"Ex: 'Queres pintar ou brincar com blocos?' em vez de 'O que queres fazer?'" },
-      { id:"pre-l4", q:"Ensino palavras novas com objetos reais, imagens e gestos", text:"Ensinar palavras novas com objetos reais, imagens e gestos (repetir muitas vezes)", desc:"Cada palavra nova precisa de um objeto, uma imagem e um gesto. Repetir em pelo menos 5 contextos diferentes.", how:"Ex: Para ensinar 'enorme': mostrar algo grande, fazer gesto de grande, dizer 'O elefante é enorme', 'A torre é enorme', 'Esta bola é enorme'..." },
-      { id:"pre-l5", q:"Quando a criança diz algo errado, repito a forma correta com naturalidade", text:"Quando a criança diz algo errado, repetir a forma correta com naturalidade", desc:"Nunca corrigir diretamente ('Não se diz assim!'). Repetir o que a criança disse, mas com a forma correta, como se fosse natural.", how:"Ex: Se a criança diz 'Eu fazi um desenho', responder: 'Fizeste um desenho? Que bonito! O que desenhaste?'" },
-      { id:"pre-l6", q:"Associo a aprendizagem ao movimento e aos sentidos", text:"Associar a aprendizagem ao movimento e aos sentidos (tocar, saltar, cantar)", desc:"Aprender através do corpo: saltar sílabas, dançar ritmos, tocar texturas enquanto se nomeiam.", how:"Ex: 'Vamos saltar as sílabas: BO-NE-CO!' (um salto por sílaba). Cantar a rotina da manhã." },
+      { id:"pre-l1", text:"Usar sempre as mesmas palavras para as mesmas rotinas (não variar)", desc:"Dizer sempre 'Hora de arrumar' — não alternar entre 'guardar', 'pôr no lugar', etc. A repetição ajuda a criança a associar a palavra à ação.", how:"Ex: Usar pictogramas na rotina. Dizer sempre 'Hora de arrumar' com o mesmo gesto." },
+      { id:"pre-l2", text:"Antes de falar: parar, baixar ao nível da criança, olhar nos olhos", desc:"Nunca dar instruções à distância ou enquanto a criança se move. Parar, ajoelhar, tocar no ombro, esperar contacto visual.", how:"Ex: Ajoelhar, tocar no ombro, olhar nos olhos, e só depois dizer 'Vamos lavar as mãos.'" },
+      { id:"pre-l3", text:"Fazer perguntas com duas opções em vez de perguntas abertas", desc:"Em vez de 'O que queres?', dar duas opções. Nunca assumir que silêncio significa que a criança compreendeu.", how:"Ex: 'Queres pintar ou brincar com blocos?' em vez de 'O que queres fazer?'" },
+      { id:"pre-l4", text:"Ensinar palavras novas com objetos reais, imagens e gestos (repetir muitas vezes)", desc:"Cada palavra nova precisa de um objeto, uma imagem e um gesto. Repetir em pelo menos 5 contextos diferentes.", how:"Ex: Para ensinar 'enorme': mostrar algo grande, fazer gesto de grande, dizer 'O elefante é enorme', 'A torre é enorme', 'Esta bola é enorme'..." },
+      { id:"pre-l5", text:"Quando a criança diz algo errado, repetir a forma correta com naturalidade", desc:"Nunca corrigir diretamente ('Não se diz assim!'). Repetir o que a criança disse, mas com a forma correta, como se fosse natural.", how:"Ex: Se a criança diz 'Eu fazi um desenho', responder: 'Fizeste um desenho? Que bonito! O que desenhaste?'" },
+      { id:"pre-l6", text:"Associar a aprendizagem ao movimento e aos sentidos (tocar, saltar, cantar)", desc:"Aprender através do corpo: saltar sílabas, dançar ritmos, tocar texturas enquanto se nomeiam.", how:"Ex: 'Vamos saltar as sílabas: BO-NE-CO!' (um salto por sílaba). Cantar a rotina da manhã." },
     ],
     both: [
-      { id:"pre-b1", q:"Mostro, digo e faço ao mesmo tempo (nunca só falo)", text:"Mostrar, dizer e fazer ao mesmo tempo (nunca só falar)", desc:"Acompanhar sempre a palavra com gesto e ação. Usar as mesmas palavras sempre. Verificar com escolha: 'Queres A ou B?'", how:"Ex: Para 'Vamos lavar as mãos': dizer + apontar para o lavatório + fazer gesto de lavar. Verificar: 'Vamos lavar as mãos ou os pés?'" },
+      { id:"pre-b1", text:"Mostrar, dizer e fazer ao mesmo tempo (nunca só falar)", desc:"Acompanhar sempre a palavra com gesto e ação. Usar as mesmas palavras sempre. Verificar com escolha: 'Queres A ou B?'", how:"Ex: Para 'Vamos lavar as mãos': dizer + apontar para o lavatório + fazer gesto de lavar. Verificar: 'Vamos lavar as mãos ou os pés?'" },
     ]
   },
 
   "1.º Ciclo": {
     context: "Entre os 6 e os 8 anos, a criança está a aprender a aprender: a seguir rotinas, a manter a atenção, a compreender instruções e a expressar-se. Dificuldades de atenção e de linguagem podem manifestar-se de formas parecidas — adaptar a forma como comunicamos e organizamos a aula ajuda ambas.",
     attention: [
-      { id:"c1-a1", q:"Sento o aluno perto de mim e longe de distrações", text:"Sentar o aluno perto do professor e longe de distrações", desc:"Colocar o aluno na 1.ª fila, ao centro, longe de janelas e portas. Preferencialmente com um colega calmo ao lado.", how:"Ex: Pedir ao aluno para voltar à sala 2 minutos antes do fim do recreio para se reorientar antes da aula seguinte." },
-      { id:"c1-a2", q:"Digo ao aluno o que vai acontecer na aula antes de começar", text:"Dizer ao aluno o que vai acontecer na aula antes de começar", desc:"No início da aula, explicar o plano: o que vão fazer primeiro, depois, e a seguir. Reduz incerteza e ansiedade.", how:"Ex: 'Hoje vamos primeiro fazer cópia, depois matemática, e a seguir vamos ao recreio.'" },
-      { id:"c1-a3", q:"Uso um temporizador visual para marcar tempo de trabalho e pausa", text:"Usar um temporizador visual para marcar tempo de trabalho e pausa", desc:"Mostrar ao aluno quanto tempo falta para acabar a tarefa com um relógio visual (ex: Time Timer, ampulheta, cronómetro no quadro).", how:"Ex: 'Tens 10 minutos para esta ficha. Olha para o relógio — quando o vermelho acabar, paramos.'" },
-      { id:"c1-a4", q:"Permito objetos manipuláveis para reduzir a inquietação", text:"Permitir objetos manipuláveis para reduzir a inquietação", desc:"Deixar o aluno usar bolas de apertar, molas, ou outros objetos que ocupem as mãos sem perturbar a turma.", how:"Ex: Combinado discreto com o aluno: 'Podes usar a bola, mas só na mão que não escreve.'" },
-      { id:"c1-a5", q:"Vario o tom de voz e uso frases-sinal nos momentos importantes", text:"Variar o tom de voz e usar frases-sinal nos momentos importantes", desc:"Mudar o tom, o ritmo ou o volume da voz para sinalizar que vem informação importante. Usar sempre a mesma frase-sinal.", how:"Ex: 'Atenção, aqui vem a parte importante!' — dito sempre da mesma forma, para que o aluno reconheça o sinal." },
-      { id:"c1-a6", q:"Dou a instrução oralmente e escrevo-a no quadro ao mesmo tempo", text:"Dar a instrução oralmente E escrevê-la no quadro ao mesmo tempo", desc:"Dizer a instrução em voz alta, escrevê-la no quadro, mostrar um exemplo, e perguntar ao aluno o que vai fazer.", how:"Ex: Dizer 'Vamos fazer o exercício 3', apontar para o quadro onde está escrito, mostrar como se começa, e perguntar 'O que vais fazer primeiro?'" },
+      { id:"c1-a1", text:"Sentar o aluno perto do professor e longe de distrações", desc:"Colocar o aluno na 1.ª fila, ao centro, longe de janelas e portas. Preferencialmente com um colega calmo ao lado.", how:"Ex: Pedir ao aluno para voltar à sala 2 minutos antes do fim do recreio para se reorientar antes da aula seguinte." },
+      { id:"c1-a2", text:"Dizer ao aluno o que vai acontecer na aula antes de começar", desc:"No início da aula, explicar o plano: o que vão fazer primeiro, depois, e a seguir. Reduz incerteza e ansiedade.", how:"Ex: 'Hoje vamos primeiro fazer cópia, depois matemática, e a seguir vamos ao recreio.'" },
+      { id:"c1-a3", text:"Usar um temporizador visual para marcar tempo de trabalho e pausa", desc:"Mostrar ao aluno quanto tempo falta para acabar a tarefa com um relógio visual (ex: Time Timer, ampulheta, cronómetro no quadro).", how:"Ex: 'Tens 10 minutos para esta ficha. Olha para o relógio — quando o vermelho acabar, paramos.'" },
+      { id:"c1-a4", text:"Permitir objetos manipuláveis para reduzir a inquietação", desc:"Deixar o aluno usar bolas de apertar, molas, ou outros objetos que ocupem as mãos sem perturbar a turma.", how:"Ex: Combinado discreto com o aluno: 'Podes usar a bola, mas só na mão que não escreve.'" },
+      { id:"c1-a5", text:"Variar o tom de voz e usar frases-sinal nos momentos importantes", desc:"Mudar o tom, o ritmo ou o volume da voz para sinalizar que vem informação importante. Usar sempre a mesma frase-sinal.", how:"Ex: 'Atenção, aqui vem a parte importante!' — dito sempre da mesma forma, para que o aluno reconheça o sinal." },
+      { id:"c1-a6", text:"Dar a instrução oralmente E escrevê-la no quadro ao mesmo tempo", desc:"Dizer a instrução em voz alta, escrevê-la no quadro, mostrar um exemplo, e perguntar ao aluno o que vai fazer.", how:"Ex: Dizer 'Vamos fazer o exercício 3', apontar para o quadro onde está escrito, mostrar como se começa, e perguntar 'O que vais fazer primeiro?'" },
     ],
     language: [
-      { id:"c1-l1", q:"Digo o nome do aluno e espero antes de dar a instrução", text:"Dizer o nome do aluno e esperar antes de dar a instrução", desc:"Chamar o nome da criança, esperar que olhe para si, e só depois dar a instrução. Nunca falar enquanto o aluno está distraído.", how:"Ex: 'Miguel! (pausa, esperar contacto visual) Agora abre o livro na página 12.'" },
-      { id:"c1-l2", q:"Reduzo o ruído de fundo e garanto que fala uma pessoa de cada vez", text:"Reduzir o ruído de fundo e falar uma pessoa de cada vez", desc:"Fechar portas, pedir silêncio antes de dar instruções. Fazer pausas de 3 segundos entre pontos importantes.", how:"Ex: Antes de uma instrução importante, dizer 'Parem tudo e ouçam.' Esperar silêncio. Só depois falar." },
-      { id:"c1-l3", q:"Dou as instruções pela ordem em que devem ser feitas", text:"Dar as instruções pela ordem em que devem ser feitas (primeiro... depois...)", desc:"Dizer as coisas pela ordem certa. Não usar 'antes de' ou 'depois de' — usar 'primeiro' e 'segundo'.", how:"Ex: Dizer 'Primeiro copia. Depois faz o exercício.' Em vez de 'Antes de fazeres o exercício, copia o que está no quadro.'" },
-      { id:"c1-l4", q:"Tenho apoios visuais afixados na sala (listas, calendário, palavras-chave)", text:"Ter sempre apoios visuais afixados (listas de passos, calendário, palavras-chave)", desc:"Manter na parede ou na mesa do aluno: lista de passos para começar uma tarefa, calendário da rotina, palavras-chave do tema.", how:"Ex: Cartaz na parede: '1. Ler a pergunta  2. Pensar  3. Se não sei, pergunto  4. Fazer'. O aluno consulta sempre que precisa." },
-      { id:"c1-l5", q:"Verifico se o aluno compreendeu dando-lhe duas opções para escolher", text:"Verificar se o aluno compreendeu dando-lhe duas opções para escolher", desc:"Em vez de perguntar 'Percebeste?', dar duas opções. Se o aluno escolhe a errada, a instrução não foi compreendida.", how:"Ex: Em vez de 'O que aprendeste?', perguntar 'Aprendemos sobre os animais ou sobre as plantas?' — a resposta mostra logo se percebeu." },
-      { id:"c1-l6", q:"Ensino as palavras novas da matéria antes de as dar à turma", text:"Ensinar as palavras novas da matéria ANTES de as dar à turma", desc:"Antes de iniciar uma unidade nova, apresentar ao aluno as palavras-chave com imagens e exemplos. Enviar lista para casa.", how:"Ex: Antes da unidade sobre o corpo humano, mostrar imagens e ensinar 'esqueleto', 'músculo', 'órgão'. Criar mural de palavras na sala." },
-      { id:"c1-l7", q:"Ensino o que significam palavras como explica, resume, descreve, compara", text:"Ensinar o que significam as palavras das instruções escolares (explica, resume, descreve, compara)", desc:"Muitos alunos não sabem o que o professor quer quando diz 'explica' ou 'compara'. Ensinar com exemplos concretos o que cada palavra pede.", how:"Ex: 'Quando eu digo COMPARA, quero que digas o que é igual E o que é diferente. Vamos praticar: compara um gato e um cão.'" },
+      { id:"c1-l1", text:"Dizer o nome do aluno e esperar antes de dar a instrução", desc:"Chamar o nome da criança, esperar que olhe para si, e só depois dar a instrução. Nunca falar enquanto o aluno está distraído.", how:"Ex: 'Miguel! (pausa, esperar contacto visual) Agora abre o livro na página 12.'" },
+      { id:"c1-l2", text:"Reduzir o ruído de fundo e falar uma pessoa de cada vez", desc:"Fechar portas, pedir silêncio antes de dar instruções. Fazer pausas de 3 segundos entre pontos importantes.", how:"Ex: Antes de uma instrução importante, dizer 'Parem tudo e ouçam.' Esperar silêncio. Só depois falar." },
+      { id:"c1-l3", text:"Dar as instruções pela ordem em que devem ser feitas (primeiro... depois...)", desc:"Dizer as coisas pela ordem certa. Não usar 'antes de' ou 'depois de' — usar 'primeiro' e 'segundo'.", how:"Ex: Dizer 'Primeiro copia. Depois faz o exercício.' Em vez de 'Antes de fazeres o exercício, copia o que está no quadro.'" },
+      { id:"c1-l4", text:"Ter sempre apoios visuais afixados (listas de passos, calendário, palavras-chave)", desc:"Manter na parede ou na mesa do aluno: lista de passos para começar uma tarefa, calendário da rotina, palavras-chave do tema.", how:"Ex: Cartaz na parede: '1. Ler a pergunta  2. Pensar  3. Se não sei, pergunto  4. Fazer'. O aluno consulta sempre que precisa." },
+      { id:"c1-l5", text:"Verificar se o aluno compreendeu dando-lhe duas opções para escolher", desc:"Em vez de perguntar 'Percebeste?', dar duas opções. Se o aluno escolhe a errada, a instrução não foi compreendida.", how:"Ex: Em vez de 'O que aprendeste?', perguntar 'Aprendemos sobre os animais ou sobre as plantas?' — a resposta mostra logo se percebeu." },
+      { id:"c1-l6", text:"Ensinar as palavras novas da matéria ANTES de as dar à turma", desc:"Antes de iniciar uma unidade nova, apresentar ao aluno as palavras-chave com imagens e exemplos. Enviar lista para casa.", how:"Ex: Antes da unidade sobre o corpo humano, mostrar imagens e ensinar 'esqueleto', 'músculo', 'órgão'. Criar mural de palavras na sala." },
+      { id:"c1-l7", text:"Ensinar o que significam as palavras das instruções escolares (explica, resume, descreve, compara)", desc:"Muitos alunos não sabem o que o professor quer quando diz 'explica' ou 'compara'. Ensinar com exemplos concretos o que cada palavra pede.", how:"Ex: 'Quando eu digo COMPARA, quero que digas o que é igual E o que é diferente. Vamos praticar: compara um gato e um cão.'" },
     ],
     both: [
-      { id:"c1-b1", q:"Sento o aluno com um colega que possa ajudar a perceber o que é para fazer", text:"Sentar com um colega que possa ajudar a perceber o que é para fazer", desc:"Colocar o aluno ao lado de um colega calmo e disponível, que possa repetir ou explicar as instruções. Não punir por pedir ajuda.", how:"Ex: 'O João pode ajudar-te a perceber o que é para fazer. Podem falar baixinho.'" },
-      { id:"c1-b2", q:"Reduzo a quantidade de trabalhos de casa quando necessário", text:"Reduzir a quantidade de trabalhos de casa (não é facilitação — é necessário)", desc:"Um aluno com dificuldades de atenção demora 3x mais a fazer os TPC. Reduzir o volume permite que se concentre no essencial.", how:"Ex: Se a turma faz 10 exercícios, este aluno faz 5 (os mais importantes). Aceitar resposta oral como alternativa à escrita." },
+      { id:"c1-b1", text:"Sentar com um colega que possa ajudar a perceber o que é para fazer", desc:"Colocar o aluno ao lado de um colega calmo e disponível, que possa repetir ou explicar as instruções. Não punir por pedir ajuda.", how:"Ex: 'O João pode ajudar-te a perceber o que é para fazer. Podem falar baixinho.'" },
+      { id:"c1-b2", text:"Reduzir a quantidade de trabalhos de casa (não é facilitação — é necessário)", desc:"Um aluno com dificuldades de atenção demora 3x mais a fazer os TPC. Reduzir o volume permite que se concentre no essencial.", how:"Ex: Se a turma faz 10 exercícios, este aluno faz 5 (os mais importantes). Aceitar resposta oral como alternativa à escrita." },
     ]
   },
 
   "2.º Ciclo": {
     context: "No 2.º Ciclo, as exigências aumentam: mais disciplinas, mais professores, mais autonomia esperada. Alunos com dificuldades de atenção podem perder-se na transição entre aulas; alunos com dificuldades de linguagem podem não acompanhar o vocabulário novo. As estratégias que se seguem ajudam em ambos os casos.",
     attention: [
-      { id:"c2-a1", q:"Divido trabalhos grandes em partes pequenas com datas para cada parte", text:"Dividir trabalhos grandes em partes pequenas com datas para cada parte", desc:"Em vez de entregar um projeto inteiro de uma vez, pedir entregas parciais com prazos intermédios e uma lista de passos.", how:"Ex: Trabalho de grupo: parte 1 (pesquisa, dia 5), parte 2 (estrutura, dia 10), parte 3 (escrita, dia 17), parte 4 (revisão, dia 20)." },
-      { id:"c2-a2", q:"Garanto que o aluno anota os TPC (foto do quadro ou email aos pais)", text:"Garantir que o aluno anota os TPC (foto do quadro + email semanal aos pais)", desc:"O aluno deve ter sempre uma forma de saber o que tem para fazer: anotar na agenda, tirar foto ao quadro, ou receber email do professor.", how:"Ex: Combinar com o aluno: 'Antes de saíres, tiras foto ao quadro.' Professor envia resumo semanal às famílias." },
-      { id:"c2-a3", q:"Peço ao aluno para dizer em voz alta o que vai fazer antes de começar", text:"Pedir ao aluno para dizer em voz alta o que vai fazer antes de começar", desc:"Antes de iniciar uma tarefa, o aluno diz os passos. Se não consegue explicar, provavelmente não percebeu a instrução.", how:"Ex: 'Diz-me lá, o que vais fazer primeiro neste exercício? E depois? E quando acabares?'" },
-      { id:"c2-a4", q:"Quando possível, organizo para que os TPC sejam feitos na escola", text:"Quando possível, fazer os trabalhos de casa na escola (com apoio)", desc:"Em casa há mais distrações e menos estrutura. Se a escola tiver apoio ao estudo, é melhor fazer lá os TPC.", how:"Ex: Apoio ao estudo na escola com professor disponível. Reduzir o volume de trabalho para casa." },
-      { id:"c2-a5", q:"Tenho um espaço calmo onde o aluno pode ir quando se sente sobrecarregado", text:"Ter um espaço calmo onde o aluno possa ir quando se sentir sobrecarregado", desc:"Não é um castigo — é um sítio onde o aluno pode ir respirar e regressar quando estiver pronto. Convidar sempre a voltar com calor.", how:"Ex: 'Parece que precisas de um momento. Vai ali ao cantinho e volta quando estiveres pronto. Estou aqui quando voltares.'" },
+      { id:"c2-a1", text:"Dividir trabalhos grandes em partes pequenas com datas para cada parte", desc:"Em vez de entregar um projeto inteiro de uma vez, pedir entregas parciais com prazos intermédios e uma lista de passos.", how:"Ex: Trabalho de grupo: parte 1 (pesquisa, dia 5), parte 2 (estrutura, dia 10), parte 3 (escrita, dia 17), parte 4 (revisão, dia 20)." },
+      { id:"c2-a2", text:"Garantir que o aluno anota os TPC (foto do quadro + email semanal aos pais)", desc:"O aluno deve ter sempre uma forma de saber o que tem para fazer: anotar na agenda, tirar foto ao quadro, ou receber email do professor.", how:"Ex: Combinar com o aluno: 'Antes de saíres, tiras foto ao quadro.' Professor envia resumo semanal às famílias." },
+      { id:"c2-a3", text:"Pedir ao aluno para dizer em voz alta o que vai fazer antes de começar", desc:"Antes de iniciar uma tarefa, o aluno diz os passos. Se não consegue explicar, provavelmente não percebeu a instrução.", how:"Ex: 'Diz-me lá, o que vais fazer primeiro neste exercício? E depois? E quando acabares?'" },
+      { id:"c2-a4", text:"Quando possível, fazer os trabalhos de casa na escola (com apoio)", desc:"Em casa há mais distrações e menos estrutura. Se a escola tiver apoio ao estudo, é melhor fazer lá os TPC.", how:"Ex: Apoio ao estudo na escola com professor disponível. Reduzir o volume de trabalho para casa." },
+      { id:"c2-a5", text:"Ter um espaço calmo onde o aluno possa ir quando se sentir sobrecarregado", desc:"Não é um castigo — é um sítio onde o aluno pode ir respirar e regressar quando estiver pronto. Convidar sempre a voltar com afeto e tranquilidade.", how:"Ex: 'Parece que precisas de um momento. Vai ali ao cantinho e volta quando estiveres pronto. Estou aqui quando voltares.'" },
     ],
     language: [
-      { id:"c2-l1", q:"Crio uma lista de palavras-chave antes de cada unidade nova", text:"Criar uma lista de palavras-chave antes de cada unidade nova (por disciplina)", desc:"Antes de começar um tema novo, dar ao aluno uma lista com as palavras importantes e os seus significados.", how:"Ex: Antes da unidade de história sobre os Descobrimentos: 'expansão' (ir para novos territórios), 'navegação' (viajar de barco), 'especiarias' (produtos como pimenta e canela)..." },
-      { id:"c2-l2", q:"Uso mapas mentais, esquemas e códigos de cores para resumir matérias", text:"Usar mapas mentais, esquemas e códigos de cores para resumir matérias", desc:"Em vez de só texto, dar resumos visuais: esquemas com setas, mapas de ideias, código de cores por tema.", how:"Ex: Mapa mental do ciclo da água: sol no topo → seta para evaporação → nuvem → seta para chuva → rio. Tudo com cores." },
-      { id:"c2-l3", q:"Evito sarcasmo e ironia — digo exatamente o que quero dizer", text:"Evitar sarcasmo e ironia — dizer exatamente o que se quer dizer", desc:"Muitos alunos não percebem ironia. Quando o professor diz 'Isso está brilhante!' a rir, o aluno pode pensar que está mesmo bem.", how:"Ex: Em vez de 'Isso está brilhante!' (irónico), dizer claramente: 'Isto precisa de ser melhorado. Vou ajudar-te.'" },
-      { id:"c2-l4", q:"Ensino o que significam as palavras dos testes (descreve, compara, justifica)", text:"Ensinar o que significam as palavras dos testes (descreve, compara, justifica, analisa)", desc:"Muitos alunos não sabem o que o teste pede quando diz 'compara' ou 'justifica'. Praticar cada palavra com exemplos.", how:"Ex: 'Quando o teste diz COMPARA, tens de dizer o que é igual E o que é diferente. Vamos praticar: compara o rio e o mar.'" },
-      { id:"c2-l5", q:"Dou mais tempo nos testes a alunos que precisam", text:"Dar mais tempo nos testes (não é vantagem — é compensação)", desc:"O aluno com dificuldades de linguagem precisa de mais tempo para ler e processar as perguntas. Não é facilitação.", how:"Ex: 25% mais tempo. Ler as instruções do teste em voz alta antes de começar. Verificar se compreendeu o que é pedido." },
-      { id:"c2-l6", q:"Dou modelos de texto com início de frase e estrutura pronta", text:"Dar modelos de texto com início de frase e estrutura pronta", desc:"Para a escrita: dar caixas com início/meio/fim, listas de palavras de ligação, e frases para começar.", how:"Ex: 'Na minha opinião... porque... Por outro lado... Em conclusão...' O aluno só tem de completar." },
-      { id:"c2-l7", q:"Aceito respostas orais, em esquema ou em desenho (não só escrita)", text:"Aceitar respostas orais, em esquema ou em desenho (não só escrita)", desc:"Se o aluno sabe a matéria mas tem dificuldade em escrever, deixar que mostre o que sabe de outra forma.", how:"Ex: 'Podes fazer um esquema em vez de um texto, desde que incluas as ideias principais.' Aceitar resposta oral gravada." },
+      { id:"c2-l1", text:"Criar uma lista de palavras-chave antes de cada unidade nova (por disciplina)", desc:"Antes de começar um tema novo, dar ao aluno uma lista com as palavras importantes e os seus significados.", how:"Ex: Antes da unidade de história sobre os Descobrimentos: 'expansão' (ir para novos territórios), 'navegação' (viajar de barco), 'especiarias' (produtos como pimenta e canela)..." },
+      { id:"c2-l2", text:"Usar mapas mentais, esquemas e códigos de cores para resumir matérias", desc:"Em vez de só texto, dar resumos visuais: esquemas com setas, mapas de ideias, código de cores por tema.", how:"Ex: Mapa mental do ciclo da água: sol no topo → seta para evaporação → nuvem → seta para chuva → rio. Tudo com cores." },
+      { id:"c2-l3", text:"Evitar sarcasmo e ironia — dizer exatamente o que se quer dizer", desc:"Muitos alunos não percebem ironia. Quando o professor diz 'Isso está brilhante!' a rir, o aluno pode pensar que está mesmo bem.", how:"Ex: Em vez de 'Isso está brilhante!' (irónico), dizer claramente: 'Isto precisa de ser melhorado. Vou ajudar-te.'" },
+      { id:"c2-l4", text:"Ensinar o que significam as palavras dos testes (descreve, compara, justifica, analisa)", desc:"Muitos alunos não sabem o que o teste pede quando diz 'compara' ou 'justifica'. Praticar cada palavra com exemplos.", how:"Ex: 'Quando o teste diz COMPARA, tens de dizer o que é igual E o que é diferente. Vamos praticar: compara o rio e o mar.'" },
+      { id:"c2-l5", text:"Dar mais tempo nos testes (não é vantagem — é compensação)", desc:"Alunos com dificuldades de atenção ou de linguagem podem precisar de mais tempo para ler, processar e organizar as respostas. Não é facilitação — é compensação.", how:"Ex: 25% mais tempo. Ler as instruções do teste em voz alta antes de começar. Verificar se compreendeu o que é pedido." },
+      { id:"c2-l6", text:"Dar modelos de texto com início de frase e estrutura pronta", desc:"Para a escrita: dar caixas com início/meio/fim, listas de palavras de ligação, e frases para começar.", how:"Ex: 'Na minha opinião... porque... Por outro lado... Em conclusão...' O aluno só tem de completar." },
+      { id:"c2-l7", text:"Aceitar respostas orais, em esquema ou em desenho (não só escrita)", desc:"Se o aluno sabe a matéria mas tem dificuldade em escrever, deixar que mostre o que sabe de outra forma.", how:"Ex: 'Podes fazer um esquema em vez de um texto, desde que incluas as ideias principais.' Aceitar resposta oral gravada." },
     ],
     both: [
-      { id:"c2-b1", q:"Atribuo um colega de apoio que ajuda a perceber instruções", text:"Atribuir um colega de apoio que ajude a perceber instruções (rodar semanalmente)", desc:"Colocar o aluno com um colega que possa repetir ou explicar o que é para fazer. Rodar o colega para não sobrecarregar.", how:"Ex: 'Esta semana a Sara é a tua parceira de apoio. Podem rever juntos as instruções dos trabalhos.'" },
-      { id:"c2-b2", q:"Combino um sinal discreto para o aluno pedir ajuda sem se expor", text:"Combinar um sinal discreto para o aluno pedir ajuda sem se expor", desc:"Ensinar o aluno a sinalizar 'não percebi' sem ter de falar em frente à turma. Pode ser um gesto, um cartão ou um objeto.", how:"Ex: Levantar a borracha = 'preciso de ajuda'. Cartão verde/vermelho na mesa. Combinado que só o professor e o aluno conhecem." },
-      { id:"c2-b3", q:"Em conflitos, peço para primeiro desenhar o que aconteceu e só depois falar", text:"Em conflitos: primeiro desenhar o que aconteceu, depois falar", desc:"Quando há um conflito, não pedir logo explicação verbal. Usar suporte visual para o aluno sequenciar o que aconteceu.", how:"Ex: 'Vamos desenhar o que aconteceu. Primeiro... depois... e a seguir...' Só depois de ordenar é que se discute." },
+      { id:"c2-b1", text:"Atribuir um colega de apoio que ajude a perceber instruções (alternando para não sobrecarregar)", desc:"Colocar o aluno com um colega que possa repetir ou explicar o que é para fazer. Alternar o colega regularmente para não sobrecarregar ninguém.", how:"Ex: 'Esta semana a Sara é a tua parceira de apoio. Podem rever juntos as instruções dos trabalhos.'" },
+      { id:"c2-b2", text:"Combinar um sinal discreto para o aluno pedir ajuda sem se expor", desc:"Ensinar o aluno a sinalizar 'não percebi' sem ter de falar em frente à turma. Pode ser um gesto, um cartão ou um objeto.", how:"Ex: Levantar a borracha = 'preciso de ajuda'. Cartão verde/vermelho na mesa. Combinado que só o professor e o aluno conhecem." },
+      { id:"c2-b3", text:"Em conflitos: esperar que o aluno esteja regulado antes de falar sobre o que aconteceu", desc:"Quando há um conflito, não pedir logo uma explicação verbal. Primeiro ajudar o aluno a acalmar-se; só depois, com tranquilidade, reconstruir o que aconteceu passo a passo.", how:"Ex: 'Vejo que estás chateado. Respira fundo. Quando estiveres mais calmo, falamos sobre o que aconteceu. Não há pressa.'" },
     ]
   },
 
   "3.º Ciclo": {
     context: "No 3.º Ciclo, as exigências académicas, sociais e de organização intensificam-se. Alunos que compensavam antes podem começar a ter dificuldades visíveis — tanto na atenção e concentração como na compreensão e expressão. Estar atento a sinais de evitamento, ansiedade e isolamento é tão importante como adaptar o ensino.",
     attention: [
-      { id:"c3-a1", q:"Ensino truques de memória: frases com iniciais, imagens mentais, resumos a pares", text:"Ensinar truques de memória: frases com iniciais, imagens mentais, resumos a pares", desc:"Não assumir que o aluno sabe como memorizar. Ensinar técnicas concretas: criar frases com iniciais, associar imagens ao texto, resumir com um colega.", how:"Ex: Para memorizar 'Mercúrio, Vénus, Terra, Marte...': 'A Minha Velha Tia Maria...' Fazer resumo visual com imagens + texto." },
-      { id:"c3-a2", q:"Mostro como se tiram apontamentos (não assumo que sabem)", text:"Mostrar como se tiram apontamentos (não assumir que sabem)", desc:"Muitos alunos não sabem tirar notas. Demonstrar: título, 3 pontos-chave, um exemplo. Usar mapas mentais, post-its, símbolos.", how:"Ex: 'Vou mostrar como eu tiro notas desta apresentação. Olhem: título em cima, 3 ideias principais, um exemplo para cada.'" },
-      { id:"c3-a3", q:"No final de cada trabalho, peço ao aluno para refletir sobre o que correu bem e o que faria diferente", text:"No final de cada trabalho, pedir ao aluno para refletir: 'O que correu bem? O que faria diferente?'", desc:"Ajudar o aluno a pensar sobre o seu próprio processo de aprendizagem. Isto desenvolve-se com prática — não é natural.", how:"Ex: Ficha simples no final de cada projeto: 'O que correu bem?', 'O que foi difícil?', 'O que aprendi sobre como eu trabalho?'" },
-      { id:"c3-a4", q:"Ensino a organizar o tempo com um planeador visual", text:"Ensinar a organizar o tempo com um planeador visual (não assumir que sabem)", desc:"Muitos alunos não sabem gerir prazos. Ensinar a usar um planeador semanal com cores ou uma lista de prioridades.", how:"Ex: Planeador com cores: vermelho = entregar amanhã, amarelo = esta semana, verde = pode esperar. Rever juntos no início da semana." },
-      { id:"c3-a5", q:"Ajudo o aluno a descobrir em que condições se concentra melhor", text:"Ajudar o aluno a descobrir em que condições se concentra melhor", desc:"Sozinho ou em grupo? Com música ou em silêncio? De manhã ou à noite? Cada aluno é diferente.", how:"Ex: 'Experimenta estudar com música, sem música, e com auscultadores. Na semana seguinte diz-me qual funcionou melhor.'" },
+      { id:"c3-a1", text:"Ensinar truques de memória: frases com iniciais, imagens mentais, resumos a pares", desc:"Não assumir que o aluno sabe como memorizar. Ensinar técnicas concretas: criar frases com iniciais, associar imagens ao texto, resumir com um colega.", how:"Ex: Para memorizar 'Mercúrio, Vénus, Terra, Marte...': 'A Minha Velha Tia Maria...' Fazer resumo visual com imagens + texto." },
+      { id:"c3-a2", text:"Mostrar como se tiram apontamentos (não assumir que sabem)", desc:"Muitos alunos não sabem tirar notas. Demonstrar: título, 3 pontos-chave, um exemplo. Usar mapas mentais, post-its, símbolos.", how:"Ex: 'Vou mostrar como eu tiro notas desta apresentação. Olhem: título em cima, 3 ideias principais, um exemplo para cada.'" },
+      { id:"c3-a3", text:"No final de cada trabalho, pedir ao aluno para refletir: 'O que correu bem? O que faria diferente?'", desc:"Ajudar o aluno a pensar sobre o seu próprio processo de aprendizagem. Isto desenvolve-se com prática — não é natural.", how:"Ex: Ficha simples no final de cada projeto: 'O que correu bem?', 'O que foi difícil?', 'O que aprendi sobre como eu trabalho?'" },
+      { id:"c3-a4", text:"Ensinar a organizar o tempo com um planeador visual (não assumir que sabem)", desc:"Muitos alunos não sabem gerir prazos. Ensinar a usar um planeador semanal com cores ou uma lista de prioridades.", how:"Ex: Planeador com cores: vermelho = entregar amanhã, amarelo = esta semana, verde = pode esperar. Rever juntos no início da semana." },
+      { id:"c3-a5", text:"Ajudar o aluno a descobrir em que condições se concentra melhor", desc:"Sozinho ou em grupo? Com música ou em silêncio? De manhã ou à noite? Cada aluno é diferente.", how:"Ex: 'Experimenta estudar com música, sem música, e com auscultadores. Na semana seguinte diz-me qual funcionou melhor.'" },
     ],
     language: [
-      { id:"c3-l1", q:"Dou instruções curtas: uma ideia por frase, sem frases dentro de frases", text:"Dar instruções curtas: uma ideia por frase, sem frases dentro de frases", desc:"Não dizer tudo de uma vez. Separar as ideias. Antes de explicar matéria nova, perguntar o que já sabem sobre o tema.", how:"Ex: Em vez de 'Tendo em conta o que discutimos sobre a revolução industrial, analisem o impacto...', dizer: 'Lembram-se da revolução industrial? (pausa) Agora vamos analisar o impacto.'" },
-      { id:"c3-l2", q:"Decomponho palavras difíceis e explico as partes", text:"Decompor palavras difíceis e explicar as partes", desc:"Quando aparece uma palavra nova, partir em pedaços e explicar cada parte. Dar sinónimos e exemplos.", how:"Ex: 'Fotossíntese — vamos partir: foto = luz, síntese = juntar. A planta junta a luz com a água para fazer alimento. Outro exemplo: fotografia = foto + grafia = escrever com luz.'" },
-      { id:"c3-l3", q:"Disponibilizo versões áudio e visuais dos materiais (nunca só texto)", text:"Disponibilizar versões áudio e visuais dos materiais (nunca só texto)", desc:"Dar acesso a áudio dos textos, vídeos complementares, diagramas junto a instruções escritas.", how:"Ex: Disponibilizar o texto em áudio (podcast da matéria). Sempre: diagrama + texto, nunca só texto." },
-      { id:"c3-l4", q:"Permito que o aluno mostre o que sabe de formas variadas (não só texto escrito)", text:"Permitir que o aluno mostre o que sabe de formas variadas (não só texto escrito)", desc:"Apresentação oral, vídeo, mapa mental, esquema com imagens — tudo conta como demonstração de aprendizagem.", how:"Ex: 'Podes escolher: texto escrito, apresentação oral com slides, vídeo de 3 minutos, ou mapa mental comentado.'" },
-      { id:"c3-l5", q:"Pratico com os alunos o que cada palavra de exame pede", text:"Praticar o que cada palavra de exame pede, disciplina a disciplina", desc:"'Analisa' em História não é o mesmo que 'analisa' em Ciências. Praticar com exemplos concretos em cada disciplina.", how:"Ex: 'Em História, JUSTIFICA = diz o que aconteceu E porquê. Em Ciências, JUSTIFICA = dá a evidência da experiência.'" },
-      { id:"c3-l6", q:"Envio materiais antes da aula e dou mais tempo nos testes para ler as perguntas", text:"Enviar materiais antes da aula e dar mais tempo nos testes para ler as perguntas", desc:"O aluno com dificuldades de linguagem precisa de mais tempo para processar. Dar acesso antecipado ao PowerPoint e 5 minutos extra.", how:"Ex: Enviar o PowerPoint por email antes da aula. Nos testes, dar 5-10 minutos extra só para ler as perguntas antes de começar." },
+      { id:"c3-l1", text:"Dar instruções curtas: uma ideia por frase, sem frases dentro de frases", desc:"Não dizer tudo de uma vez. Separar as ideias. Antes de explicar matéria nova, perguntar o que já sabem sobre o tema.", how:"Ex: Em vez de 'Tendo em conta o que discutimos sobre a revolução industrial, analisem o impacto...', dizer: 'Lembram-se da revolução industrial? (pausa) Agora vamos analisar o impacto.'" },
+      { id:"c3-l2", text:"Decompor palavras difíceis e explicar as partes", desc:"Quando aparece uma palavra nova, partir em pedaços e explicar cada parte. Dar sinónimos e exemplos.", how:"Ex: 'Fotossíntese — vamos partir: foto = luz, síntese = juntar. A planta junta a luz com a água para fazer alimento. Outro exemplo: fotografia = foto + grafia = escrever com luz.'" },
+      { id:"c3-l3", text:"Disponibilizar versões áudio e visuais dos materiais (nunca só texto)", desc:"Dar acesso a áudio dos textos, vídeos complementares, diagramas junto a instruções escritas.", how:"Ex: Disponibilizar o texto em áudio (podcast da matéria). Sempre: diagrama + texto, nunca só texto." },
+      { id:"c3-l4", text:"Permitir que o aluno mostre o que sabe de formas variadas (não só texto escrito)", desc:"Apresentação oral, vídeo, mapa mental, esquema com imagens — tudo conta como demonstração de aprendizagem.", how:"Ex: 'Podes escolher: texto escrito, apresentação oral com slides, vídeo de 3 minutos, ou mapa mental comentado.'" },
+      { id:"c3-l5", text:"Praticar o que cada palavra de exame pede, disciplina a disciplina", desc:"'Analisa' em História não é o mesmo que 'analisa' em Ciências. Praticar com exemplos concretos em cada disciplina.", how:"Ex: 'Em História, JUSTIFICA = diz o que aconteceu E porquê. Em Ciências, JUSTIFICA = dá a evidência da experiência.'" },
+      { id:"c3-l6", text:"Enviar materiais antes da aula e dar mais tempo nos testes para ler as perguntas", desc:"Alunos com dificuldades de atenção ou de linguagem beneficiam de ter mais tempo e acesso antecipado aos materiais. Dar acesso antecipado ao PowerPoint e 5 minutos extra.", how:"Ex: Enviar o PowerPoint por email antes da aula. Nos testes, dar 5-10 minutos extra só para ler as perguntas antes de começar." },
     ],
     both: [
-      { id:"c3-b1", q:"Permito uso de fichas de apoio, fórmulas e listas de passos nos testes", text:"Permitir uso de fichas de apoio, fórmulas e listas de passos nos testes", desc:"Não é facilitação — é compensação. Calculadoras, fichas de fórmulas, listas de passos ajudam o aluno a focar-se no raciocínio.", how:"Ex: Folha de fórmulas em matemática. Checklist de passos para resolução de problemas. Lista de conjunções para escrita." },
-      { id:"c3-b2", q:"Estou atento/a a sinais de isolamento, ansiedade ou evitamento escolar", text:"Estar atento a sinais de isolamento, ansiedade ou evitamento escolar", desc:"Alunos com estas dificuldades estão em risco aumentado de problemas de saúde mental. Monitorizar e agir cedo.", how:"Ex: Perguntar regularmente: 'Como te sentes esta semana, de 1 a 5?' Identificar um adulto de confiança na escola." },
-      { id:"c3-b3", q:"Pratico com os alunos situações sociais difíceis (pedir ajuda, resolver conflitos)", text:"Praticar situações sociais difíceis: pedir ajuda, resolver conflitos, participar em grupo", desc:"Muitos alunos não sabem como pedir ajuda ou entrar numa conversa de grupo. Praticar antes, em contexto seguro.", how:"Ex: 'Vamos treinar: eu sou o professor de matemática e tu vais pedir ajuda. O que dizes primeiro?'" },
+      { id:"c3-b1", text:"Permitir uso de fichas de apoio, fórmulas e listas de passos nos testes", desc:"Não é facilitação — é compensação. Calculadoras, fichas de fórmulas, listas de passos ajudam o aluno a focar-se no raciocínio.", how:"Ex: Folha de fórmulas em matemática. Checklist de passos para resolução de problemas. Lista de conjunções para escrita." },
+      { id:"c3-b2", text:"Estar atento a sinais de isolamento, ansiedade ou evitamento escolar", desc:"Alunos com estas dificuldades estão em risco aumentado de problemas de saúde mental. Monitorizar e agir cedo.", how:"Ex: Perguntar regularmente: 'Como te sentes esta semana, de 1 a 5?' Identificar um adulto de confiança na escola." },
+      { id:"c3-b3", text:"Praticar situações sociais difíceis: pedir ajuda, resolver conflitos, participar em grupo", desc:"Muitos alunos não sabem como pedir ajuda ou entrar numa conversa de grupo. Praticar antes, em contexto seguro.", how:"Ex: 'Vamos treinar: eu sou o professor de matemática e tu vais pedir ajuda. O que dizes primeiro?'" },
     ]
   },
 
   "Ensino Superior": {
     context: "No Ensino Superior, o apoio estruturado da escola desaparece e o estudante precisa de se organizar sozinho. Dificuldades de atenção, de organização e de compreensão de textos complexos não desaparecem com a idade — precisam de estratégias e de apoio adequado. A chave é ajudar o estudante a conhecer-se e a pedir o que precisa.",
     attention: [
-      { id:"es-a1", q:"Ajudo o estudante a usar ferramentas digitais de organização", text:"Ajudar o estudante a usar ferramentas digitais de organização (calendário, lembretes, listas)", desc:"Muitos jovens adultos nunca aprenderam a organizar-se com ferramentas digitais. Experimentar várias até encontrar a que funciona.", how:"Ex: Google Calendar com alertas automáticos. Aplicações como Todoist ou Notion para gerir projetos e prazos." },
-      { id:"es-a2", q:"Parto trabalhos grandes em partes pequenas com datas intermédias", text:"Partir trabalhos grandes em partes pequenas com datas intermédias", desc:"Dissertações e projetos longos são avassaladores. Criar marcos parciais com datas concretas impede que fique tudo para o fim.", how:"Ex: 'O trabalho é para dia 30. Pesquisa: dia 10. Estrutura: dia 17. Primeiro rascunho: dia 24. Revisão: dia 28.'" },
-      { id:"es-a3", q:"Ensino técnicas de estudo concretas: fichas, auto-teste, revisão espaçada", text:"Ensinar técnicas de estudo concretas: fichas, auto-teste, revisão espaçada", desc:"Não assumir que o estudante sabe estudar. Mostrar técnicas: fichas com pergunta/resposta, rever em intervalos crescentes, auto-teste.", how:"Ex: Criar fichas com o conceito de um lado e a definição do outro. Usar apps como Anki para revisão espaçada." },
-      { id:"es-a4", q:"Ajudo o estudante a descobrir onde e quando se concentra melhor", text:"Ajudar a descobrir onde e quando se concentra melhor", desc:"Biblioteca ou casa? Silêncio ou música? Manhã ou noite? Cada pessoa é diferente e muitos nunca experimentaram alternativas.", how:"Ex: 'Experimenta uma semana na biblioteca e outra em casa. Regista onde produziste mais e partilha comigo.'" },
+      { id:"es-a1", text:"Ajudar o estudante a usar ferramentas digitais de organização (calendário, lembretes, listas)", desc:"Muitos jovens adultos nunca aprenderam a organizar-se com ferramentas digitais. Experimentar várias até encontrar a que funciona.", how:"Ex: Google Calendar com alertas automáticos. Aplicações como Todoist ou Notion para gerir projetos e prazos." },
+      { id:"es-a2", text:"Partir trabalhos grandes em partes pequenas com datas intermédias", desc:"Dissertações e projetos longos são avassaladores. Criar marcos parciais com datas concretas impede que fique tudo para o fim.", how:"Ex: 'O trabalho é para dia 30. Pesquisa: dia 10. Estrutura: dia 17. Primeiro rascunho: dia 24. Revisão: dia 28.'" },
+      { id:"es-a3", text:"Ensinar técnicas de estudo concretas: fichas, auto-teste, revisão espaçada", desc:"Não assumir que o estudante sabe estudar. Mostrar técnicas: fichas com pergunta/resposta, rever em intervalos crescentes, auto-teste.", how:"Ex: Criar fichas com o conceito de um lado e a definição do outro. Usar apps como Anki para revisão espaçada." },
+      { id:"es-a4", text:"Ajudar a descobrir onde e quando se concentra melhor", desc:"Biblioteca ou casa? Silêncio ou música? Manhã ou noite? Cada pessoa é diferente e muitos nunca experimentaram alternativas.", how:"Ex: 'Experimenta uma semana na biblioteca e outra em casa. Regista onde produziste mais e partilha comigo.'" },
     ],
     language: [
-      { id:"es-l1", q:"Oriento o estudante para os serviços de apoio da universidade logo no início", text:"Orientar o estudante para os serviços de apoio da universidade logo no início", desc:"Não esperar por dificuldades. Na matrícula, procurar o gabinete de apoio e registar necessidades com documentação.", how:"Ex: 'Vai ao Gabinete de Apoio ao Estudante na primeira semana. Leva o relatório e explica o que precisas.'" },
-      { id:"es-l2", q:"Uso ou recomendo tecnologia de apoio (gravação de aulas, leitura de ecrã)", text:"Usar tecnologia de apoio: gravação de aulas, leitura de ecrã, voz-para-texto", desc:"Gravar aulas (com permissão), usar software que lê textos em voz alta, ou que transcreve o que se diz.", how:"Ex: Gravar a aula no telemóvel. Usar o Google Read&Write para ouvir os textos. Ditar trabalhos em vez de escrever." },
-      { id:"es-l3", q:"Ajudo a pedir formalmente adaptações nas avaliações", text:"Pedir formalmente adaptações nas avaliações (tempo extra, enunciado simplificado)", desc:"O estudante tem direito a adaptações. Pedir formalmente: mais tempo, acesso antecipado aos materiais, avaliação alternativa.", how:"Ex: Email ao docente: 'Tenho adaptações formalizadas no gabinete de apoio. Preciso de tempo extra e acesso ao PowerPoint antes da aula.'" },
-      { id:"es-l4", q:"Pratico com o estudante competências do dia-a-dia (emails formais, formulários)", text:"Praticar competências do dia-a-dia: escrever emails formais, preencher formulários, falar com autoridades", desc:"Muitos jovens com dificuldades de linguagem têm dificuldade em tarefas que parecem simples: emails, formulários, conversas formais.", how:"Ex: 'Vamos praticar: como escreves um email ao professor a pedir ajuda? Assunto claro, saudação, pedido em 2 frases, despedida.'" },
-      { id:"es-l5", q:"Ajudo o estudante a saber explicar as suas necessidades a professores e colegas", text:"Ajudar o estudante a saber explicar as suas necessidades a professores e colegas", desc:"Criar um perfil pessoal: 'Tenho dificuldades de processamento linguístico. Preciso de: tempo extra, instruções escritas, materiais antecipados.'", how:"Ex: Praticar a frase: 'Posso falar consigo no início do semestre? Tenho algumas necessidades que gostava de explicar.'" },
+      { id:"es-l1", text:"Orientar o estudante para os serviços de apoio da universidade logo no início", desc:"Não esperar por dificuldades. Na matrícula, procurar o gabinete de apoio e registar necessidades com documentação.", how:"Ex: 'Vai ao Gabinete de Apoio ao Estudante na primeira semana. Leva o relatório e explica o que precisas.'" },
+      { id:"es-l2", text:"Usar tecnologia de apoio: gravação de aulas, leitura de ecrã, voz-para-texto", desc:"Gravar aulas (com permissão), usar software que lê textos em voz alta, ou que transcreve o que se diz.", how:"Ex: Gravar a aula no telemóvel. Usar o Google Read&Write para ouvir os textos. Ditar trabalhos em vez de escrever." },
+      { id:"es-l3", text:"Pedir formalmente adaptações nas avaliações (tempo extra, enunciado simplificado)", desc:"O estudante tem direito a adaptações. Pedir formalmente: mais tempo, acesso antecipado aos materiais, avaliação alternativa.", how:"Ex: Email ao docente: 'Tenho adaptações formalizadas no gabinete de apoio. Preciso de tempo extra e acesso ao PowerPoint antes da aula.'" },
+      { id:"es-l4", text:"Praticar competências do dia-a-dia: escrever emails formais, preencher formulários, falar com autoridades", desc:"Muitos jovens com dificuldades de linguagem têm dificuldade em tarefas que parecem simples: emails, formulários, conversas formais.", how:"Ex: 'Vamos praticar: como escreves um email ao professor a pedir ajuda? Assunto claro, saudação, pedido em 2 frases, despedida.'" },
+      { id:"es-l5", text:"Ajudar o estudante a saber explicar as suas necessidades a professores e colegas", desc:"Criar um perfil pessoal: 'Tenho dificuldades de processamento linguístico. Preciso de: tempo extra, instruções escritas, materiais antecipados.'", how:"Ex: Praticar a frase: 'Posso falar consigo no início do semestre? Tenho algumas necessidades que gostava de explicar.'" },
     ],
     both: [
-      { id:"es-b1", q:"Crio ou facilito uma relação com um tutor que compreenda as dificuldades", text:"Criar relação com um tutor ou mentor que compreenda as dificuldades do estudante", desc:"Ter pelo menos um professor ou tutor que saiba o que se passa e possa orientar ao longo do curso.", how:"Ex: 'Posso falar consigo no início do semestre? Tenho dificuldades que afetam a forma como processo informação.'" },
-      { id:"es-b2", q:"Estou atento/a a sinais de exaustão, ansiedade ou isolamento", text:"Estar atento a sinais de exaustão, ansiedade ou isolamento", desc:"Jovens adultos com estas dificuldades têm risco aumentado de burnout, ansiedade e depressão. Normalizar a procura de ajuda.", how:"Ex: Serviço de psicologia da universidade. Encaminhar para terapeutas familiarizados com dificuldades de linguagem." },
-      { id:"es-b3", q:"Preparo o estudante para entrevistas e para explicar as suas necessidades no trabalho", text:"Preparar para entrevistas de emprego e para explicar as suas necessidades no trabalho", desc:"Praticar a linguagem de entrevistas. Discutir se e quando explicar as dificuldades a um empregador.", how:"Ex: 'Numa entrevista, responde assim: Situação → Tarefa → Ação → Resultado. Vamos praticar com exemplos teus.'" },
+      { id:"es-b1", text:"Criar relação com um tutor ou mentor que compreenda as dificuldades do estudante", desc:"Ter pelo menos um professor ou tutor que saiba o que se passa e possa orientar ao longo do curso.", how:"Ex: 'Posso falar consigo no início do semestre? Tenho dificuldades que afetam a forma como processo informação.'" },
+      { id:"es-b2", text:"Estar atento a sinais de exaustão, ansiedade ou isolamento", desc:"Jovens adultos com estas dificuldades têm risco aumentado de burnout, ansiedade e depressão. Normalizar a procura de ajuda.", how:"Ex: Serviço de psicologia da universidade. Encaminhar para profissionais familiarizados com estas dificuldades." },
+      { id:"es-b3", text:"Preparar para entrevistas de emprego e para explicar as suas necessidades no trabalho", desc:"Praticar a linguagem de entrevistas. Discutir se e quando explicar as dificuldades a um empregador.", how:"Ex: 'Numa entrevista, responde assim: Situação → Tarefa → Ação → Resultado. Vamos praticar com exemplos teus.'" },
     ]
   }
+};
+
+// Versão na 1.ª pessoa para o questionário "O que já faz" (S4)
+const FIRST_PERSON = {
+  "pre-a1": "Tenho uma rotina visual com fotografias para cada parte do dia",
+  "pre-a2": "Dou apenas um pedido de cada vez e espero antes de repetir",
+  "pre-a3": "Ignoro o comportamento indesejado e elogio logo o comportamento correto",
+  "pre-a4": "Faço pausas de movimento entre atividades",
+  "pre-a5": "Peço à criança para dizer o que vai fazer antes de começar",
+  "pre-l1": "Uso sempre as mesmas palavras para as mesmas rotinas",
+  "pre-l2": "Antes de falar, paro, baixo-me ao nível da criança e olho-a nos olhos",
+  "pre-l3": "Faço perguntas com duas opções em vez de perguntas abertas",
+  "pre-l4": "Ensino palavras novas com objetos reais, imagens e gestos",
+  "pre-l5": "Quando a criança diz algo errado, repito a forma correta com naturalidade",
+  "pre-l6": "Associo a aprendizagem ao movimento e aos sentidos",
+  "pre-b1": "Mostro, digo e faço ao mesmo tempo (nunca só falo)",
+  "c1-a1": "Sento o aluno perto de mim e longe de distrações",
+  "c1-a2": "Digo ao aluno o que vai acontecer na aula antes de começar",
+  "c1-a3": "Uso um temporizador visual para marcar tempo de trabalho e pausa",
+  "c1-a4": "Permito objetos manipuláveis para reduzir a inquietação",
+  "c1-a5": "Vario o tom de voz e uso frases-sinal nos momentos importantes",
+  "c1-a6": "Dou a instrução oralmente e escrevo-a no quadro ao mesmo tempo",
+  "c1-l1": "Digo o nome do aluno e espero antes de dar a instrução",
+  "c1-l2": "Reduzo o ruído de fundo e garanto que fala uma pessoa de cada vez",
+  "c1-l3": "Dou as instruções pela ordem em que devem ser feitas",
+  "c1-l4": "Tenho apoios visuais afixados na sala (listas, calendário, palavras-chave)",
+  "c1-l5": "Verifico se o aluno compreendeu dando-lhe duas opções para escolher",
+  "c1-l6": "Ensino as palavras novas da matéria antes de as dar à turma",
+  "c1-l7": "Ensino o que significam palavras como explica, resume, descreve, compara",
+  "c1-b1": "Sento o aluno com um colega que possa ajudar a perceber o que é para fazer",
+  "c1-b2": "Reduzo a quantidade de trabalhos de casa quando necessário",
+  "c2-a1": "Divido trabalhos grandes em partes pequenas com datas para cada parte",
+  "c2-a2": "Garanto que o aluno anota os TPC (foto do quadro ou email aos pais)",
+  "c2-a3": "Peço ao aluno para dizer em voz alta o que vai fazer antes de começar",
+  "c2-a4": "Quando possível, organizo para que os TPC sejam feitos na escola",
+  "c2-a5": "Tenho um espaço calmo onde o aluno pode ir quando se sente sobrecarregado",
+  "c2-l1": "Crio uma lista de palavras-chave antes de cada unidade nova",
+  "c2-l2": "Uso mapas mentais, esquemas e códigos de cores para resumir matérias",
+  "c2-l3": "Evito sarcasmo e ironia — digo exatamente o que quero dizer",
+  "c2-l4": "Ensino o que significam as palavras dos testes (descreve, compara, justifica)",
+  "c2-l5": "Dou mais tempo nos testes a alunos que precisam",
+  "c2-l6": "Dou modelos de texto com início de frase e estrutura pronta",
+  "c2-l7": "Aceito respostas orais, em esquema ou em desenho (não só escrita)",
+  "c2-b1": "Atribuo um colega de apoio que ajuda a perceber instruções (alternando para não sobrecarregar)",
+  "c2-b2": "Combino um sinal discreto para o aluno pedir ajuda sem se expor",
+  "c2-b3": "Em conflitos, espero que o aluno esteja regulado antes de falar sobre o que aconteceu",
+  "c3-a1": "Ensino truques de memória: frases com iniciais, imagens mentais, resumos a pares",
+  "c3-a2": "Mostro como se tiram apontamentos (não assumo que sabem)",
+  "c3-a3": "No final de cada trabalho, peço ao aluno para refletir sobre o que correu bem e o que faria diferente",
+  "c3-a4": "Ensino a organizar o tempo com um planeador visual",
+  "c3-a5": "Ajudo o aluno a descobrir em que condições se concentra melhor",
+  "c3-l1": "Dou instruções curtas: uma ideia por frase, sem frases dentro de frases",
+  "c3-l2": "Decomponho palavras difíceis e explico as partes",
+  "c3-l3": "Disponibilizo versões áudio e visuais dos materiais (nunca só texto)",
+  "c3-l4": "Permito que o aluno mostre o que sabe de formas variadas (não só texto escrito)",
+  "c3-l5": "Pratico com os alunos o que cada palavra de exame pede",
+  "c3-l6": "Envio materiais antes da aula e dou mais tempo nos testes para ler as perguntas",
+  "c3-b1": "Permito uso de fichas de apoio, fórmulas e listas de passos nos testes",
+  "c3-b2": "Estou atento/a a sinais de isolamento, ansiedade ou evitamento escolar",
+  "c3-b3": "Pratico com os alunos situações sociais difíceis (pedir ajuda, resolver conflitos)",
+  "es-a1": "Ajudo o estudante a usar ferramentas digitais de organização",
+  "es-a2": "Parto trabalhos grandes em partes pequenas com datas intermédias",
+  "es-a3": "Ensino técnicas de estudo concretas: fichas, auto-teste, revisão espaçada",
+  "es-a4": "Ajudo o estudante a descobrir onde e quando se concentra melhor",
+  "es-l1": "Oriento o estudante para os serviços de apoio da universidade logo no início",
+  "es-l2": "Uso ou recomendo tecnologia de apoio (gravação de aulas, leitura de ecrã)",
+  "es-l3": "Ajudo a pedir formalmente adaptações nas avaliações",
+  "es-l4": "Pratico com o estudante competências do dia-a-dia (emails formais, formulários)",
+  "es-l5": "Ajudo o estudante a saber explicar as suas necessidades a professores e colegas",
+  "es-b1": "Crio ou facilito uma relação com um tutor que compreenda as dificuldades",
+  "es-b2": "Estou atento/a a sinais de exaustão, ansiedade ou isolamento",
+  "es-b3": "Preparo o estudante para entrevistas e para explicar as suas necessidades no trabalho",
 };
 
 function getStrategiesForCycle(cycle) {
@@ -753,7 +810,7 @@ const VIGNETTES = [
   { id: "v2", title: "Caso B — A Leonor" },
 ];
 
-const REFERRAL_OPTIONS = ["Psicólogo/a","Terapeuta da fala","Pediatra","Neuropediatra","Equipa multidisciplinar","Outro"];
+const REFERRAL_OPTIONS = ["Psicólogo/a","Terapeuta da fala","Pediatra","Equipa multidisciplinar","Outro"];
 const HYPOTHESIS_OPTIONS = ["Principalmente atenção/comportamento","Principalmente linguagem","Ambos (atenção e linguagem)","Nenhuma dificuldade significativa"];
 
 // ─── PRÓXIMOS PASSOS E EXPLICAÇÕES ──────────────────────────
@@ -761,7 +818,7 @@ const HYPOTHESIS_OPTIONS = ["Principalmente atenção/comportamento","Principalm
 const NEXT_STEPS = {
   "Encaminhar": [
     { icon: "🔔", text: "Comunicar à família", desc: "Partilhe as suas observações com os pais/encarregados de educação, focando nos comportamentos observados (não em diagnósticos)." },
-    { icon: "📋", text: "Solicitar avaliação especializada", desc: "Encaminhe para o profissional adequado (terapeuta da fala se predominância linguagem; psicólogo/neuropediatra se predominância atenção; equipa multidisciplinar se perfil misto)." },
+    { icon: "📋", text: "Solicitar avaliação especializada", desc: "Encaminhe para o profissional adequado (terapeuta da fala se predominância linguagem; psicólogo se predominância atenção; equipa multidisciplinar se perfil misto)." },
     { icon: "📝", text: "Documentar observações", desc: "Registe exemplos concretos de comportamentos em sala de aula — datas, contextos, frequência. Isto será essencial para a avaliação." },
     { icon: "🔄", text: "Manter estratégias de sala", desc: "Enquanto aguarda avaliação, implemente as estratégias recomendadas. Monitorize e registe se há melhoria." },
   ],
@@ -1211,7 +1268,7 @@ function TeacherProfile({ onComplete }) {
       )}
       {cycleStrats.map((s, i) => (
         <div key={s.id} style={{ marginBottom: "20px", padding: "14px", background: i%2===0 ? "var(--surface)" : "var(--surface2)", borderRadius: "10px", border: "1px solid var(--border)" }}>
-          <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "4px" }}>{s.q || s.text}</p>
+          <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "4px" }}>{FIRST_PERSON[s.id] || s.text}</p>
           {s.desc && <p style={{ fontSize: "13px", color: "var(--text2)", marginBottom: "10px", lineHeight: 1.5 }}>{s.desc}</p>}
           <Scale7 value={stratUse[s.id]} onChange={v => setStratUse({...stratUse, [s.id]: v})} scale={SCALES.strategy} />
         </div>
@@ -2027,7 +2084,7 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(ErrorBoundary, null, React.createElement(App)));
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
 </script>
 </body>
 </html>
