@@ -10,32 +10,32 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #F7F6F3;
+      --bg: #FAFAF8;
       --surface: #FFFFFF;
-      --surface2: #F0EFEB;
-      --border: #E2E0D9;
+      --surface2: #F5F4F0;
+      --border: #E8E6E0;
       --text: #2D2B27;
-      --text2: #6B6860;
-      --text3: #9E9B93;
+      --text2: #5C5A54;
+      --text3: #8E8B83;
       --teal: #2A7C6F;
       --teal-dark: #1F5F55;
-      --teal-light: #E6F2EF;
+      --teal-light: #F5FFF3;
       --coral: #D97757;
-      --coral-light: #FDF0EB;
+      --coral-light: #FFF6EB;
       --blue: #3B7DD8;
-      --blue-light: #EBF2FC;
+      --blue-light: #EBF4FB;
       --purple: #7C5CBF;
       --red: #D94F4F;
-      --red-light: #FDECEC;
+      --red-light: #FFF0F0;
       --green: #2D9B6E;
-      --green-light: #E8F8F0;
+      --green-light: #F5FFF3;
       --amber: #D4940A;
-      --amber-light: #FEF7E0;
-      --radius: 12px;
-      --shadow: 0 1px 3px rgba(0,0,0,0.06);
+      --amber-light: #FFF6EB;
+      --radius: 14px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'DM Sans', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    body { font-family: 'DM Sans', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; font-size: 16px; -webkit-font-smoothing: antialiased; }
     #root { min-height: 100vh; }
     button { font-family: inherit; cursor: pointer; border: none; outline: none; }
     input, select, textarea { font-family: inherit; }
@@ -59,7 +59,6 @@ const { useState, useMemo } = React;
 // ─── CONFIGURAÇÃO ───────────────────────────────────────────
 // Cole aqui o URL do Google Apps Script após deploy:
 const API_URL = "https://script.google.com/macros/s/AKfycbxEw7bzcQ0ycMKGaiOApeEZMg1DEiF2w86E7gzB0PZaYEb3WmgKoqi74PYYY-o7NlUi/exec";
-// Exemplo: "https://script.google.com/macros/s/AKfycbx.../exec"
 
 async function sendToSheet(action, payload) {
   if (!API_URL) { console.warn("API_URL vazio"); return; }
@@ -569,6 +568,7 @@ const STRATEGIES_BY_CYCLE = {
       { id:"pre-a3", text:"Ignorar o comportamento indesejado e elogiar logo o comportamento correto", desc:"Em vez de chamar a atenção para o que está mal, esperar e elogiar imediatamente quando o comportamento correto acontece.", how:"Ex: Em vez de 'Pára de te levantar!', esperar que se sente e dizer logo 'Boa, sentaste-te muito bem!'" },
       { id:"pre-a4", text:"Fazer pausas de movimento entre atividades (máximo 2-5 minutos sentado)", desc:"Intercalar atividades calmas com momentos de movimento. Permitir objetos manipuláveis (bolas de apertar, plasticina).", how:"Ex: Após 3 minutos sentado, dizer 'Vamos sacudir o corpo!' antes da atividade seguinte." },
       { id:"pre-a5", text:"Pedir à criança para dizer o que vai fazer antes de começar", desc:"Verificar se a criança percebeu pedindo-lhe que repita com as suas palavras. Se não consegue, a instrução não foi compreendida.", how:"Ex: 'O que é que vais fazer agora? Diz-me.' Se a criança não responde ou diz outra coisa, repetir com calma." },
+      { id:"pre-a6", text:"Começar por tarefas que a criança já consegue fazer (aprendizagem sem erro)", desc:"Começar sempre por algo que a criança domina — constrói confiança e reduz frustração. Só depois introduzir o desafio novo.", how:"Ex: Antes de uma atividade difícil, propor uma que a criança já sabe fazer bem. Elogiar. Depois avançar." },
     ],
     language: [
       { id:"pre-l1", text:"Usar sempre as mesmas palavras para as mesmas rotinas (não variar)", desc:"Dizer sempre 'Hora de arrumar' — não alternar entre 'guardar', 'pôr no lugar', etc. A repetição ajuda a criança a associar a palavra à ação.", how:"Ex: Usar pictogramas na rotina. Dizer sempre 'Hora de arrumar' com o mesmo gesto." },
@@ -580,6 +580,8 @@ const STRATEGIES_BY_CYCLE = {
     ],
     both: [
       { id:"pre-b1", text:"Mostrar, dizer e fazer ao mesmo tempo (nunca só falar)", desc:"Acompanhar sempre a palavra com gesto e ação. Usar as mesmas palavras sempre. Verificar com escolha: 'Queres A ou B?'", how:"Ex: Para 'Vamos lavar as mãos': dizer + apontar para o lavatório + fazer gesto de lavar. Verificar: 'Vamos lavar as mãos ou os pés?'" },
+      { id:"pre-b2", text:"Dar tempo à criança para processar antes de repetir ou reformular", desc:"Depois de falar, esperar em silêncio pelo menos 5 segundos. Não repetir com palavras diferentes — isso adiciona mais linguagem a processar.", how:"Ex: Dar a instrução, contar mentalmente até 5, e só depois repetir se necessário — com as mesmas palavras." },
+      { id:"pre-b3", text:"Antecipar transições e mudanças de atividade com aviso prévio", desc:"Avisar antes de mudar de atividade. Reduz ansiedade em crianças com dificuldades de atenção e dá tempo para processar a mudança.", how:"Ex: 'Faltam 5 minutos para arrumar.' Depois: 'Faltam 2 minutos.' Depois: 'Agora vamos arrumar.'" },
     ]
   },
 
@@ -600,11 +602,11 @@ const STRATEGIES_BY_CYCLE = {
       { id:"c1-l4", text:"Ter sempre apoios visuais afixados (listas de passos, calendário, palavras-chave)", desc:"Manter na parede ou na mesa do aluno: lista de passos para começar uma tarefa, calendário da rotina, palavras-chave do tema.", how:"Ex: Cartaz na parede: '1. Ler a pergunta  2. Pensar  3. Se não sei, pergunto  4. Fazer'. O aluno consulta sempre que precisa." },
       { id:"c1-l5", text:"Verificar se o aluno compreendeu dando-lhe duas opções para escolher", desc:"Em vez de perguntar 'Percebeste?', dar duas opções. Se o aluno escolhe a errada, a instrução não foi compreendida.", how:"Ex: Em vez de 'O que aprendeste?', perguntar 'Aprendemos sobre os animais ou sobre as plantas?' — a resposta mostra logo se percebeu." },
       { id:"c1-l6", text:"Ensinar as palavras novas da matéria ANTES de as dar à turma", desc:"Antes de iniciar uma unidade nova, apresentar ao aluno as palavras-chave com imagens e exemplos. Enviar lista para casa.", how:"Ex: Antes da unidade sobre o corpo humano, mostrar imagens e ensinar 'esqueleto', 'músculo', 'órgão'. Criar mural de palavras na sala." },
-      { id:"c1-l7", text:"Ensinar o que significam as palavras das instruções escolares (explica, resume, descreve, compara)", desc:"Muitos alunos não sabem o que o professor quer quando diz 'explica' ou 'compara'. Ensinar com exemplos concretos o que cada palavra pede.", how:"Ex: 'Quando eu digo COMPARA, quero que digas o que é igual E o que é diferente. Vamos praticar: compara um gato e um cão.'" },
     ],
     both: [
       { id:"c1-b1", text:"Sentar com um colega que possa ajudar a perceber o que é para fazer", desc:"Colocar o aluno ao lado de um colega calmo e disponível, que possa repetir ou explicar as instruções. Não punir por pedir ajuda.", how:"Ex: 'O João pode ajudar-te a perceber o que é para fazer. Podem falar baixinho.'" },
       { id:"c1-b2", text:"Reduzir a quantidade de trabalhos de casa (não é facilitação — é necessário)", desc:"Um aluno com dificuldades de atenção demora 3x mais a fazer os TPC. Reduzir o volume permite que se concentre no essencial.", how:"Ex: Se a turma faz 10 exercícios, este aluno faz 5 (os mais importantes). Aceitar resposta oral como alternativa à escrita." },
+      { id:"c1-b3", text:"Assumir sempre que o aluno está a tentar — comportamento difícil pode ser frustração ou incompreensão", desc:"Falta de início pode significar que não processou a instrução. Silêncio pode ser processamento, não descaso. Comportamento difícil pode ser frustração.", how:"Ex: Em vez de 'Não estás a ouvir!', tentar 'Precisas que repita? Mostra-me o que vais fazer.'" },
     ]
   },
 
@@ -616,6 +618,7 @@ const STRATEGIES_BY_CYCLE = {
       { id:"c2-a3", text:"Pedir ao aluno para dizer em voz alta o que vai fazer antes de começar", desc:"Antes de iniciar uma tarefa, o aluno diz os passos. Se não consegue explicar, provavelmente não percebeu a instrução.", how:"Ex: 'Diz-me lá, o que vais fazer primeiro neste exercício? E depois? E quando acabares?'" },
       { id:"c2-a4", text:"Quando possível, fazer os trabalhos de casa na escola (com apoio)", desc:"Em casa há mais distrações e menos estrutura. Se a escola tiver apoio ao estudo, é melhor fazer lá os TPC.", how:"Ex: Apoio ao estudo na escola com professor disponível. Reduzir o volume de trabalho para casa." },
       { id:"c2-a5", text:"Ter um espaço calmo onde o aluno possa ir quando se sentir sobrecarregado", desc:"Não é um castigo — é um sítio onde o aluno pode ir respirar e regressar quando estiver pronto. Convidar sempre a voltar com afeto e tranquilidade.", how:"Ex: 'Parece que precisas de um momento. Vai ali ao cantinho e volta quando estiveres pronto. Estou aqui quando voltares.'" },
+      { id:"c2-a6", text:"Começar sempre por uma tarefa que o aluno já consegue antes de introduzir desafios novos", desc:"Aprendizagem sem erro: primeiro sucesso, depois desafio. Quanto mais velho o aluno não identificado, mais enraizado o padrão de desistência.", how:"Ex: Antes de um exercício difícil, dar um que o aluno domina. Elogiar. Só depois avançar para o novo." },
     ],
     language: [
       { id:"c2-l1", text:"Criar uma lista de palavras-chave antes de cada unidade nova (por disciplina)", desc:"Antes de começar um tema novo, dar ao aluno uma lista com as palavras importantes e os seus significados.", how:"Ex: Antes da unidade de história sobre os Descobrimentos: 'expansão' (ir para novos territórios), 'navegação' (viajar de barco), 'especiarias' (produtos como pimenta e canela)..." },
@@ -624,7 +627,6 @@ const STRATEGIES_BY_CYCLE = {
       { id:"c2-l4", text:"Ensinar o que significam as palavras dos testes (descreve, compara, justifica, analisa)", desc:"Muitos alunos não sabem o que o teste pede quando diz 'compara' ou 'justifica'. Praticar cada palavra com exemplos.", how:"Ex: 'Quando o teste diz COMPARA, tens de dizer o que é igual E o que é diferente. Vamos praticar: compara o rio e o mar.'" },
       { id:"c2-l5", text:"Dar mais tempo nos testes (não é vantagem — é compensação)", desc:"Alunos com dificuldades de atenção ou de linguagem podem precisar de mais tempo para ler, processar e organizar as respostas. Não é facilitação — é compensação.", how:"Ex: 25% mais tempo. Ler as instruções do teste em voz alta antes de começar. Verificar se compreendeu o que é pedido." },
       { id:"c2-l6", text:"Dar modelos de texto com início de frase e estrutura pronta", desc:"Para a escrita: dar caixas com início/meio/fim, listas de palavras de ligação, e frases para começar.", how:"Ex: 'Na minha opinião... porque... Por outro lado... Em conclusão...' O aluno só tem de completar." },
-      { id:"c2-l7", text:"Aceitar respostas orais, em esquema ou em desenho (não só escrita)", desc:"Se o aluno sabe a matéria mas tem dificuldade em escrever, deixar que mostre o que sabe de outra forma.", how:"Ex: 'Podes fazer um esquema em vez de um texto, desde que incluas as ideias principais.' Aceitar resposta oral gravada." },
     ],
     both: [
       { id:"c2-b1", text:"Atribuir um colega de apoio que ajude a perceber instruções (alternando para não sobrecarregar)", desc:"Colocar o aluno com um colega que possa repetir ou explicar o que é para fazer. Alternar o colega regularmente para não sobrecarregar ninguém.", how:"Ex: 'Esta semana a Sara é a tua parceira de apoio. Podem rever juntos as instruções dos trabalhos.'" },
@@ -641,6 +643,7 @@ const STRATEGIES_BY_CYCLE = {
       { id:"c3-a3", text:"No final de cada trabalho, pedir ao aluno para refletir: 'O que correu bem? O que faria diferente?'", desc:"Ajudar o aluno a pensar sobre o seu próprio processo de aprendizagem. Isto desenvolve-se com prática — não é natural.", how:"Ex: Ficha simples no final de cada projeto: 'O que correu bem?', 'O que foi difícil?', 'O que aprendi sobre como eu trabalho?'" },
       { id:"c3-a4", text:"Ensinar a organizar o tempo com um planeador visual (não assumir que sabem)", desc:"Muitos alunos não sabem gerir prazos. Ensinar a usar um planeador semanal com cores ou uma lista de prioridades.", how:"Ex: Planeador com cores: vermelho = entregar amanhã, amarelo = esta semana, verde = pode esperar. Rever juntos no início da semana." },
       { id:"c3-a5", text:"Ajudar o aluno a descobrir em que condições se concentra melhor", desc:"Sozinho ou em grupo? Com música ou em silêncio? De manhã ou à noite? Cada aluno é diferente.", how:"Ex: 'Experimenta estudar com música, sem música, e com auscultadores. Na semana seguinte diz-me qual funcionou melhor.'" },
+      { id:"c3-a6", text:"Permitir pausas curtas e estruturadas durante tarefas longas (ex: 5 min trabalho → 1 min pausa)", desc:"Blocos de trabalho curtos com micropausas planeadas. Não é preguiça — é gestão da capacidade atencional. Combinado prévio com o aluno.", how:"Ex: 'Vamos combinar: trabalhas 20 minutos, fazes 5 de pausa. Usa o cronómetro do telemóvel.'" },
     ],
     language: [
       { id:"c3-l1", text:"Dar instruções curtas: uma ideia por frase, sem frases dentro de frases", desc:"Não dizer tudo de uma vez. Separar as ideias. Antes de explicar matéria nova, perguntar o que já sabem sobre o tema.", how:"Ex: Em vez de 'Tendo em conta o que discutimos sobre a revolução industrial, analisem o impacto...', dizer: 'Lembram-se da revolução industrial? (pausa) Agora vamos analisar o impacto.'" },
@@ -664,6 +667,8 @@ const STRATEGIES_BY_CYCLE = {
       { id:"es-a2", text:"Partir trabalhos grandes em partes pequenas com datas intermédias", desc:"Dissertações e projetos longos são avassaladores. Criar marcos parciais com datas concretas impede que fique tudo para o fim.", how:"Ex: 'O trabalho é para dia 30. Pesquisa: dia 10. Estrutura: dia 17. Primeiro rascunho: dia 24. Revisão: dia 28.'" },
       { id:"es-a3", text:"Ensinar técnicas de estudo concretas: fichas, auto-teste, revisão espaçada", desc:"Não assumir que o estudante sabe estudar. Mostrar técnicas: fichas com pergunta/resposta, rever em intervalos crescentes, auto-teste.", how:"Ex: Criar fichas com o conceito de um lado e a definição do outro. Usar apps como Anki para revisão espaçada." },
       { id:"es-a4", text:"Ajudar a descobrir onde e quando se concentra melhor", desc:"Biblioteca ou casa? Silêncio ou música? Manhã ou noite? Cada pessoa é diferente e muitos nunca experimentaram alternativas.", how:"Ex: 'Experimenta uma semana na biblioteca e outra em casa. Regista onde produziste mais e partilha comigo.'" },
+      { id:"es-a5", text:"Criar uma rotina de check-in semanal para rever prazos e prioridades", desc:"Reunião breve semanal (presencial ou por mensagem) para rever o que está pendente, o que é urgente, e o que pode esperar.", how:"Ex: 'Todas as segundas, 10 minutos: o que tens para entregar esta semana? O que precisa de ajuda?'" },
+      { id:"es-a6", text:"Usar blocos de estudo curtos com pausas programadas (ex: técnica Pomodoro)", desc:"25 minutos de foco + 5 minutos de pausa. Evita a exaustão em sessões longas. Experimentar variações até encontrar o ritmo certo.", how:"Ex: 'Experimenta o Pomodoro: 25 min de foco total, 5 min de pausa. Depois de 4 blocos, pausa de 15 min.'" },
     ],
     language: [
       { id:"es-l1", text:"Orientar o estudante para os serviços de apoio da universidade logo no início", desc:"Não esperar por dificuldades. Na matrícula, procurar o gabinete de apoio e registar necessidades com documentação.", how:"Ex: 'Vai ao Gabinete de Apoio ao Estudante na primeira semana. Leva o relatório e explica o que precisas.'" },
@@ -671,6 +676,7 @@ const STRATEGIES_BY_CYCLE = {
       { id:"es-l3", text:"Pedir formalmente adaptações nas avaliações (tempo extra, enunciado simplificado)", desc:"O estudante tem direito a adaptações. Pedir formalmente: mais tempo, acesso antecipado aos materiais, avaliação alternativa.", how:"Ex: Email ao docente: 'Tenho adaptações formalizadas no gabinete de apoio. Preciso de tempo extra e acesso ao PowerPoint antes da aula.'" },
       { id:"es-l4", text:"Praticar competências do dia-a-dia: escrever emails formais, preencher formulários, falar com autoridades", desc:"Muitos jovens com dificuldades de linguagem têm dificuldade em tarefas que parecem simples: emails, formulários, conversas formais.", how:"Ex: 'Vamos praticar: como escreves um email ao professor a pedir ajuda? Assunto claro, saudação, pedido em 2 frases, despedida.'" },
       { id:"es-l5", text:"Ajudar o estudante a saber explicar as suas necessidades a professores e colegas", desc:"Criar um perfil pessoal: 'Tenho dificuldades de processamento linguístico. Preciso de: tempo extra, instruções escritas, materiais antecipados.'", how:"Ex: Praticar a frase: 'Posso falar consigo no início do semestre? Tenho algumas necessidades que gostava de explicar.'" },
+      { id:"es-l6", text:"Disponibilizar resumos escritos ou gravações das aulas para revisão posterior", desc:"Estudantes com dificuldades de linguagem podem não processar tudo em tempo real. Ter acesso ao material depois da aula permite rever ao próprio ritmo.", how:"Ex: Gravar a aula (com permissão) e partilhar. Ou disponibilizar resumos em tópicos das aulas anteriores." },
     ],
     both: [
       { id:"es-b1", text:"Criar relação com um tutor ou mentor que compreenda as dificuldades do estudante", desc:"Ter pelo menos um professor ou tutor que saiba o que se passa e possa orientar ao longo do curso.", how:"Ex: 'Posso falar consigo no início do semestre? Tenho dificuldades que afetam a forma como processo informação.'" },
@@ -687,6 +693,7 @@ const FIRST_PERSON = {
   "pre-a3": "Ignoro o comportamento indesejado e elogio logo o comportamento correto",
   "pre-a4": "Faço pausas de movimento entre atividades",
   "pre-a5": "Peço à criança para dizer o que vai fazer antes de começar",
+  "pre-a6": "Começo por tarefas que a criança já consegue fazer",
   "pre-l1": "Uso sempre as mesmas palavras para as mesmas rotinas",
   "pre-l2": "Antes de falar, paro, baixo-me ao nível da criança e olho-a nos olhos",
   "pre-l3": "Faço perguntas com duas opções em vez de perguntas abertas",
@@ -694,6 +701,8 @@ const FIRST_PERSON = {
   "pre-l5": "Quando a criança diz algo errado, repito a forma correta com naturalidade",
   "pre-l6": "Associo a aprendizagem ao movimento e aos sentidos",
   "pre-b1": "Mostro, digo e faço ao mesmo tempo (nunca só falo)",
+  "pre-b2": "Dou tempo à criança para processar antes de repetir ou reformular",
+  "pre-b3": "Antecipo transições e mudanças de atividade com aviso prévio",
   "c1-a1": "Sento o aluno perto de mim e longe de distrações",
   "c1-a2": "Digo ao aluno o que vai acontecer na aula antes de começar",
   "c1-a3": "Uso um temporizador visual para marcar tempo de trabalho e pausa",
@@ -709,11 +718,13 @@ const FIRST_PERSON = {
   "c1-l7": "Ensino o que significam palavras como explica, resume, descreve, compara",
   "c1-b1": "Sento o aluno com um colega que possa ajudar a perceber o que é para fazer",
   "c1-b2": "Reduzo a quantidade de trabalhos de casa quando necessário",
+  "c1-b3": "Assumo sempre que o aluno está a tentar — comportamento difícil pode ser frustração ou incompreensão",
   "c2-a1": "Divido trabalhos grandes em partes pequenas com datas para cada parte",
   "c2-a2": "Garanto que o aluno anota os TPC (foto do quadro ou email aos pais)",
   "c2-a3": "Peço ao aluno para dizer em voz alta o que vai fazer antes de começar",
   "c2-a4": "Quando possível, organizo para que os TPC sejam feitos na escola",
   "c2-a5": "Tenho um espaço calmo onde o aluno pode ir quando se sente sobrecarregado",
+  "c2-a6": "Começo sempre por uma tarefa que o aluno já consegue antes de introduzir desafios",
   "c2-l1": "Crio uma lista de palavras-chave antes de cada unidade nova",
   "c2-l2": "Uso mapas mentais, esquemas e códigos de cores para resumir matérias",
   "c2-l3": "Evito sarcasmo e ironia — digo exatamente o que quero dizer",
@@ -729,6 +740,7 @@ const FIRST_PERSON = {
   "c3-a3": "No final de cada trabalho, peço ao aluno para refletir sobre o que correu bem e o que faria diferente",
   "c3-a4": "Ensino a organizar o tempo com um planeador visual",
   "c3-a5": "Ajudo o aluno a descobrir em que condições se concentra melhor",
+  "c3-a6": "Permito pausas curtas e estruturadas durante tarefas longas",
   "c3-l1": "Dou instruções curtas: uma ideia por frase, sem frases dentro de frases",
   "c3-l2": "Decomponho palavras difíceis e explico as partes",
   "c3-l3": "Disponibilizo versões áudio e visuais dos materiais (nunca só texto)",
@@ -742,11 +754,14 @@ const FIRST_PERSON = {
   "es-a2": "Parto trabalhos grandes em partes pequenas com datas intermédias",
   "es-a3": "Ensino técnicas de estudo concretas: fichas, auto-teste, revisão espaçada",
   "es-a4": "Ajudo o estudante a descobrir onde e quando se concentra melhor",
+  "es-a5": "Crio uma rotina de check-in semanal para rever prazos e prioridades",
+  "es-a6": "Uso blocos de estudo curtos com pausas programadas",
   "es-l1": "Oriento o estudante para os serviços de apoio da universidade logo no início",
   "es-l2": "Uso ou recomendo tecnologia de apoio (gravação de aulas, leitura de ecrã)",
   "es-l3": "Ajudo a pedir formalmente adaptações nas avaliações",
   "es-l4": "Pratico com o estudante competências do dia-a-dia (emails formais, formulários)",
   "es-l5": "Ajudo o estudante a saber explicar as suas necessidades a professores e colegas",
+  "es-l6": "Disponibilizo resumos ou gravações das aulas para revisão posterior",
   "es-b1": "Crio ou facilito uma relação com um tutor que compreenda as dificuldades",
   "es-b2": "Estou atento/a a sinais de exaustão, ansiedade ou isolamento",
   "es-b3": "Preparo o estudante para entrevistas e para explicar as suas necessidades no trabalho",
@@ -780,21 +795,21 @@ function getCycleStrategiesByType(cycle, profile) {
 
 const VF_ITEMS = [
   { s: "A PHDA é mais frequente nos rapazes do que nas raparigas.", c: true, d: "phda" },
-  { s: "A PHDA desaparece habitualmente na adolescência.", c: false, d: "phda" },
-  { s: "A maioria das crianças que começam a falar tarde (late talkers) acabam por desenvolver linguagem dentro dos parâmetros normais.", c: true, d: "lang" },
-  { s: "O excesso de tempo de ecrã (televisão, tablets) é uma causa direta da PHDA.", c: false, d: "phda" },
   { s: "Crianças com perturbação da linguagem têm habitualmente uma inteligência abaixo da média.", c: false, d: "lang" },
-  { s: "Dificuldades de atenção e dificuldades de linguagem podem manifestar-se de forma semelhante em sala de aula.", c: true, d: "cross" },
-  { s: "Uma criança que não segue instruções na sala de aula tem necessariamente um problema de atenção.", c: false, d: "cross" },
+  { s: "Se uma criança não segue instruções na sala de aula, isso muito provavelmente indica um problema de atenção.", c: false, d: "cross" },
+  { s: "As dificuldades de linguagem não ficam resolvidas com a idade \u2014 afetam a aprendizagem, as relações sociais e a vida profissional.", c: true, d: "lang" },
+  { s: "A PHDA é resultado de atitudes parentais ou de má educação.", c: false, d: "phda" },
+  { s: "Dificuldades de atenção e dificuldades de linguagem apresentam manifestações semelhantes em sala de aula.", c: true, d: "cross" },
+  { s: "A PHDA envolve sempre algum grau de hiperatividade.", c: false, d: "phda" },
+  { s: "Uma criança com PHDA consegue manter-se concentrada numa atividade que lhe interessa muito.", c: true, d: "phda" },
+  { s: "A forma como uma criança responde a adaptações na sala de aula dá pistas sobre a origem das suas dificuldades.", c: true, d: "cross" },
+  { s: "A perturbação da linguagem é geralmente identificada antes da entrada no 1.º ciclo.", c: false, d: "lang" },
+  { s: "Uma criança com perturbação da linguagem consegue disfarçar as suas dificuldades em contexto de sala de aula.", c: true, d: "cross" },
+  { s: "A dificuldade em compreender o que o professor diz é um sinal típico de desatenção.", c: false, d: "cross" },
   { s: "A perturbação da linguagem é tão comum em idade escolar como a PHDA.", c: true, d: "lang" },
-  { s: "A PHDA e a perturbação da linguagem raramente coexistem na mesma criança.", c: false, d: "cross" },
-  { s: "A forma como uma criança responde a adaptações na sala de aula pode ajudar a distinguir entre dificuldades de atenção e de linguagem.", c: true, d: "cross" },
-  { s: "É aconselhável educar crianças com perturbação da linguagem apenas numa língua (monolingue).", c: false, d: "lang" },
-  { s: "Uma criança pode expressar-se bem oralmente e ainda assim ter uma perturbação da linguagem.", c: true, d: "cross" },
-  { s: "Uma perturbação da linguagem é geralmente identificada antes da entrada no 1.º ciclo.", c: false, d: "lang" },
-  { s: "Uma criança com bom vocabulário pode, ainda assim, ter uma perturbação da linguagem.", c: true, d: "cross" },
   { s: "O treino de memória de trabalho é uma intervenção recomendada para melhorar as competências linguísticas.", c: false, d: "cross" },
-  { s: "Dificuldades na linguagem oral podem ser um fator de risco para dificuldades na leitura.", c: true, d: "cross" },
+  { s: "Um professor experiente consegue distinguir entre dificuldades de atenção e de linguagem através da observação em sala de aula.", c: false, d: "cross" },
+  { s: "Dificuldades na linguagem oral são um fator de risco para dificuldades na leitura.", c: true, d: "cross" },
 ];
 
 const EFFICACY_ITEMS = [
@@ -997,13 +1012,13 @@ function Scale7({ value, onChange, scale }) {
           width: "38px", height: "38px", borderRadius: "50%",
           border: `2px solid ${sel ? "var(--teal)" : "var(--border)"}`,
           background: sel ? "var(--teal)" : "var(--surface)",
-          color: sel ? "#fff" : "var(--text)", fontSize: "14px", fontWeight: sel ? 700 : 500,
+          color: sel ? "#fff" : "var(--text)", fontSize: "15px", fontWeight: sel ? 700 : 500,
           display: "flex", alignItems: "center", justifyContent: "center",
           transition: "all 0.15s",
         }}>{n}</button>;
       })}
     </div>
-    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px", fontSize: "11px", color: "var(--text3)" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px", fontSize: "13px", color: "var(--text3)" }}>
       <span style={{ maxWidth: "60px", textAlign: "center" }}>{scale[1]}</span>
       <span style={{ maxWidth: "80px", textAlign: "center" }}>{scale[4]}</span>
       <span style={{ maxWidth: "60px", textAlign: "center" }}>{scale[7]}</span>
@@ -1135,18 +1150,18 @@ function TeacherProfile({ onComplete }) {
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
         <img src="Caidi-logo-Branco-1080.png" alt="CAIDI" style={{ height: "48px", marginBottom: "12px", objectFit: "contain", filter: "brightness(0)" }}
           onError={e => { e.target.style.display="none"; }} />
-        <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--teal-dark)" }}>Crianças no Mundo da Lua?</h2>
-        <p style={{ fontSize: "13px", color: "var(--text2)", marginTop: "4px" }}>
+        <h2 style={{ fontSize: "24px", fontWeight: 700, color: "var(--teal-dark)" }}>Crianças no Mundo da Lua?</h2>
+        <p style={{ fontSize: "15px", color: "var(--text2)", marginTop: "6px" }}>
           Instrumento de rastreio de dificuldades de atenção e linguagem
         </p>
-        <p style={{ fontSize: "12px", color: "var(--text3)", marginTop: "6px" }}>
+        <p style={{ fontSize: "13px", color: "var(--text3)", marginTop: "6px" }}>
           Joana Miguel &amp; Joana Carvalho
         </p>
-        <p style={{ fontSize: "11px", color: "var(--text3)" }}>
+        <p style={{ fontSize: "13px", color: "var(--text3)" }}>
           NIDCAIDI — Núcleo de Investigação e Desenvolvimento
         </p>
       </div>
-      <div style={{ background: "var(--teal-light)", padding: "20px", borderRadius: "var(--radius)", lineHeight: 1.8, fontSize: "14px", borderLeft: "4px solid var(--teal)", marginBottom: "20px" }}>
+      <div style={{ background: "var(--teal-light)", padding: "20px", borderRadius: "var(--radius)", lineHeight: 1.8, fontSize: "15px", borderLeft: "4px solid var(--teal)", marginBottom: "20px" }}>
         <p style={{ fontWeight: 600, fontSize: "15px", marginBottom: "12px" }}>Sobre esta ferramenta</p>
         <p style={{ marginBottom: "10px" }}>Esta aplicação foi desenvolvida para apoiar educadores e professores na identificação precoce de dificuldades de <strong>atenção</strong> e de <strong>linguagem</strong> em contexto escolar, fornecendo orientações práticas de atuação.</p>
         <p style={{ marginBottom: "10px" }}>A ferramenta é <strong>totalmente gratuita</strong> e de utilização livre. As respostas recolhidas são <strong>anónimas</strong> — não registamos nome, escola, nem qualquer dado que permita identificar quem responde.</p>
@@ -1256,7 +1271,7 @@ function TeacherProfile({ onComplete }) {
       <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "4px" }}>🛠 O que já faz</h3>
       <p style={{ fontSize: "14px", color: "var(--text2)", marginBottom: "8px" }}>Com que frequência usa cada estratégia?</p>
       {demo.cycle && (
-        <div style={{ background: "var(--teal-light)", padding: "12px 16px", borderRadius: "8px", marginBottom: "16px", fontSize: "13px", lineHeight: 1.6 }}>
+        <div style={{ background: "var(--teal-light)", padding: "12px 16px", borderRadius: "8px", marginBottom: "16px", fontSize: "15px", lineHeight: 1.6 }}>
           <strong>Estratégias para {demo.cycle}</strong>
           {ctx && <span style={{ color: "var(--text2)" }}> — {ctx}</span>}
         </div>
@@ -1364,7 +1379,7 @@ function TeacherProfile({ onComplete }) {
                 opacity: full ? 0.5 : 1,
               }}>
                 {sel ? "✓ " : ""}{s.text}
-                <span style={{ fontSize: "11px", color: "var(--text3)", marginLeft: "6px" }}>({s.cat === "attention" ? "atenção" : "linguagem"})</span>
+                <span style={{ fontSize: "13px", color: "var(--text3)", marginLeft: "6px" }}>({s.cat === "attention" ? "atenção" : "linguagem"})</span>
               </button>;
             })}
           </div>
@@ -1998,7 +2013,7 @@ function App() {
           <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--teal-dark)", marginBottom: "4px" }}>Crianças no Mundo da Lua?</h1>
           <p style={{ fontSize: "14px", color: "var(--text2)", fontWeight: 500, marginBottom: "8px" }}>Instrumento de rastreio de dificuldades de atenção e linguagem</p>
           <p style={{ fontSize: "12px", color: "var(--text3)", marginBottom: "2px" }}>Joana Miguel &amp; Joana Carvalho</p>
-          <p style={{ fontSize: "11px", color: "var(--text3)", marginBottom: "28px" }}>NIDCAIDI — Núcleo de Investigação e Desenvolvimento</p>
+          <p style={{ fontSize: "13px", color: "var(--text3)", marginBottom: "28px" }}>NIDCAIDI — Núcleo de Investigação e Desenvolvimento</p>
           <Card>
             <p style={{ fontSize: "14px", lineHeight: 1.7, marginBottom: "16px", textAlign: "left" }}>
               Aplicação para apoiar educadores na identificação precoce de dificuldades de <strong style={{ color: "var(--teal)" }}>atenção</strong> e <strong style={{ color: "var(--coral)" }}>linguagem</strong>, fornecendo estratégias práticas de intervenção.
@@ -2074,7 +2089,7 @@ function App() {
         {tab === 1 && <Screening students={students} setStudents={setStudents} teacherData={teacherData} />}
         {tab === 2 && <Dashboard students={students} teacherData={teacherData} />}
         <div style={{ textAlign: "center", padding: "20px 16px 12px", marginTop: "16px", borderTop: "1px solid var(--border)" }}>
-          <p style={{ fontSize: "11px", color: "var(--text3)", lineHeight: 1.6 }}>
+          <p style={{ fontSize: "13px", color: "var(--text3)", lineHeight: 1.6 }}>
             © {new Date().getFullYear()} Joana Miguel &amp; Joana Carvalho · NIDCAIDI<br/>
             Todos os direitos reservados. Instrumento de uso exclusivamente educativo e clínico.
           </p>
