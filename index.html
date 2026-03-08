@@ -59,6 +59,7 @@ const { useState, useMemo } = React;
 // ─── CONFIGURAÇÃO ───────────────────────────────────────────
 // Cole aqui o URL do Google Apps Script após deploy:
 const API_URL = "https://script.google.com/macros/s/AKfycbxEw7bzcQ0ycMKGaiOApeEZMg1DEiF2w86E7gzB0PZaYEb3WmgKoqi74PYYY-o7NlUi/exec";
+// Exemplo: "https://script.google.com/macros/s/AKfycbx.../exec"
 
 async function sendToSheet(action, payload) {
   if (!API_URL) { console.warn("API_URL vazio"); return; }
@@ -749,7 +750,7 @@ const FIRST_PERSON = {
   "c3-b2": "Estou atento/a a sinais de isolamento, ansiedade ou evitamento escolar",
   "c3-b3": "Pratico com os alunos situações sociais difíceis (pedir ajuda, resolver conflitos)",
   "es-a1": "Ajudo o estudante a usar ferramentas digitais de organização",
-  "es-a2": "Divido trabalhos grandes em partes mais pequenas com datas intermédias",
+  "es-a2": "Parto trabalhos grandes em partes pequenas com datas intermédias",
   "es-a3": "Ensino técnicas de estudo concretas: fichas, auto-teste, revisão espaçada",
   "es-a4": "Ajudo o estudante a descobrir onde e quando se concentra melhor",
   "es-a5": "Crio uma rotina de check-in semanal para rever prazos e prioridades",
@@ -1612,7 +1613,7 @@ ${[
 
 function Screening({ students, setStudents, teacherData }) {
   const [mode, setMode] = useState("list");
-  const [info, setInfo] = useState({ initials: "", age: "", cycle: "", knownDx: "" });
+  const [info, setInfo] = useState({ initials: "", age: "", cycle: "", knownDx: "", notes: "" });
   const [resp, setResp] = useState({});
   const [sStep, setSStep] = useState(0);
   const [result, setResult] = useState(null);
@@ -1622,7 +1623,7 @@ function Screening({ students, setStudents, teacherData }) {
   const answered = Object.values(resp).flat().filter(v => v !== null && v !== undefined).length;
 
   const startNew = () => {
-    const emptyInfo = { initials: "", age: "", cycle: "", knownDx: "" };
+    const emptyInfo = { initials: "", age: "", cycle: "", knownDx: "", notes: "" };
     setInfo(emptyInfo);
     const r = {};
     domains.forEach(d => { r[d] = Array(getScreeningItems(emptyInfo.cycle)[d].items.length).fill(null); });
@@ -1814,6 +1815,11 @@ function Screening({ students, setStudents, teacherData }) {
               )}
             </div>
           ))}
+          <div style={{ marginBottom: "12px" }}>
+            <label style={{ display: "block", fontSize: "14px", fontWeight: 600, marginBottom: "4px" }}>Notas / Observações (opcional)</label>
+            <textarea value={info.notes} onChange={e => setInfo({...info, notes: e.target.value})} placeholder="Ex: contexto relevante, preocupações específicas, informações adicionais..."
+              rows={3} style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1.5px solid var(--border)", fontSize: "14px", resize: "vertical", lineHeight: 1.5 }} />
+          </div>
         </Card>
       )}
 
