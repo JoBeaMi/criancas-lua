@@ -59,7 +59,6 @@ const { useState, useMemo } = React;
 // ─── CONFIGURAÇÃO ───────────────────────────────────────────
 // Cole aqui o URL do Google Apps Script após deploy:
 const API_URL = "https://script.google.com/macros/s/AKfycbxEw7bzcQ0ycMKGaiOApeEZMg1DEiF2w86E7gzB0PZaYEb3WmgKoqi74PYYY-o7NlUi/exec";
-// Exemplo: "https://script.google.com/macros/s/AKfycbx.../exec"
 
 async function sendToSheet(action, payload) {
   if (!API_URL) { console.warn("API_URL vazio"); return; }
@@ -546,7 +545,7 @@ const STRATEGIES_GENERIC = [
   { id: "s7", cat: "language", text: "Ensinar as palavras novas e o vocabulário da matéria antes de a introduzir à turma",
     desc: "Muitas crianças não compreendem a matéria porque não conhecem as palavras. Apresentar o vocabulário-chave antes da unidade, com imagens e exemplos concretos.",
     how: "Ex: Antes de começar a unidade sobre o corpo humano, mostrar imagens e ensinar 'esqueleto', 'músculo', 'órgão'. Criar mural de palavras na sala." },
-  { id: "s8", cat: "language", text: "Quando o aluno não compreende, repetir a instrução com palavras diferentes e mais simples em vez de repetir mais alto",
+  { id: "s8", cat: "language", text: "Quando o aluno não compreende, repetir a instrução com palavras diferentes e mais simples",
     desc: "Repetir a mesma frase mais alto não ajuda se o problema é a compreensão. Reformular com palavras mais simples e frases mais curtas.",
     how: "Ex: Se disse 'Identifica os elementos do texto' e o aluno não compreendeu, reformular: 'O que encontras no texto? Quem está? O que acontece?'" },
   { id: "s9", cat: "language", text: "Dar tempo ao aluno para processar o que ouviu antes de repetir ou reformular a instrução",
@@ -1051,7 +1050,7 @@ function TeacherProfile({ onComplete }) {
     if (v.gravidade) c++;
     if (v.refer) c++;
     if (v.refer === "Sim" && (v.referTo||[]).length > 0) c++;
-    if ((v.topStrategies||[]).length >= 2) c++;
+    if ((v.topStrategies||[]).length >= 4) c++;
     if (v.confTouched) c++;
     return c;
   };
@@ -1074,8 +1073,8 @@ function TeacherProfile({ onComplete }) {
       case 2: return vf.every(v => v !== null);
       case 3: return eff.every(v => v !== null);
       case 4: return getStrategiesForCycle(demo.cycle).every(s => stratUse[s.id] !== undefined && stratUse[s.id] !== null);
-      case 5: return vig.v1.hypothesis && vig.v1.polo && vig.v1.gravidade && vig.v1.refer && vig.v1.confTouched && (vig.v1.topStrategies||[]).length >= 2 && (vig.v1.refer !== "Sim" || (vig.v1.referTo||[]).length > 0);
-      case 6: return vig.v2.hypothesis && vig.v2.polo && vig.v2.gravidade && vig.v2.refer && vig.v2.confTouched && (vig.v2.topStrategies||[]).length >= 2 && (vig.v2.refer !== "Sim" || (vig.v2.referTo||[]).length > 0);
+      case 5: return vig.v1.hypothesis && vig.v1.polo && vig.v1.gravidade && vig.v1.refer && vig.v1.confTouched && (vig.v1.topStrategies||[]).length >= 4 && (vig.v1.refer !== "Sim" || (vig.v1.referTo||[]).length > 0);
+      case 6: return vig.v2.hypothesis && vig.v2.polo && vig.v2.gravidade && vig.v2.refer && vig.v2.confTouched && (vig.v2.topStrategies||[]).length >= 4 && (vig.v2.refer !== "Sim" || (vig.v2.referTo||[]).length > 0);
       default: return true;
     }
   };
@@ -1108,7 +1107,7 @@ function TeacherProfile({ onComplete }) {
         if (!vig.v1.gravidade) m.push("gravidade");
         if (!vig.v1.refer) m.push("encaminhamento");
         if (vig.v1.refer === "Sim" && !(vig.v1.referTo||[]).length) m.push("para quem encaminha");
-        if ((vig.v1.topStrategies||[]).length < 2) m.push("mínimo 2 estratégias");
+        if ((vig.v1.topStrategies||[]).length < 4) m.push("selecione 4 estratégias");
         if (!vig.v1.confTouched) m.push("confiança");
         return `Caso A — faltam: ${m.join(", ")}`;
       }
@@ -1119,7 +1118,7 @@ function TeacherProfile({ onComplete }) {
         if (!vig.v2.gravidade) m.push("gravidade");
         if (!vig.v2.refer) m.push("encaminhamento");
         if (vig.v2.refer === "Sim" && !(vig.v2.referTo||[]).length) m.push("para quem encaminha");
-        if ((vig.v2.topStrategies||[]).length < 2) m.push("mínimo 2 estratégias");
+        if ((vig.v2.topStrategies||[]).length < 4) m.push("selecione 4 estratégias");
         if (!vig.v2.confTouched) m.push("confiança");
         return `Caso B — faltam: ${m.join(", ")}`;
       }
@@ -1303,7 +1302,7 @@ function TeacherProfile({ onComplete }) {
     const toggleStrat = (sid) => {
       const arr = r.topStrategies || [];
       if (arr.includes(sid)) { upd("topStrategies", arr.filter(x => x !== sid)); }
-      else if (arr.length < 3) { upd("topStrategies", [...arr, sid]); }
+      else if (arr.length < 4) { upd("topStrategies", [...arr, sid]); }
     };
     let q = 1;
     return (
@@ -1361,10 +1360,10 @@ function TeacherProfile({ onComplete }) {
         {/* 6. Top 3 estratégias */}
         <div style={{ marginBottom: "16px" }}>
           <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "6px" }}>
-            {q++}. Que estratégias aplicaria em primeiro lugar? (selecione 2 a 3)
+            {q++}. Que estratégias aplicaria neste caso? (selecione 4)
           </p>
-          <p style={{ fontSize: "12px", color: (r.topStrategies||[]).length >= 2 ? "var(--green)" : "var(--text3)", marginBottom: "8px" }}>
-            Selecionadas: {(r.topStrategies||[]).length}/3 {(r.topStrategies||[]).length < 2 ? "— mínimo 2" : "✓"}
+          <p style={{ fontSize: "12px", color: (r.topStrategies||[]).length >= 4 ? "var(--green)" : "var(--text3)", marginBottom: "8px" }}>
+            Selecionadas: {(r.topStrategies||[]).length}/4 {(r.topStrategies||[]).length < 4 ? "— selecione 4" : "✓"}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             {[...STRATEGIES_GENERIC].sort((a,b) => {
@@ -1373,7 +1372,7 @@ function TeacherProfile({ onComplete }) {
               return (order[a.id]||0) - (order[b.id]||0);
             }).map(s => {
               const sel = (r.topStrategies||[]).includes(s.id);
-              const full = (r.topStrategies||[]).length >= 3 && !sel;
+              const full = (r.topStrategies||[]).length >= 4 && !sel;
               return <button key={s.id} onClick={() => !full && toggleStrat(s.id)} style={{
                 padding: "10px 14px", borderRadius: "8px", textAlign: "left", fontSize: "15px", lineHeight: 1.5,
                 border: `1.5px solid ${sel ? "var(--teal)" : "var(--border)"}`,
