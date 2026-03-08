@@ -59,6 +59,7 @@ const { useState, useMemo } = React;
 // ─── CONFIGURAÇÃO ───────────────────────────────────────────
 // Cole aqui o URL do Google Apps Script após deploy:
 const API_URL = "https://script.google.com/macros/s/AKfycbxEw7bzcQ0ycMKGaiOApeEZMg1DEiF2w86E7gzB0PZaYEb3WmgKoqi74PYYY-o7NlUi/exec";
+// Exemplo: "https://script.google.com/macros/s/AKfycbx.../exec"
 
 async function sendToSheet(action, payload) {
   if (!API_URL) { console.warn("API_URL vazio"); return; }
@@ -102,10 +103,10 @@ const SCREENING_ITEMS_DEFAULT = {
     ],
   },
   hyperactivity: {
-    label: "Inquietação / Impulsividade", icon: "⚡", color: "#F97316",
+    label: "Agitação / Impulsividade", icon: "⚡", color: "#F97316",
     items: [
       "Mexe-se excessivamente na cadeira ou levanta-se quando deveria estar sentado/a",
-      "Mostra inquietação motora persistente (mexe mãos/pés, não consegue estar parado/a)",
+      "Mostra agitação motora persistente (mexe mãos/pés, não consegue estar parado/a)",
       "Tem dificuldade em realizar atividades de forma calma e organizada",
       "Fala excessivamente",
       "Responde antes de a pergunta ser completada",
@@ -175,10 +176,10 @@ const SCREENING_BY_CYCLE = {
     ],
   },
   hyperactivity: {
-    label: "Inquietação / Impulsividade", icon: "⚡", color: "#F97316",
+    label: "Agitação / Impulsividade", icon: "⚡", color: "#F97316",
     items: [
       "Não consegue permanecer sentado/a durante atividades de grupo (roda, história)",
-      "Mostra inquietação motora constante (mexe mãos/pés, balança o corpo, não para)",
+      "Mostra agitação motora constante (mexe mãos/pés, balança o corpo, não para)",
       "Tem dificuldade em participar em atividades calmas (ouvir uma história, pintar)",
       "Fala excessivamente e de forma descontrolada",
       "Age antes de pensar (ex: tira brinquedos a outros, empurra na fila)",
@@ -244,10 +245,10 @@ const SCREENING_BY_CYCLE = {
     ],
   },
   hyperactivity: {
-    label: "Inquietação / Impulsividade", icon: "⚡", color: "#F97316",
+    label: "Agitação / Impulsividade", icon: "⚡", color: "#F97316",
     items: [
       "Mexe-se excessivamente na cadeira ou levanta-se quando deveria estar sentado/a",
-      "Mostra inquietação motora persistente (mexe mãos/pés, não consegue estar parado/a)",
+      "Mostra agitação motora persistente (mexe mãos/pés, não consegue estar parado/a)",
       "Tem dificuldade em realizar atividades de forma calma e organizada",
       "Fala excessivamente",
       "Responde antes de a pergunta ser completada",
@@ -313,10 +314,10 @@ const SCREENING_BY_CYCLE = {
     ],
   },
   hyperactivity: {
-    label: "Inquietação / Impulsividade", icon: "⚡", color: "#F97316",
+    label: "Agitação / Impulsividade", icon: "⚡", color: "#F97316",
     items: [
       "Mexe-se excessivamente na cadeira, balança-se ou levanta-se sem motivo aparente",
-      "Mostra inquietação que o/a impede de trabalhar de forma organizada e produtiva",
+      "Mostra agitação que o/a impede de trabalhar de forma organizada e produtiva",
       "Tem dificuldade em trabalhar em silêncio durante períodos de trabalho individual",
       "Fala excessivamente ou faz comentários inapropriados durante a aula",
       "Responde impulsivamente sem levantar a mão ou esperar pela sua vez",
@@ -382,9 +383,9 @@ const SCREENING_BY_CYCLE = {
     ],
   },
   hyperactivity: {
-    label: "Inquietação / Impulsividade", icon: "⚡", color: "#F97316",
+    label: "Agitação / Impulsividade", icon: "⚡", color: "#F97316",
     items: [
-      "Mostra inquietação física constante que interfere com o trabalho (mexe-se, rabisca)",
+      "Mostra agitação física constante que interfere com o trabalho (mexe-se, rabisca)",
       "Tem dificuldade em permanecer numa tarefa sem se levantar ou mudar de atividade",
       "Parece constantemente acelerado/a ou com dificuldade em abrandar",
       "Fala excessivamente ou faz comentários impulsivos que perturbam a dinâmica de aula",
@@ -451,9 +452,9 @@ const SCREENING_BY_CYCLE = {
     ],
   },
   hyperactivity: {
-    label: "Inquietação / Impulsividade", icon: "⚡", color: "#F97316",
+    label: "Agitação / Impulsividade", icon: "⚡", color: "#F97316",
     items: [
-      "Mostra inquietação física durante aulas ou períodos de trabalho prolongado",
+      "Mostra agitação física durante aulas ou períodos de trabalho prolongado",
       "Tem dificuldade em permanecer numa tarefa sem interrupções autogeradas",
       "Parece sempre 'acelerado/a' ou tem dificuldade em gerir o ritmo de trabalho",
       "Intervém de forma excessiva ou desproporcional em contextos de grupo (aulas, seminários)",
@@ -524,36 +525,36 @@ const SCALES = {
 const STRATEGY_LABELS = SCALES.strategy; // alias
 
 const STRATEGIES_GENERIC = [
-  { id: "s1", cat: "attention", text: "Dividir tarefas em etapas curtas",
-    desc: "Fragmente atividades longas em etapas claras. Dê uma instrução de cada vez e espere que seja cumprida antes de dar a seguinte. Trabalhos de casa demoram 3x mais a um aluno com dificuldades de atenção — reduzir o volume é essencial, não é facilitação.",
-    how: "Ex: Em vez de 'Faz os exercícios da página 12', diga 'Faz o exercício 1. Quando acabares, mostra-me.' Use checklists com caixas para riscar." },
-  { id: "s2", cat: "attention", text: "Supervisão frequente e próxima",
-    desc: "Passe pela mesa do aluno regularmente para verificar o progresso e redirecionar se necessário. O contacto breve e positivo é mais eficaz do que instruções longas à distância.",
-    how: "Ex: A cada 5 minutos, passe pela mesa, dê um reforço breve ('Estás no bom caminho') e siga. Rácio 3:1 — três comentários positivos por cada corretivo." },
-  { id: "s3", cat: "attention", text: "Posicionamento estratégico na sala",
-    desc: "Sente o aluno perto de si, longe de janelas, portas e outros estímulos. Preferencialmente secretária individual ou com par calmo. Peça ao aluno para voltar à sala 2 minutos antes do fim do recreio para se reorientar.",
-    how: "Ex: Lugar na 1.ª fila, ao centro, com colega calmo ao lado. Evitar corredor e porta. Para comorbilidade: sentar com par de confiança que possa ajudar a clarificar — NÃO punir por pedir ajuda ao colega." },
-  { id: "s4", cat: "attention", text: "Feedback imediato e específico",
-    desc: "Reforce o comportamento adequado no momento exato em que acontece. O elogio específico é muito mais eficaz do que o genérico. Nunca dê reforço apenas no final do dia.",
-    how: "Ex: 'Boa, começaste logo a trabalhar!' é mais eficaz do que 'Portaste-te bem hoje.' Para dificuldades de atenção: sistema de pontos com recompensas a curto prazo." },
-  { id: "s5", cat: "attention", text: "Sinais não-verbais combinados",
-    desc: "Combine um gesto ou sinal visual com o aluno para o redirecionar sem interromper a aula. Isto preserva a relação e evita exposição perante os pares.",
-    how: "Ex: Toque na mesa, aponte para a ficha, ou use um cartão amarelo/verde combinado previamente. Para dificuldades combinadas: usar suporte visual para sequenciar o que aconteceu antes de pedir explicação verbal." },
-  { id: "s6", cat: "language", text: "Simplificar a linguagem das instruções",
-    desc: "Use frases curtas, vocabulário concreto, e evite instruções com múltiplas condições. Chamar o nome da criança ANTES de dar a instrução. Dar instruções na ordem em que devem ser seguidas — evitar 'antes' e 'depois' de forma abstrata.",
-    how: "Ex: Em vez de 'Quando acabarem de copiar, se não tiverem dúvidas, podem avançar para o exercício seguinte', diga 'Primeiro: copiar. Segundo: fazer o exercício.' Nunca dar instruções enquanto a criança se move." },
-  { id: "s7", cat: "language", text: "Apoios visuais permanentes",
-    desc: "Acompanhe a instrução oral com suportes visuais: calendário visual, palavras-chave a cores, listas de tarefas com caixas para riscar. Rotinas com as mesmas palavras todos os dias. Pictogramas para sequenciar atividades.",
-    how: "Ex: Afixe uma sequência visual dos passos da tarefa. Use mural de palavras na sala. Para o 2.º ciclo: resumos visuais das matérias (mapas mentais, infográficos, esquemas)." },
-  { id: "s8", cat: "language", text: "Repetição com reformulação",
-    desc: "Repita a instrução usando palavras diferentes e mais simples — não apenas a mesma frase mais alto. Fazer pausas entre pontos-chave. Reduzir ruído de fundo: fechar portas, uma pessoa fala de cada vez.",
-    how: "Ex: Se disse 'Identifica os elementos do texto' e o aluno não compreendeu, reformule: 'O que encontras no texto? Quem está? O que acontece?' Para dificuldades de linguagem: corrigir modelando a forma correta com naturalidade — 'Ah, foste à loja!' (não corrigir diretamente)." },
-  { id: "s9", cat: "language", text: "Verificação ativa da compreensão",
-    desc: "Peça ao aluno para explicar o que vai fazer ANTES de começar. Nunca assuma que silêncio = compreensão. Use perguntas de escolha ('Vais buscar o casaco ou a mochila?'), não perguntas abertas. Para dificuldades de linguagem: ensinar o aluno a reconhecer quando não compreende e a pedir ajuda de forma discreta.",
-    how: "Ex: 'Diz-me lá, o que vais fazer primeiro?' — se não consegue explicar, a instrução não foi compreendida. Para o 2.º ciclo: ensinar explicitamente o vocabulário dos exames — 'descreve', 'compara', 'explica', 'analisa'." },
-  { id: "s10", cat: "language", text: "Modelar estruturas de resposta",
-    desc: "Dê ao aluno um modelo de resposta e peça-lhe que o complete ou adapte. Fornecer frameworks narrativos visuais para escrita: caixas para início/meio/fim. Aceitar respostas orais, em pontos, ou em formato visual como alternativas.",
-    how: "Ex: 'Começa a frase assim: O personagem sentiu-se... porque...' em vez de 'O que achas que ele sentiu?' Dar listas de conjunções e explicar como usá-las: 'e', 'mas', 'porque', 'portanto', 'no entanto'." },
+  { id: "s1", cat: "attention", text: "Fazer pausas de movimento entre atividades para ajudar a criança a libertar energia e a refocar",
+    desc: "Intercalar atividades calmas com momentos de movimento. A criança que se mexe muito precisa de oportunidades regulares para se mover — não é indisciplina, é uma necessidade.",
+    how: "Ex: Após 10-15 minutos de trabalho, dizer 'Vamos sacudir o corpo!' antes da atividade seguinte." },
+  { id: "s2", cat: "attention", text: "Passar pela mesa do aluno com frequência para verificar o progresso e redirecionar com um reforço breve",
+    desc: "O contacto próximo e regular é mais eficaz do que instruções longas à distância. Redirecionar sem expor — um toque na mesa, um olhar, uma palavra curta.",
+    how: "Ex: A cada 5 minutos, passar pela mesa: 'Estás no bom caminho.' Rácio 3:1 — três reforços positivos por cada corretivo." },
+  { id: "s3", cat: "attention", text: "Sentar o aluno perto do professor e longe de fontes de distração como janelas e portas",
+    desc: "Reduzir os estímulos visuais e sonoros à volta do aluno. Preferencialmente na 1.ª fila, ao centro, com um colega calmo ao lado.",
+    how: "Ex: Pedir ao aluno para voltar à sala 2 minutos antes do fim do recreio para se reorientar antes da aula seguinte." },
+  { id: "s4", cat: "attention", text: "Permitir que o aluno tenha objetos para manipular com as mãos enquanto ouve ou trabalha",
+    desc: "Bolas de apertar, molas, plasticina — ocupar as mãos pode ajudar a criança a manter-se mais focada e menos agitada.",
+    how: "Ex: Combinado discreto: 'Podes usar a bola, mas só na mão que não escreve.' Sem chamar a atenção da turma." },
+  { id: "s5", cat: "attention", text: "Usar sinais não-verbais combinados previamente com o aluno para o redirecionar sem interromper a aula",
+    desc: "Um gesto, um toque na mesa ou um cartão de cor previamente combinado permite redirecionar o aluno sem o expor perante os colegas.",
+    how: "Ex: Combinar antes: 'Quando eu tocar na tua mesa, significa que precisas de olhar para o trabalho.' Preserva a relação." },
+  { id: "s6", cat: "language", text: "Simplificar a forma como dá as instruções — frases curtas, uma de cada vez, pela ordem em que devem ser feitas",
+    desc: "Evitar instruções com múltiplas condições. Chamar o nome do aluno antes de falar. Usar palavras concretas e dar uma instrução de cada vez.",
+    how: "Ex: Em vez de 'Quando acabarem de copiar, se não tiverem dúvidas, avancem para o exercício', diga 'Primeiro: copiar. Segundo: fazer o exercício.'" },
+  { id: "s7", cat: "language", text: "Ensinar as palavras novas e o vocabulário da matéria antes de a introduzir à turma",
+    desc: "Muitas crianças não compreendem a matéria porque não conhecem as palavras. Apresentar o vocabulário-chave antes da unidade, com imagens e exemplos concretos.",
+    how: "Ex: Antes de começar a unidade sobre o corpo humano, mostrar imagens e ensinar 'esqueleto', 'músculo', 'órgão'. Criar mural de palavras na sala." },
+  { id: "s8", cat: "language", text: "Quando o aluno não compreende, repetir a instrução com palavras diferentes e mais simples em vez de repetir mais alto",
+    desc: "Repetir a mesma frase mais alto não ajuda se o problema é a compreensão. Reformular com palavras mais simples e frases mais curtas.",
+    how: "Ex: Se disse 'Identifica os elementos do texto' e o aluno não compreendeu, reformular: 'O que encontras no texto? Quem está? O que acontece?'" },
+  { id: "s9", cat: "language", text: "Dar tempo ao aluno para processar o que ouviu antes de repetir ou reformular a instrução",
+    desc: "Depois de falar, esperar em silêncio pelo menos 5 segundos. Muitas crianças precisam de mais tempo para processar — não é que não ouviram, é que ainda estão a processar.",
+    how: "Ex: Dar a instrução, contar mentalmente até 5. Só depois repetir — e com as mesmas palavras, não com palavras diferentes." },
+  { id: "s10", cat: "language", text: "Dar ao aluno um modelo de resposta e pedir-lhe que o complete ou adapte em vez de esperar uma resposta aberta",
+    desc: "Começar a frase pelo aluno reduz a exigência linguística e permite-lhe focar-se no conteúdo. Aceitar respostas orais ou em esquema como alternativas à escrita.",
+    how: "Ex: 'Começa assim: O personagem sentiu-se... porque...' em vez de 'O que achas que ele sentiu?'" },
 ];
 // STRATEGIES_BY_CYCLE - extracted from PHDA_DLD Guide
 // Each cycle has attention[], language[], both[] arrays
@@ -591,7 +592,7 @@ const STRATEGIES_BY_CYCLE = {
       { id:"c1-a1", text:"Sentar o aluno perto do professor e longe de distrações", desc:"Colocar o aluno na 1.ª fila, ao centro, longe de janelas e portas. Preferencialmente com um colega calmo ao lado.", how:"Ex: Pedir ao aluno para voltar à sala 2 minutos antes do fim do recreio para se reorientar antes da aula seguinte." },
       { id:"c1-a2", text:"Dizer ao aluno o que vai acontecer na aula antes de começar", desc:"No início da aula, explicar o plano: o que vão fazer primeiro, depois, e a seguir. Reduz incerteza e ansiedade.", how:"Ex: 'Hoje vamos primeiro fazer cópia, depois matemática, e a seguir vamos ao recreio.'" },
       { id:"c1-a3", text:"Usar um temporizador visual para marcar tempo de trabalho e pausa", desc:"Mostrar ao aluno quanto tempo falta para acabar a tarefa com um relógio visual (ex: Time Timer, ampulheta, cronómetro no quadro).", how:"Ex: 'Tens 10 minutos para esta ficha. Olha para o relógio — quando o vermelho acabar, paramos.'" },
-      { id:"c1-a4", text:"Permitir objetos manipuláveis para reduzir a inquietação", desc:"Deixar o aluno usar bolas de apertar, molas, ou outros objetos que ocupem as mãos sem perturbar a turma.", how:"Ex: Combinado discreto com o aluno: 'Podes usar a bola, mas só na mão que não escreve.'" },
+      { id:"c1-a4", text:"Permitir objetos manipuláveis para reduzir a agitação", desc:"Deixar o aluno usar bolas de apertar, molas, ou outros objetos que ocupem as mãos sem perturbar a turma.", how:"Ex: Combinado discreto com o aluno: 'Podes usar a bola, mas só na mão que não escreve.'" },
       { id:"c1-a5", text:"Variar o tom de voz e usar frases-sinal nos momentos importantes", desc:"Mudar o tom, o ritmo ou o volume da voz para sinalizar que vem informação importante. Usar sempre a mesma frase-sinal.", how:"Ex: 'Atenção, aqui vem a parte importante!' — dito sempre da mesma forma, para que o aluno reconheça o sinal." },
       { id:"c1-a6", text:"Dar a instrução oralmente E escrevê-la no quadro ao mesmo tempo", desc:"Dizer a instrução em voz alta, escrevê-la no quadro, mostrar um exemplo, e perguntar ao aluno o que vai fazer.", how:"Ex: Dizer 'Vamos fazer o exercício 3', apontar para o quadro onde está escrito, mostrar como se começa, e perguntar 'O que vais fazer primeiro?'" },
     ],
@@ -706,7 +707,7 @@ const FIRST_PERSON = {
   "c1-a1": "Sento o aluno perto de mim e longe de distrações",
   "c1-a2": "Digo ao aluno o que vai acontecer na aula antes de começar",
   "c1-a3": "Uso um temporizador visual para marcar tempo de trabalho e pausa",
-  "c1-a4": "Permito objetos manipuláveis para reduzir a inquietação",
+  "c1-a4": "Permito objetos manipuláveis para reduzir a agitação",
   "c1-a5": "Vario o tom de voz e uso frases-sinal nos momentos importantes",
   "c1-a6": "Dou a instrução oralmente e escrevo-a no quadro ao mesmo tempo",
   "c1-l1": "Digo o nome do aluno e espero antes de dar a instrução",
@@ -715,7 +716,6 @@ const FIRST_PERSON = {
   "c1-l4": "Tenho apoios visuais afixados na sala (listas, calendário, palavras-chave)",
   "c1-l5": "Verifico se o aluno compreendeu dando-lhe duas opções para escolher",
   "c1-l6": "Ensino as palavras novas da matéria antes de as dar à turma",
-  "c1-l7": "Ensino o que significam palavras como explica, resume, descreve, compara",
   "c1-b1": "Sento o aluno com um colega que possa ajudar a perceber o que é para fazer",
   "c1-b2": "Reduzo a quantidade de trabalhos de casa quando necessário",
   "c1-b3": "Assumo sempre que o aluno está a tentar — comportamento difícil pode ser frustração ou incompreensão",
@@ -731,7 +731,6 @@ const FIRST_PERSON = {
   "c2-l4": "Ensino o que significam as palavras dos testes (descreve, compara, justifica)",
   "c2-l5": "Dou mais tempo nos testes a alunos que precisam",
   "c2-l6": "Dou modelos de texto com início de frase e estrutura pronta",
-  "c2-l7": "Aceito respostas orais, em esquema ou em desenho (não só escrita)",
   "c2-b1": "Atribuo um colega de apoio que ajuda a perceber instruções (alternando para não sobrecarregar)",
   "c2-b2": "Combino um sinal discreto para o aluno pedir ajuda sem se expor",
   "c2-b3": "Em conflitos, espero que o aluno esteja regulado antes de falar sobre o que aconteceu",
@@ -809,7 +808,7 @@ const VF_ITEMS = [
   { s: "A perturbação da linguagem é tão comum em idade escolar como a PHDA.", c: true, d: "lang" },
   { s: "O treino de memória de trabalho é uma intervenção recomendada para melhorar as competências linguísticas.", c: false, d: "cross" },
   { s: "Um professor experiente consegue distinguir entre dificuldades de atenção e de linguagem através da observação em sala de aula.", c: false, d: "cross" },
-  { s: "Dificuldades na linguagem oral são um fator de risco para dificuldades na leitura.", c: true, d: "cross" },
+  { s: "Problemas de comportamento numa criança com PHDA podem ser sinal de dificuldades de linguagem não identificadas.", c: true, d: "cross" },
 ];
 
 const EFFICACY_ITEMS = [
@@ -854,7 +853,7 @@ function getProfileExplanation(scores, age, cycle) {
   const parts = [];
   const ageNum = parseInt(age) || 0;
   const domainNames = {
-    inattention: "atenção e concentração", hyperactivity: "inquietação/impulsividade",
+    inattention: "atenção e concentração", hyperactivity: "agitação/impulsividade",
     comprehension: "compreensão de instruções", expression: "expressão oral",
     pragmatics: "uso social da linguagem", impact: "impacto funcional"
   };
@@ -889,7 +888,7 @@ function getProfileExplanation(scores, age, cycle) {
       parts.push("Nesta faixa etária, alguma imaturidade na expressão e na comunicação social é esperada. Valorize sobretudo a compreensão e o impacto no dia-a-dia.");
     }
     if (scores.hyperactivity >= 4) {
-      parts.push("A inquietação motora no pré-escolar é frequente. Considere se os comportamentos são desproporcionados face aos pares da mesma idade.");
+      parts.push("A agitação motora no pré-escolar é frequente. Considere se os comportamentos são desproporcionados face aos pares da mesma idade.");
     }
   } else if (cycle === "1.º Ciclo" || (ageNum >= 6 && ageNum <= 8)) {
     if (scores.comprehension >= 4 || scores.expression >= 4) {
@@ -1368,18 +1367,21 @@ function TeacherProfile({ onComplete }) {
             Selecionadas: {(r.topStrategies||[]).length}/3 {(r.topStrategies||[]).length < 2 ? "— mínimo 2" : "✓"}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            {STRATEGIES_GENERIC.map(s => {
+            {[...STRATEGIES_GENERIC].sort((a,b) => {
+              // Interleave: s6,s1,s8,s2,s9,s3,s7,s4,s10,s5
+              const order = {s6:0,s1:1,s8:2,s2:3,s9:4,s3:5,s7:6,s4:7,s10:8,s5:9};
+              return (order[a.id]||0) - (order[b.id]||0);
+            }).map(s => {
               const sel = (r.topStrategies||[]).includes(s.id);
               const full = (r.topStrategies||[]).length >= 3 && !sel;
               return <button key={s.id} onClick={() => !full && toggleStrat(s.id)} style={{
-                padding: "10px 14px", borderRadius: "8px", textAlign: "left", fontSize: "14px",
+                padding: "10px 14px", borderRadius: "8px", textAlign: "left", fontSize: "15px", lineHeight: 1.5,
                 border: `1.5px solid ${sel ? "var(--teal)" : "var(--border)"}`,
                 background: sel ? "var(--teal-light)" : "var(--surface)",
                 color: full ? "var(--text3)" : "var(--text)",
                 opacity: full ? 0.5 : 1,
               }}>
                 {sel ? "✓ " : ""}{s.text}
-                <span style={{ fontSize: "13px", color: "var(--text3)", marginLeft: "6px" }}>({s.cat === "attention" ? "atenção" : "linguagem"})</span>
               </button>;
             })}
           </div>
@@ -1552,7 +1554,7 @@ function generateStudentDoc(result, info) {
 <h2>📊 Resultados por domínio</h2>
 ${[
   {l:"Atenção",v:result.scores.inattention,c:"#EF4444"},
-  {l:"Inquietação",v:result.scores.hyperactivity,c:"#F97316"},
+  {l:"Agitação",v:result.scores.hyperactivity,c:"#F97316"},
   {l:"Compreensão",v:result.scores.comprehension,c:"#3B82F6"},
   {l:"Expressão",v:result.scores.expression,c:"#6366F1"},
   {l:"Pragmática",v:result.scores.pragmatics,c:"#8B5CF6"},
@@ -1676,7 +1678,7 @@ function Screening({ students, setStudents, teacherData }) {
         <p style={{ fontSize: "12px", color: "var(--text3)", marginBottom: "14px" }}>Escala 1-7 · Zona de preocupação: ≥ 4</p>
         {[
           { l: "Atenção", v: result.scores.inattention, c: "#EF4444" },
-          { l: "Inquietação", v: result.scores.hyperactivity, c: "#F97316" },
+          { l: "Agitação", v: result.scores.hyperactivity, c: "#F97316" },
           { l: "Compreensão", v: result.scores.comprehension, c: "#3B82F6" },
           { l: "Expressão", v: result.scores.expression, c: "#6366F1" },
           { l: "Pragmática", v: result.scores.pragmatics, c: "#8B5CF6" },
@@ -1958,7 +1960,7 @@ function Dashboard({ students, teacherData }) {
         <h4 style={{ fontSize: "14px", fontWeight: 600, marginBottom: "12px" }}>Médias por domínio</h4>
         {[
           { l: "Atenção", k: "inattention", c: "#EF4444" },
-          { l: "Inquietação", k: "hyperactivity", c: "#F97316" },
+          { l: "Agitação", k: "hyperactivity", c: "#F97316" },
           { l: "Compreensão", k: "comprehension", c: "#3B82F6" },
           { l: "Expressão", k: "expression", c: "#6366F1" },
           { l: "Pragmática", k: "pragmatics", c: "#8B5CF6" },
