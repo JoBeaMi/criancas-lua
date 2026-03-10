@@ -50,6 +50,11 @@
 <script type="text/babel">
 const { useState, useMemo } = React;
 
+// ═══ MODO DA APP ═══
+// true  = versão investigação (perfil + V/F + estratégias + vinhetas + rastreio)
+// false = versão prática (só rastreio — para uso no dia-a-dia)
+const RESEARCH_MODE = false;
+
 
 // ═══════════════════════════════════════════════════════════════
 // CRIANÇAS NO MUNDO DA LUA? — Rastreio Atenção e Linguagem
@@ -665,7 +670,7 @@ const STRATEGIES_BY_CYCLE = {
     context: "No Ensino Superior, o apoio estruturado da escola desaparece e o estudante precisa de se organizar sozinho. Dificuldades de atenção, de organização e de compreensão de textos complexos não desaparecem com a idade — precisam de estratégias e de apoio adequado. A chave é ajudar o estudante a conhecer-se e a pedir o que precisa.",
     attention: [
       { id:"es-a1", text:"Ajudar o estudante a usar ferramentas digitais de organização (calendário, lembretes, listas)", desc:"Muitos jovens adultos nunca aprenderam a organizar-se com ferramentas digitais. Experimentar várias até encontrar a que funciona.", how:"Ex: Google Calendar com alertas automáticos. Aplicações como Todoist ou Notion para gerir projetos e prazos." },
-      { id:"es-a2", text:"Dividir trabalhos grandes em partes pequenas com datas intermédias", desc:"Dissertações e projetos longos são avassaladores. Criar marcos parciais com datas concretas impede que fique tudo para o fim.", how:"Ex: 'O trabalho é para dia 30. Pesquisa: dia 10. Estrutura: dia 17. Primeiro rascunho: dia 24. Revisão: dia 28.'" },
+      { id:"es-a2", text:"Partir trabalhos grandes em partes pequenas com datas intermédias", desc:"Dissertações e projetos longos são avassaladores. Criar marcos parciais com datas concretas impede que fique tudo para o fim.", how:"Ex: 'O trabalho é para dia 30. Pesquisa: dia 10. Estrutura: dia 17. Primeiro rascunho: dia 24. Revisão: dia 28.'" },
       { id:"es-a3", text:"Ensinar técnicas de estudo concretas: fichas, auto-teste, revisão espaçada", desc:"Não assumir que o estudante sabe estudar. Mostrar técnicas: fichas com pergunta/resposta, rever em intervalos crescentes, auto-teste.", how:"Ex: Criar fichas com o conceito de um lado e a definição do outro. Usar apps como Anki para revisão espaçada." },
       { id:"es-a4", text:"Ajudar a descobrir onde e quando se concentra melhor", desc:"Biblioteca ou casa? Silêncio ou música? Manhã ou noite? Cada pessoa é diferente e muitos nunca experimentaram alternativas.", how:"Ex: 'Experimenta uma semana na biblioteca e outra em casa. Regista onde produziste mais e partilha comigo.'" },
       { id:"es-a5", text:"Criar uma rotina de check-in semanal para rever prazos e prioridades", desc:"Reunião breve semanal (presencial ou por mensagem) para rever o que está pendente, o que é urgente, e o que pode esperar.", how:"Ex: 'Todas as segundas, 10 minutos: o que tens para entregar esta semana? O que precisa de ajuda?'" },
@@ -1653,11 +1658,56 @@ function Screening({ students, setStudents, teacherData }) {
       <Card style={{ borderTop: `4px solid ${result.pColor}`, textAlign: "center" }}>
         <div style={{ fontSize: "56px", marginBottom: "4px" }}>{result.pIcon}</div>
         <h3 style={{ fontSize: "22px", fontWeight: 700, color: result.pColor, marginBottom: "2px" }}>{result.profile}</h3>
-        <p style={{ fontSize: "14px", color: "var(--text2)" }}>{result.initials} · {result.age} anos · {result.date}</p>
+        <p style={{ fontSize: "14px", color: "var(--text2)" }}>{result.initials} · {result.age} anos · {result.cycle} · {result.date}</p>
 
         <div style={{ background: result.dColor+"12", border: `1.5px solid ${result.dColor}`, borderRadius: "var(--radius)", padding: "12px", textAlign: "center", margin: "16px 0" }}>
-          <span style={{ fontSize: "12px", color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Decisão recomendada</span>
+          <span style={{ fontSize: "12px", color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Orientação sugerida</span>
           <p style={{ fontSize: "20px", fontWeight: 700, color: result.dColor, marginTop: "4px" }}>{result.decision}</p>
+        </div>
+      </Card>
+
+      {/* Contexto do aluno */}
+      <Card>
+        <h4 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "18px" }}>👤</span> Dados do aluno
+        </h4>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "13px" }}>
+          <div style={{ background: "var(--surface2)", padding: "8px 12px", borderRadius: "8px" }}>
+            <span style={{ color: "var(--text3)", display: "block", fontSize: "11px" }}>Iniciais</span>
+            <span style={{ fontWeight: 600 }}>{result.initials}</span>
+          </div>
+          <div style={{ background: "var(--surface2)", padding: "8px 12px", borderRadius: "8px" }}>
+            <span style={{ color: "var(--text3)", display: "block", fontSize: "11px" }}>Idade</span>
+            <span style={{ fontWeight: 600 }}>{result.age} anos</span>
+          </div>
+          <div style={{ background: "var(--surface2)", padding: "8px 12px", borderRadius: "8px" }}>
+            <span style={{ color: "var(--text3)", display: "block", fontSize: "11px" }}>Ciclo</span>
+            <span style={{ fontWeight: 600 }}>{result.cycle}</span>
+          </div>
+          <div style={{ background: "var(--surface2)", padding: "8px 12px", borderRadius: "8px" }}>
+            <span style={{ color: "var(--text3)", display: "block", fontSize: "11px" }}>Diagnóstico conhecido</span>
+            <span style={{ fontWeight: 600 }}>{result.knownDx || "Nenhum"}</span>
+          </div>
+        </div>
+        {result.notes && (
+          <div style={{ marginTop: "10px", padding: "10px 12px", background: "#FFFBEB", borderRadius: "8px", border: "1px solid #F59E0B30" }}>
+            <span style={{ color: "var(--text3)", display: "block", fontSize: "11px", marginBottom: "4px" }}>Notas do professor</span>
+            <p style={{ fontSize: "13px", lineHeight: 1.5 }}>{result.notes}</p>
+          </div>
+        )}
+      </Card>
+
+      {/* O que este rastreio avalia */}
+      <Card style={{ background: "var(--blue-light, #EBF4FB)", border: "1px solid #3B82F620" }}>
+        <h4 style={{ fontSize: "15px", fontWeight: 700, marginBottom: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "18px" }}>ℹ️</span> Como interpretar estes resultados
+        </h4>
+        <div style={{ fontSize: "13px", lineHeight: 1.7, color: "var(--text)" }}>
+          <p style={{ marginBottom: "8px" }}>Este rastreio avalia <strong>6 domínios</strong> com base na sua observação em sala de aula:</p>
+          <p style={{ marginBottom: "4px" }}>⚡ <strong>Atenção</strong> e <strong>Agitação</strong> — sinais de dificuldades de atenção e comportamento</p>
+          <p style={{ marginBottom: "4px" }}>💬 <strong>Compreensão</strong>, <strong>Expressão</strong> e <strong>Pragmática</strong> — sinais de dificuldades de linguagem e comunicação</p>
+          <p style={{ marginBottom: "8px" }}>📏 <strong>Impacto</strong> — grau em que as dificuldades afetam a aprendizagem e a participação</p>
+          <p>Valores <strong>≥ 4.0</strong> na escala 1-7 indicam zona de preocupação. Este resultado é <strong>orientador</strong> — não substitui uma avaliação formal por profissionais qualificados.</p>
         </div>
       </Card>
 
@@ -1667,9 +1717,6 @@ function Screening({ students, setStudents, teacherData }) {
           <span style={{ fontSize: "18px" }}>🔎</span> Porquê este perfil?
         </h4>
         <p style={{ fontSize: "14px", lineHeight: 1.7, color: "var(--text)" }}>{result.explanation}</p>
-        <p style={{ fontSize: "12px", lineHeight: 1.5, color: "var(--text3)", marginTop: "10px", fontStyle: "italic" }}>
-          Nota: Este rastreio é indicativo e não substitui uma avaliação formal. Os pontos de corte são orientadores e devem ser interpretados em contexto, considerando a idade e o nível de desenvolvimento da criança.
-        </p>
       </Card>
 
       {/* Resultados por domínio */}
@@ -2000,13 +2047,16 @@ function Dashboard({ students, teacherData }) {
 // ─── APP PRINCIPAL ──────────────────────────────────────────
 
 function App() {
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState(RESEARCH_MODE ? 0 : 0);
   const [students, setStudents] = useState([]);
-  const [teacherData, setTeacherData] = useState(null);
+  const [teacherData, setTeacherData] = useState(RESEARCH_MODE ? null : { skip: true });
   const [showIntro, setShowIntro] = useState(true);
 
-  const tabs = [
+  const tabs = RESEARCH_MODE ? [
     { l: "O Meu Perfil", i: "👤" },
+    { l: "Rastreio", i: "🔍" },
+    { l: "Painel", i: "📊" },
+  ] : [
     { l: "Rastreio", i: "🔍" },
     { l: "Painel", i: "📊" },
   ];
@@ -2014,32 +2064,39 @@ function App() {
   if (showIntro) {
     return (
       <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, var(--teal-light) 0%, var(--bg) 50%, var(--coral-light) 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
-        <div style={{ maxWidth: "480px", textAlign: "center" }}>
+        <div style={{ maxWidth: "520px", textAlign: "center" }}>
           <img src="Caidi-logo-Branco-1080.png" alt="CAIDI" style={{ height: "64px", marginBottom: "16px", objectFit: "contain", filter: "brightness(0)" }}
             onError={e => { e.target.style.display="none"; }} />
           <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--teal-dark)", marginBottom: "4px" }}>Crianças no Mundo da Lua?</h1>
-          <p style={{ fontSize: "14px", color: "var(--text2)", fontWeight: 500, marginBottom: "8px" }}>Instrumento de rastreio de dificuldades de atenção e linguagem</p>
+          <p style={{ fontSize: "14px", color: "var(--text2)", fontWeight: 500, marginBottom: "8px" }}>Ferramenta de rastreio de dificuldades de atenção e linguagem</p>
           <p style={{ fontSize: "12px", color: "var(--text3)", marginBottom: "2px" }}>Joana Miguel &amp; Joana Carvalho</p>
           <p style={{ fontSize: "13px", color: "var(--text3)", marginBottom: "28px" }}>NIDCAIDI — Núcleo de Investigação e Desenvolvimento</p>
           <Card>
             <p style={{ fontSize: "14px", lineHeight: 1.7, marginBottom: "16px", textAlign: "left" }}>
-              Aplicação para apoiar educadores na identificação precoce de dificuldades de <strong style={{ color: "var(--teal)" }}>atenção</strong> e <strong style={{ color: "var(--coral)" }}>linguagem</strong>, fornecendo estratégias práticas de intervenção.
+              Esta ferramenta ajuda educadores a <strong style={{ color: "var(--teal)" }}>reconhecer sinais</strong> de dificuldades de atenção e linguagem nos seus alunos, fornecendo um <strong style={{ color: "var(--coral)" }}>perfil orientador</strong> e estratégias práticas de intervenção.
             </p>
-            <div style={{ textAlign: "left", marginBottom: "20px" }}>
+            <div style={{ textAlign: "left", marginBottom: "16px" }}>
               {[
-                { i: "👤", t: "Configure o seu perfil (breve e anónimo)" },
-                { i: "🔍", t: "Rastreio rápido com perfil automático" },
-                { i: "📊", t: "Painel com resumo dos resultados" },
+                { i: "🔍", t: "Rastreio rápido", d: "Responda a questões sobre o comportamento do aluno em sala de aula" },
+                { i: "📊", t: "Perfil automático", d: "Receba um perfil com barras por domínio (atenção, linguagem, impacto)" },
+                { i: "📝", t: "Estratégias personalizadas", d: "Estratégias práticas ajustadas ao perfil e ao ciclo de ensino" },
+                { i: "🎯", t: "Orientação de encaminhamento", d: "Sugestão de próximos passos e profissionais a contactar" },
               ].map((x,j) => (
-                <div key={j} style={{ display: "flex", gap: "10px", alignItems: "center", padding: "10px 0", borderBottom: j<2 ? "1px solid var(--border)" : "none" }}>
-                  <span style={{ fontSize: "20px" }}>{x.i}</span>
-                  <span style={{ fontSize: "14px" }}>{x.t}</span>
+                <div key={j} style={{ display: "flex", gap: "12px", alignItems: "flex-start", padding: "10px 0", borderBottom: j<3 ? "1px solid var(--border)" : "none" }}>
+                  <span style={{ fontSize: "20px", flexShrink: 0 }}>{x.i}</span>
+                  <div>
+                    <span style={{ fontSize: "14px", fontWeight: 600 }}>{x.t}</span>
+                    <p style={{ fontSize: "12px", color: "var(--text3)", lineHeight: 1.4, marginTop: "2px" }}>{x.d}</p>
+                  </div>
                 </div>
               ))}
             </div>
+            <div style={{ background: "var(--amber-light, #FEF3C7)", border: "1px solid #F59E0B40", borderRadius: "8px", padding: "10px 14px", marginBottom: "16px", fontSize: "12px", lineHeight: 1.6, color: "#7C5F00", textAlign: "left" }}>
+              ⚠️ <strong>Importante:</strong> Esta ferramenta é um instrumento de rastreio, não de diagnóstico. Os resultados são orientadores e devem ser interpretados por profissionais qualificados. Não substitui uma avaliação formal.
+            </div>
             <button onClick={() => setShowIntro(false)}
               style={{ width: "100%", padding: "14px", borderRadius: "var(--radius)", background: "var(--teal)", color: "#fff", fontSize: "15px", fontWeight: 700 }}>
-              Começar
+              Começar rastreio
             </button>
           </Card>
         </div>
@@ -2061,11 +2118,11 @@ function App() {
                 <span style={{ fontSize: "10px", color: "var(--text3)" }}>J. Miguel &amp; J. Carvalho · NIDCAIDI</span>
               </div>
             </div>
-            {teacherData && <span style={{ fontSize: "10px", color: "var(--green)", fontWeight: 600, padding: "3px 8px", background: "var(--green-light)", borderRadius: "10px" }}>✓ Perfil OK</span>}
+            {RESEARCH_MODE && teacherData && <span style={{ fontSize: "10px", color: "var(--green)", fontWeight: 600, padding: "3px 8px", background: "var(--green-light)", borderRadius: "10px" }}>✓ Perfil OK</span>}
           </div>
           <div style={{ display: "flex", gap: "4px" }}>
             {tabs.map((t, i) => {
-              const locked = i > 0 && !teacherData;
+              const locked = RESEARCH_MODE && i > 0 && !teacherData;
               return <button key={i} onClick={() => !locked && setTab(i)}
                 style={{
                   flex: 1, padding: "8px 4px", borderRadius: "8px 8px 0 0", fontSize: "13px", fontWeight: tab===i ? 700 : 400,
@@ -2081,20 +2138,29 @@ function App() {
 
       {/* Content */}
       <div style={{ maxWidth: "640px", margin: "0 auto", padding: "16px" }}>
-        {tab === 0 && (
-          teacherData ? (
-            <Card style={{ textAlign: "center", padding: "40px" }}>
-              <div style={{ fontSize: "48px", marginBottom: "8px" }}>✅</div>
-              <h3 style={{ fontSize: "18px", fontWeight: 700, color: "var(--green)", marginBottom: "8px" }}>Perfil configurado!</h3>
-              <p style={{ fontSize: "14px", color: "var(--text2)", marginBottom: "20px" }}>Pode agora utilizar as secções Rastreio e Painel.</p>
-              <button onClick={() => setTab(1)} style={{ padding: "12px 28px", borderRadius: "8px", background: "var(--teal)", color: "#fff", fontSize: "14px", fontWeight: 600 }}>Ir para Rastreio →</button>
-            </Card>
-          ) : (
-            <TeacherProfile onComplete={(data) => { setTeacherData(data); setTab(1); }} />
-          )
+        {RESEARCH_MODE ? (
+          <>
+            {tab === 0 && (
+              teacherData ? (
+                <Card style={{ textAlign: "center", padding: "40px" }}>
+                  <div style={{ fontSize: "48px", marginBottom: "8px" }}>✅</div>
+                  <h3 style={{ fontSize: "18px", fontWeight: 700, color: "var(--green)", marginBottom: "8px" }}>Perfil configurado!</h3>
+                  <p style={{ fontSize: "14px", color: "var(--text2)", marginBottom: "20px" }}>Pode agora utilizar as secções Rastreio e Painel.</p>
+                  <button onClick={() => setTab(1)} style={{ padding: "12px 28px", borderRadius: "8px", background: "var(--teal)", color: "#fff", fontSize: "14px", fontWeight: 600 }}>Ir para Rastreio →</button>
+                </Card>
+              ) : (
+                <TeacherProfile onComplete={(data) => { setTeacherData(data); setTab(1); }} />
+              )
+            )}
+            {tab === 1 && <Screening students={students} setStudents={setStudents} teacherData={teacherData} />}
+            {tab === 2 && <Dashboard students={students} teacherData={teacherData} />}
+          </>
+        ) : (
+          <>
+            {tab === 0 && <Screening students={students} setStudents={setStudents} teacherData={teacherData} />}
+            {tab === 1 && <Dashboard students={students} teacherData={teacherData} />}
+          </>
         )}
-        {tab === 1 && <Screening students={students} setStudents={setStudents} teacherData={teacherData} />}
-        {tab === 2 && <Dashboard students={students} teacherData={teacherData} />}
         <div style={{ textAlign: "center", padding: "20px 16px 12px", marginTop: "16px", borderTop: "1px solid var(--border)" }}>
           <p style={{ fontSize: "13px", color: "var(--text3)", lineHeight: 1.6 }}>
             © {new Date().getFullYear()} Joana Miguel &amp; Joana Carvalho · NIDCAIDI<br/>
