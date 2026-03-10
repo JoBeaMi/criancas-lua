@@ -64,7 +64,6 @@ const RESEARCH_MODE = false;
 // ─── CONFIGURAÇÃO ───────────────────────────────────────────
 // Cole aqui o URL do Google Apps Script após deploy:
 const API_URL = "https://script.google.com/macros/s/AKfycbxEw7bzcQ0ycMKGaiOApeEZMg1DEiF2w86E7gzB0PZaYEb3WmgKoqi74PYYY-o7NlUi/exec";
-// Exemplo: "https://script.google.com/macros/s/AKfycbx.../exec"
 
 async function sendToSheet(action, payload) {
   if (!API_URL) { console.warn("API_URL vazio"); return; }
@@ -2072,27 +2071,34 @@ function App() {
           <p style={{ fontSize: "12px", color: "var(--text3)", marginBottom: "2px" }}>Joana Miguel &amp; Joana Carvalho</p>
           <p style={{ fontSize: "13px", color: "var(--text3)", marginBottom: "28px" }}>NIDCAIDI — Núcleo de Investigação e Desenvolvimento</p>
           <Card>
-            <p style={{ fontSize: "14px", lineHeight: 1.7, marginBottom: "16px", textAlign: "left" }}>
-              Esta ferramenta ajuda educadores a <strong style={{ color: "var(--teal)" }}>reconhecer sinais</strong> de dificuldades de atenção e linguagem nos seus alunos, fornecendo um <strong style={{ color: "var(--coral)" }}>perfil orientador</strong> e estratégias práticas de intervenção.
+            <p style={{ fontSize: "14px", lineHeight: 1.8, marginBottom: "12px", textAlign: "left" }}>
+              Esta ferramenta foi criada para apoiar educadores e professores na <strong style={{ color: "var(--teal)" }}>observação e organização de sinais</strong> de dificuldades de atenção e de linguagem em contexto escolar.
             </p>
-            <div style={{ textAlign: "left", marginBottom: "16px" }}>
+            <p style={{ fontSize: "14px", lineHeight: 1.8, marginBottom: "12px", textAlign: "left" }}>
+              Muitas crianças apresentam comportamentos em sala de aula — como não seguir instruções, parecer desligadas ou ter dificuldade em expressar-se — que podem ter origens diferentes e que <strong style={{ color: "var(--coral)" }}>merecem uma atenção diferenciada</strong>. Esta ferramenta ajuda-o(a) a sistematizar essas observações e a perceber se os sinais apontam mais para dificuldades de atenção, de linguagem, ou de ambas.
+            </p>
+            <p style={{ fontSize: "14px", lineHeight: 1.8, marginBottom: "16px", textAlign: "left" }}>
+              Com base nas suas respostas, receberá um <strong>perfil orientador</strong> do aluno, <strong>estratégias práticas</strong> ajustadas ao ciclo de ensino — que podem ser integradas nas medidas universais de apoio — e uma <strong>orientação sobre os próximos passos</strong>, incluindo se faz sentido solicitar uma avaliação especializada.
+            </p>
+
+            <div style={{ textAlign: "left", marginBottom: "16px", background: "var(--surface2)", borderRadius: "10px", padding: "14px 16px" }}>
+              <p style={{ fontSize: "13px", fontWeight: 600, marginBottom: "10px", color: "var(--teal-dark)" }}>O que vai acontecer:</p>
               {[
-                { i: "🔍", t: "Rastreio rápido", d: "Responda a questões sobre o comportamento do aluno em sala de aula" },
-                { i: "📊", t: "Perfil automático", d: "Receba um perfil com barras por domínio (atenção, linguagem, impacto)" },
-                { i: "📝", t: "Estratégias personalizadas", d: "Estratégias práticas ajustadas ao perfil e ao ciclo de ensino" },
-                { i: "🎯", t: "Orientação de encaminhamento", d: "Sugestão de próximos passos e profissionais a contactar" },
+                { i: "1️⃣", t: "Preenche dados básicos do aluno (iniciais, idade, ciclo)" },
+                { i: "2️⃣", t: "Responde a questões sobre o que observa na sala de aula" },
+                { i: "3️⃣", t: "Recebe um perfil com resultados por domínio" },
+                { i: "4️⃣", t: "Consulta estratégias e orientações de encaminhamento" },
               ].map((x,j) => (
-                <div key={j} style={{ display: "flex", gap: "12px", alignItems: "flex-start", padding: "10px 0", borderBottom: j<3 ? "1px solid var(--border)" : "none" }}>
-                  <span style={{ fontSize: "20px", flexShrink: 0 }}>{x.i}</span>
-                  <div>
-                    <span style={{ fontSize: "14px", fontWeight: 600 }}>{x.t}</span>
-                    <p style={{ fontSize: "12px", color: "var(--text3)", lineHeight: 1.4, marginTop: "2px" }}>{x.d}</p>
-                  </div>
+                <div key={j} style={{ display: "flex", gap: "10px", alignItems: "center", padding: "6px 0" }}>
+                  <span style={{ fontSize: "16px", flexShrink: 0 }}>{x.i}</span>
+                  <span style={{ fontSize: "13px" }}>{x.t}</span>
                 </div>
               ))}
+              <p style={{ fontSize: "12px", color: "var(--text3)", marginTop: "8px" }}>⏱ Duração estimada: 5–8 minutos por aluno</p>
             </div>
-            <div style={{ background: "var(--amber-light, #FEF3C7)", border: "1px solid #F59E0B40", borderRadius: "8px", padding: "10px 14px", marginBottom: "16px", fontSize: "12px", lineHeight: 1.6, color: "#7C5F00", textAlign: "left" }}>
-              ⚠️ <strong>Importante:</strong> Esta ferramenta é um instrumento de rastreio, não de diagnóstico. Os resultados são orientadores e devem ser interpretados por profissionais qualificados. Não substitui uma avaliação formal.
+
+            <div style={{ background: "#FEF3C7", border: "1px solid #F59E0B40", borderRadius: "8px", padding: "10px 14px", marginBottom: "16px", fontSize: "12px", lineHeight: 1.6, color: "#7C5F00", textAlign: "left" }}>
+              <strong>⚠️ Nota importante:</strong> Esta ferramenta é um instrumento de rastreio, não de diagnóstico. Não substitui a avaliação por um profissional qualificado (terapeuta da fala, psicólogo, pediatra do desenvolvimento). O seu objetivo é ajudar o educador a organizar informação, fundamentar preocupações e tomar decisões mais informadas sobre o encaminhamento.
             </div>
             <button onClick={() => setShowIntro(false)}
               style={{ width: "100%", padding: "14px", borderRadius: "var(--radius)", background: "var(--teal)", color: "#fff", fontSize: "15px", fontWeight: 700 }}>
